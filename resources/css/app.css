@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+    margin: 0;
+    font-family: "Marmelad", sans-serif;
+    padding: 0;
+    text-decoration: none;
+    transition: all .2s;
+    scroll-behavior: smooth;
+}
+
+:root{
+    --background: #eee;
+    --base: #fff;
+    --text_dark: #000;
+    --text_light: #777;
+    --button: #7499f8;
+    --button2: #ea7d10;
+    --button3: #abd032;
+    --button4: #de5753;
+    --selection: #749af8b9;
+    --line: #ccc;
+}
+
+*::selection{
+    background-color: var(--selection);
+    color: var(--base);
+}
+
+html::-webkit-scrollbar{
+    width: 1rem;
+    height: .5rem;
+}
+
+html::-webkit-scrollbar-track{
+    background: var(--line);
+}
+
+html::-webkit-scrollbar-thumb{
+    background: var(--button);
+}

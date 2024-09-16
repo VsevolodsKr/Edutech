@@ -1,0 +1,85 @@
+<template>
+<Header />
+<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] pr-[2rem] bg-background">
+    <div v-if="showSidebar == true" class="flex items-center flex-wrap gap-[1.5rem]">
+        <div class="flex-[1_1_45rem]">
+            <img src="../images/contact-img.svg" class="w-full h-[50rem]">
+        </div>
+        <form action="" method="post" class="flex-[1_1_35rem] bg-base p-[2rem] text-center rounded-lg">
+            <h3 class="mb-[1rem] capitalize text-text_dark text-[2rem]">Get In Touch</h3>
+            <input type="text" name="name" placeholder="Enter you name..." required maxlength="50" class="w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none">
+            <input type="email" name="email" placeholder="Enter you email..." required maxlength="50" class="w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none">    
+            <input type="tel" name="phone" placeholder="Enter you phone number..." required maxlength="50" class="w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none">
+            <textarea name="message" placeholder="Enter your message..." required maxlength="1000" cols="30" rows="10" class="h-[20rem] resize-none w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none"></textarea>
+            <button type="submit" value="Send Message" name="submit" class="w-full bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base">Send Message</button>
+        </form>
+    </div>
+    <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] justify-center items-start mt-[3rem] pb-[1.5rem]">
+        <div class="flex flex-col justify-center items-center bg-base rounded-lg p-[.3rem]">
+            <i class="fas fa-phone text-[2.5rem] text-button my-[1rem]"></i>
+            <h3 class="text-[1.5rem] text-text_dark mt-[.5rem]">Phone number</h3>
+            <a href="tel:+37122222222" class="block text-[1.3rem] text-text_light">+37122222222</a>
+        </div>
+        <div class="flex flex-col justify-center items-center bg-base rounded-lg p-[.3rem]">
+            <i class="fas fa-envelope text-[2.5rem] text-button my-[1rem]"></i>
+            <h3 class="text-[1.5rem] text-text_dark mt-[.5rem]">Email address</h3>
+            <a href="mailto:edutech@gmail.com" class="block text-[1.3rem] text-text_light">edutech@gmail.com</a>
+        </div>
+        <div class="flex flex-col justify-center items-center bg-base rounded-lg p-[.3rem]">
+            <i class="fas fa-map-marker-alt text-[2.5rem] text-button my-[1rem]"></i>
+            <h3 class="text-[1.5rem] text-text_dark mt-[.5rem]">Office address</h3>
+            <a href="https://maps.app.goo.gl/9QKNkCmYL57HJPnN7" target="_blank" class="block text-[1.3rem] text-text_light">Satiksmes iela 6, Liepāja</a>
+        </div>
+    </div>
+</section>
+<section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] pr-[2rem] bg-background">
+    <div v-if="showSidebar == false" class="flex items-center flex-wrap gap-[1.5rem]">
+        <div class="flex-[1_1_45rem]">
+            <img src="../images/contact-img.svg" class="w-full h-[50rem]">
+        </div>
+        <form action="" method="post" class="flex-[1_1_35rem] bg-base p-[2rem] text-center rounded-lg">
+            <h3 class="mb-[1rem] capitalize text-text_dark text-[2rem]">Get In Touch</h3>
+            <input type="text" name="name" placeholder="Enter you name..." required maxlength="50" class="w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none">
+            <input type="email" name="email" placeholder="Enter you email..." required maxlength="50" class="w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none">    
+            <input type="tel" name="phone" placeholder="Enter you phone number..." required maxlength="50" class="w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none">
+            <textarea name="message" placeholder="Enter your message..." required maxlength="1000" cols="30" rows="10" class="h-[20rem] resize-none w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none"></textarea>
+            <button type="submit" value="Send Message" name="submit" class="w-full bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base">Send Message</button>
+        </form>
+    </div>
+    <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] justify-center items-start mt-[3rem] pb-[1.5rem]">
+        <div class="flex flex-col justify-center items-center bg-base rounded-lg p-[.3rem]">
+            <i class="fas fa-phone text-[2.5rem] text-button my-[1rem]"></i>
+            <h3 class="text-[1.5rem] text-text_dark mt-[.5rem]">Phone number</h3>
+            <a href="tel:+37122222222" class="block text-[1.3rem] text-text_light">+37122222222</a>
+        </div>
+        <div class="flex flex-col justify-center items-center bg-base rounded-lg p-[.3rem]">
+            <i class="fas fa-envelope text-[2.5rem] text-button my-[1rem]"></i>
+            <h3 class="text-[1.5rem] text-text_dark mt-[.5rem]">Email address</h3>
+            <a href="mailto:edutech@gmail.com" class="block text-[1.3rem] text-text_light">edutech@gmail.com</a>
+        </div>
+        <div class="flex flex-col justify-center items-center bg-base rounded-lg p-[.3rem]">
+            <i class="fas fa-map-marker-alt text-[2.5rem] text-button my-[1rem]"></i>
+            <h3 class="text-[1.5rem] text-text_dark mt-[.5rem]">Office address</h3>
+            <a href="https://maps.app.goo.gl/9QKNkCmYL57HJPnN7" target="_blank" class="block text-[1.3rem] text-text_light">Satiksmes iela 6, Liepāja</a>
+        </div>
+    </div>
+</section>
+<Sidebar />
+</template>
+<script>
+import Header from '../components/Header.vue';
+import Sidebar from '../components/Sidebar.vue';
+import store from '../store/store';
+
+export default {
+    components: {
+        Header,
+        Sidebar
+    },
+    computed: {
+        showSidebar: function (){
+            return store.getters.getShowSidebar
+        }
+    }
+}
+</script>
