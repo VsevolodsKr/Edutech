@@ -1,7 +1,9 @@
 <template>
     <div v-if="showSidebar == true" class="fixed top-0 left-0 w-[20rem] bg-base h-[100vh] border-r-2 border-[#ccc] z-120">
-        <div class="text-right p-[2rem] hidden">
-            <i class="fa fa-times text-right text-[2rem] bg-red rounded-lg text-base cursor-pointer h-[4.5rem] w-[4.5rem] leading-[4.5rem] text-center hover:bg-text_dark"></i>
+        <div class="text-right p-[2rem] hidden [@media(max-width:1180px)]:block">
+            <div class="flex justify-end">
+                <button class="flex items-center justify-center text-[#fff] text-[1.5rem] bg-button4 rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200"><i class="fas fa-times"></i></button>
+            </div>
         </div>  
         <div class="py-[3rem] px-[2rem] text-center">
             <div class="flex justify-center">
@@ -20,12 +22,29 @@
     </div>
 </template>
 <script>
+import { useWindowSize } from '@vueuse/core'
 import store from '../store/store'
 
+const {width} = useWindowSize()
+
 export default {
+    data: () => {
+        return{
+            width
+        }
+    },
     computed: {
         showSidebar: function (){
             return store.getters.getShowSidebar
+        },
+    },
+    watch: {
+        width(value){
+            if(value < 1180){
+                store.commit('setShowSidebar', false)
+            }else{
+                store.commit('setShowSidebar', true)
+            }
         }
     }
 }
