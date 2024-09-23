@@ -1,7 +1,7 @@
 <template>
 <Header />
-<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] pr-[2rem] bg-background">
-    <div v-if="showSidebar == true" class="flex items-center flex-wrap gap-[1.5rem] [@media(max-width:1715px)]:flex [@media(max-width:1715px)]:flex-col-reverse">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] pr-[2rem] bg-background">
+    <div v-if="showSidebar == true && width > 1180" class="flex items-center flex-wrap gap-[1.5rem] [@media(max-width:1715px)]:flex [@media(max-width:1715px)]:flex-col-reverse">
         <div class="flex-[1_1_45rem] [@media(max-width:1715px)]:flex-[1_1_1rem]">
             <img src="../images/contact-img.svg" class="w-full h-[50rem]">
         </div>
@@ -32,8 +32,8 @@
         </div>
     </div>
 </section>
-<section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] pr-[2rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
-    <div v-if="showSidebar == false" class="flex items-center flex-wrap gap-[1.5rem] [@media(max-width:1715px)]:flex [@media(max-width:1715px)]:flex-col-reverse">
+<section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] pr-[2rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+    <div v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="flex items-center flex-wrap gap-[1.5rem] [@media(max-width:1715px)]:flex [@media(max-width:1715px)]:flex-col-reverse">
         <div class="flex-[1_1_45rem] [@media(max-width:1715px)]:flex-[1_1_1rem]">
             <img src="../images/contact-img.svg" class="w-full h-[50rem] [@media(max-width:550px)]:h-[25rem]">
         </div>
@@ -70,11 +70,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
-export default {
+const {width} = useWindowSize()
+export default{
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){

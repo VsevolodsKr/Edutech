@@ -1,6 +1,6 @@
 <template>
     <Header />
-    <section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] pr-[1rem] bg-background">
+    <section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] pr-[1rem] bg-background">
         <h1 class="text-[1.5rem] text-text_dark capitalize">Quick options</h1>
         <hr class="border-[#ccc] mb-[2rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_24rem)] gap-[1rem] justify-center items-start">
@@ -44,7 +44,7 @@
             </div>
         </div>
     </section>
-    <section v-if="showSidebar == true" class="pl-[22rem] pt-[4rem] bg-background">
+    <section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[4rem] bg-background">
         <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1.5rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1.5rem]">
@@ -143,7 +143,7 @@
             <router-link to="/courses" class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] px-[2rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button3 hover:bg-base">View All Courses</router-link>
         </div>
     </section>
-    <section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+    <section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
         <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Quick options</h1>
         <hr class="border-[#ccc] mb-[2rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_24rem)] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
@@ -187,7 +187,7 @@
             </div>
         </div>
     </section>
-    <section v-if="showSidebar == false" class="pl-[2rem] pt-[4rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-0">
+    <section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[4rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-0">
         <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Our Courses</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1.5rem] [@media(max-width:550px)]:mr-[.5rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-[.5rem]">
@@ -292,11 +292,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
+const {width} = useWindowSize()
 export default {
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){

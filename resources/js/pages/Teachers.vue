@@ -1,6 +1,6 @@
 <template>
 <Header />
-<section v-if="showSidebar == true" class="pl-[22rem] pr-[1.5rem] pt-[2rem] bg-background">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pr-[1.5rem] pt-[2rem] bg-background">
     <h1 class="text-[1.5rem] text-text_dark capitalize">Expert Teachers</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <form class="w-full rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-base" method="post" action="">
@@ -94,7 +94,7 @@
         </div>
     </div>
 </section>
-<section v-if="showSidebar == false" class="pl-[2rem] pr-[1.5rem] pt-[2rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+<section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pr-[1.5rem] pt-[2rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Expert Teachers</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <form class="w-full rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-base" method="post" action="">
@@ -194,11 +194,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
-export default {
+const {width} = useWindowSize()
+export default{
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){

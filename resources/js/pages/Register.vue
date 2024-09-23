@@ -1,6 +1,6 @@
 <template>
 <Header />
-    <section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] flex items-center justify-center">
+    <section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] flex items-center justify-center">
         <form action="" method="post" enctype="multipart/form-data" class="bg-base rounded-lg p-[1rem] w-[50rem]">
         <h3 class="text-[1.5rem] capitalize text-text_dark text-center">Register</h3>
         <p class="text-[1.2rem] text-text_light pt-[1rem]">Your name <span class="text-[#ff0000]">*</span></p>
@@ -16,7 +16,7 @@
         <button type="submit" name="submit" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full mt-[1.5rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base">Register</button>
     </form>
     </section>
-    <section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] flex items-center justify-center [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+    <section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] flex items-center justify-center [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
         <form action="" method="post" enctype="multipart/form-data" class="bg-base rounded-lg p-[1rem] w-[50rem]">
         <h3 class="text-[1.5rem] capitalize text-text_dark text-center [@media(max-width:550px)]:text-[1.2rem]">Register</h3>
         <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your name <span class="text-[#ff0000]">*</span></p>
@@ -38,12 +38,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
-
-export default {
+const {width} = useWindowSize()
+export default{
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){

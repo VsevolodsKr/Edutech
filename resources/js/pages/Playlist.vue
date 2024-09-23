@@ -1,6 +1,6 @@
 <template>
 <Header />
-<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize">Playlist Details</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
@@ -29,7 +29,7 @@
         </div>
     </div>
 </section>
-<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize">Playlist Videos</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pb-[2rem]">
@@ -77,7 +77,7 @@
         </router-link>
     </div>
 </section>
-<section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+<section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Playlist Details</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
@@ -106,7 +106,7 @@
         </div>
     </div>
 </section>
-<section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+<section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Playlist Videos</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pb-[2rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
@@ -160,11 +160,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
-export default {
+const {width} = useWindowSize()
+export default{
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){

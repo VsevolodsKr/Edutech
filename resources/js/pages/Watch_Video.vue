@@ -1,6 +1,6 @@
 <template>
 <Header />
-<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
     <div class="bg-base rounded-lg p-[1rem]">
         <div class="relative mb-[1rem]">
             <video src="../videos/vid-1.mp4" controls poster="../images/post-2-1.png" class="rounded-lg w-full object-contain bg-[#000]"></video>
@@ -24,7 +24,7 @@
         <p class="leading-1.5 text-[1rem] text-text_light mt-[1.5rem] text-justify">Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus unde quas repellat quaerat, voluptas aperiam culpa magnam. Odit, totam illo incidunt pariatur vitae consequuntur delectus exercitationem. Illum mollitia error magnam ab praesentium quis nulla? Officia, modi adipisci error blanditiis, ipsum sequi eligendi ad, facere dolor odio aspernatur. Quae sint iure dignissimos quas soluta est sit nostrum voluptatum, ipsa non voluptate.</p>
     </div>
 </section>
-<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] bg-background pr-[2rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize">2 Comments</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <form method="post" class="bg-base rounded-lg p-[1rem] mb-[1rem]">
@@ -60,7 +60,7 @@
         </div>
     </div>
 </section>
-<section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+<section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
     <div class="bg-base rounded-lg p-[1rem]">
         <div class="relative mb-[1rem]">
             <video src="../videos/vid-1.mp4" controls poster="../images/post-2-1.png" class="rounded-lg w-full object-contain bg-[#000]"></video>
@@ -84,7 +84,7 @@
         <p class="leading-1.5 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus unde quas repellat quaerat, voluptas aperiam culpa magnam. Odit, totam illo incidunt pariatur vitae consequuntur delectus exercitationem. Illum mollitia error magnam ab praesentium quis nulla? Officia, modi adipisci error blanditiis, ipsum sequi eligendi ad, facere dolor odio aspernatur. Quae sint iure dignissimos quas soluta est sit nostrum voluptatum, ipsa non voluptate.</p>
     </div>
 </section>
-<section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+<section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">2 Comments</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <form method="post" class="bg-base rounded-lg p-[1rem] mb-[1rem]">
@@ -126,11 +126,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
-export default {
+const {width} = useWindowSize()
+export default{
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){

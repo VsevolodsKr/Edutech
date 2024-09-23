@@ -1,6 +1,6 @@
 <template>
 <Header />
-<section v-if="showSidebar == true" class="pl-[22rem] pt-[2rem] bg-background pr-[1rem]">
+<section v-if="showSidebar == true && width > 1180" class="pl-[22rem] pt-[2rem] bg-background pr-[1rem]">
         <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem]">
@@ -141,7 +141,7 @@
             </div>
         </div>
     </section>
-    <section v-if="showSidebar == false" class="pl-[2rem] pt-[2rem] bg-background pr-[1rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
+    <section v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="pl-[2rem] pt-[2rem] bg-background pr-[1rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]">
         <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
@@ -288,11 +288,18 @@
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import { useWindowSize } from '@vueuse/core'
 
-export default {
+const {width} = useWindowSize()
+export default{
     components: {
         Header,
         Sidebar
+    },
+    data: () => {
+        return{
+          width  
+        }
     },
     computed: {
         showSidebar: function (){
