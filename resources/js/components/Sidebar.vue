@@ -1,8 +1,8 @@
 <template>
-    <div id="sidebar" v-if="showSidebar == true" class="fixed top-0 left-0 w-[20rem] bg-base h-[100vh] border-r-2 border-[#ccc] z-120 [@media(max-width:550px)]:w-[15rem]">
+    <div v-if="showSidebar == true" class="fixed top-0 left-0 w-[20rem] bg-base h-[100vh] border-r-2 border-[#ccc] z-120 [@media(max-width:550px)]:w-[15rem]">
         <div class="text-right p-[2rem] hidden [@media(max-width:1180px)]:block">
             <div class="flex justify-end">
-                <button @click="updateSidebar" class="flex items-center justify-center text-[#fff] text-[1.5rem] bg-button4 rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200"><i class="fas fa-times"></i></button>
+                <button @click="updateSidebar" class="flex items-center justify-center text-[#fff] text-[1.5rem] bg-button4 rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] hover:text-base transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200"><i class="fas fa-times"></i></button>
             </div>
         </div>  
         <div class="py-[3rem] px-[2rem] text-center">

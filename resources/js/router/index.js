@@ -11,6 +11,7 @@ import Update from '../pages/Update.vue';
 import Playlist from '../pages/Playlist.vue';
 import Watch_Video from '../pages/Watch_Video.vue';
 import Teacher_Profile from "../pages/Teacher_Profile.vue";
+import Dashboard from "../admin/Dashboard.vue";
 
 const routes = [
     {
@@ -73,7 +74,12 @@ const routes = [
         path: '/teacher_profile',
         component: Teacher_Profile,
         meta: {title: 'Profile'}
-    }
+    },
+    {
+        path: '/dashboard',
+        component: Dashboard,
+        meta: {title: 'Dashboard'}
+    },
 ]
 
 const router = createRouter({
