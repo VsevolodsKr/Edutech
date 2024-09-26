@@ -5,19 +5,19 @@
             <h3 class="text-[1.5rem] capitalize text-text_dark text-center [@media(max-width:550px)]:text-[1.2rem]">Register</h3>
             <div>
                 <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your name <span class="text-[#ff0000]">*</span></p>
-                <input v-model="FormData.name" type="name" name="name" placeholder="Enter your name..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
+                <input v-model="name" type="name" name="name" placeholder="Enter your name..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
             </div>
             <div>
                 <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your email <span class="text-[#ff0000]">*</span></p>
-                <input v-model="FormData.email" type="email" name="email" placeholder="Enter your email..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
+                <input v-model="email" type="email" name="email" placeholder="Enter your email..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
             </div>
             <div>
                 <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your password <span class="text-[#ff0000]">*</span></p>
-                <input v-model="FormData.password" type="password" name="password" placeholder="Enter your password..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">        
+                <input v-model="password" type="password" name="password" placeholder="Enter your password..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">        
             </div>
             <div>
                 <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Confirm password <span class="text-[#ff0000]">*</span></p>
-                <input v-model="FormData.conf_password" type="password" name="password2" placeholder="Confirm your password..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
+                <input v-model="conf_password" type="password" name="password2" placeholder="Confirm your password..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
             </div>
             <div>
                 <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Select image <span class="text-[#ff0000]">*</span></p>
@@ -45,13 +45,11 @@ export default{
     },
     data: () => {
         return{
-          width,
-          FormData: {
+            width,
             name:'',
             email: '',
             password: '',
             conf_password: '',  
-          }
         }
     },
     computed: {
@@ -67,8 +65,13 @@ export default{
                     'description-Type': 'multipart/form-data'
                 }
             }
+            let data = new FormData()
+            data.append('name', this.name)
+            data.append('email', this.email)
+            data.append('password', this.password)
+            data.append('conf_password', this.conf_password)
             try{
-                const response = await axios.post('/api/register/send', this.FormData, config);
+                const response = await axios.post('api/register/send', data, config);
                 console.log(response)            
             }catch(err){
                 console.log(err)
