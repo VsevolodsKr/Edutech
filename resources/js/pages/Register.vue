@@ -3,6 +3,11 @@
     <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] flex items-center justify-center [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
         <div class="bg-base rounded-lg p-[1rem] w-[50rem]">
             <h3 class="text-[1.5rem] capitalize text-text_dark text-center [@media(max-width:550px)]:text-[1.2rem]">Register</h3>
+            <ul v-if="Object.keys(this.errorList).length > 0">
+                <li v-for="(error, index) in this.errorList" :key="index">
+                    {{ error[0] }}
+                </li>
+            </ul>
             <div>
                 <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your name <span class="text-[#ff0000]">*</span></p>
                 <input v-model="name" type="name" name="name" placeholder="Enter your name..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
@@ -49,7 +54,8 @@ export default{
             name:'',
             email: '',
             password: '',
-            conf_password: '',  
+            conf_password: '',
+            errorList: '',  
         }
     },
     computed: {
@@ -71,10 +77,14 @@ export default{
             data.append('password', this.password)
             data.append('conf_password', this.conf_password)
             try{
-                const response = await axios.post('api/register/send', data, config);
-                console.log(response)            
+                const response = await axios.post('api/register/send', data, config)
+                console.log(response.data.message)            
             }catch(err){
-                console.log(err)
+                if(err.response){
+                    if(err.response.status == 422){
+                        this.errorList = err.response.data.errors
+                    }
+                }
             }
         }
     }
