@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use App\Models\Users;
@@ -76,10 +77,13 @@ class AuthorizationController extends Controller
         $user = Users::where('email', $request->email)->first();
         if(!$user){
             return response()->json(['message' => array('Provided email does not exist in database. Try to register!'), 'status' => 500], 500);
+        }   
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
+            $logged_user = Auth::user();
+            $token = $logged_user->createToken('Logged')->plainTextToken;
+            return response()->json(['message' => array('You succesfully logged in!'), 'status' => 200, 'data' => $user, 'token' => $token], 200);
         }else{
             if(Hash::check($request->password, $user->password)){
-                return response()->json(['message' => array('You succesfully logged in!'), 'status' => 200, 'data' => $user], 200);
-            }else{
                 return response()->json(['message' => array('Password is incorrect'), 'status' => 500], 500);
             }
         }

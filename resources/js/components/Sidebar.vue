@@ -24,6 +24,7 @@
 <script>
 import { useWindowSize } from '@vueuse/core'
 import store from '../store/store'
+import { mapState } from 'vuex/dist/vuex.cjs.js';
 
 const {width} = useWindowSize()
 

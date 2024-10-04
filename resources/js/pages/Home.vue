@@ -150,6 +150,7 @@ import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
+import { mapState } from 'vuex/dist/vuex.cjs.js';
 
 const {width} = useWindowSize()
 export default {
@@ -159,13 +160,17 @@ export default {
     },
     data: () => {
         return{
-          width  
+            width,
         }
     },
     computed: {
         showSidebar: function (){
             return store.getters.getShowSidebar
-        }
+        },
+        ...mapState(['user'])
+    },
+    mounted(){
+        console.log(this.user)
     }
 }
 </script>
