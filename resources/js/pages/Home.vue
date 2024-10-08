@@ -4,7 +4,7 @@
         <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Quick options</h1>
         <hr class="border-[#ccc] mb-[2rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_24rem)] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
-            <div class="bg-base rounded-lg p-[1rem] w-full">
+            <div v-if="user != null" class="bg-base rounded-lg p-[1rem] w-full">
                 <h3 class="text-[1.3rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1rem]">Likes and comments</h3>
                 <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total likes: <span class="text-button">14</span></p>
                 <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[6rem]">View Likes</router-link>
@@ -12,6 +12,13 @@
                 <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[8rem]">View Comments</router-link>
                 <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total playlists: <span class="text-button">3</span></p>
                 <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlists</router-link>
+            </div>
+            <div v-else class="bg-base rounded-lg p-[1rem] w-full">
+                <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">Please login or register</h3>
+                <div class="w-full flex gap-[.5rem] px-[1rem] pt-[.5rem]">
+                    <router-link to="/login" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Login</router-link>
+                    <router-link to="/register" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Register</router-link>
+                </div>
             </div>
             <div class="bg-base rounded-lg p-[1rem] w-full">
                 <h3 class="text-[1.3rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1rem]">Top Categories</h3>
@@ -150,7 +157,7 @@ import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
-import { mapState } from 'vuex/dist/vuex.cjs.js';
+import axios from 'axios';
 
 const {width} = useWindowSize()
 export default {
@@ -161,16 +168,21 @@ export default {
     data: () => {
         return{
             width,
+            user: null,
         }
     },
     computed: {
         showSidebar: function (){
             return store.getters.getShowSidebar
         },
-        ...mapState(['user'])
+        showUser: function (){
+            return store.getters.getUser
+        }
     },
     mounted(){
-        console.log(this.user)
-    }
+        axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
+            this.user = response.data
+        })
+    },
 }
 </script>

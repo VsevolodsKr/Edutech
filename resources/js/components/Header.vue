@@ -12,16 +12,24 @@
                 <button @click="show = !show" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem]"><div class="fa fa-user"></div></button>
                 <button @click="switchTheme();" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem]"><div :class="[currentTheme === 'theme-light' ? 'fas fa-sun' : 'fas fa-moon']"></div></button>
             </div>
-            <div v-if="show == true" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
+            <div v-if="show == true && user != null" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
                 <div class="flex justify-center">
                     <img src="../images/pic-9.png" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">username</h3>
+                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
                 <p class="text-[1.3rem] text-text_light">role</p>
                 <router-link to="/profile" class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem]">View Profile</router-link>
                 <div class="flex gap-[1rem]">
                     <router-link to="/login" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base">Login</router-link>
                     <router-link to="/register" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base">Register</router-link>
+                </div>
+                <button @click="logout" class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base">Logout</button>
+            </div>
+            <div v-if="show == true && user == null" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
+                <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">Please login or register</h3>
+                <div class="w-full flex gap-[.5rem] px-[1rem] pt-[.5rem]">
+                    <router-link to="/login" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Login</router-link>
+                    <router-link to="/register" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Register</router-link>
                 </div>
             </div>
         </section>
@@ -39,16 +47,24 @@
                 <button @click="show = !show" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"><div class="fa fa-user"></div></button>
                 <button @click="switchTheme();" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"><div :class="[currentTheme === 'theme-light' ? 'fas fa-sun' : 'fas fa-moon']"></div></button>
             </div>
-            <div v-if="show == true" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100 [@media(max-width:550px)]:right-[1rem] [@media(max-width:550px)]:w-[15rem]">
+            <div v-if="show == true && user != null" class="absolute top-[120%] right-[1rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
                 <div class="flex justify-center">
-                    <img src="../images/pic-9.png" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem] [@media(max-width:550px)]:h-[5rem] [@media(max-width:550px)]:w-[5rem]">
+                    <img src="../images/pic-9.png" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">username</h3>
+                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">{{ user.name }}</h3>
                 <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">role</p>
-                <router-link to="/profile" class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Profile</router-link>
+                <router-link to="/profile" class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem] [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Profile</router-link>
                 <div class="flex gap-[1rem]">
-                    <router-link to="/login" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">Login</router-link>
-                    <router-link to="/register" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">Register</router-link>
+                    <router-link to="/login" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Login</router-link>
+                    <router-link to="/register" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Register</router-link>
+                </div>
+                <button @click="logout" class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Logout</button>
+            </div>
+            <div v-if="show == true && user == null" class="absolute top-[120%] right-[1rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[15rem] transition ease-linear duration-200 transform scale-100">
+                <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">Please login or register</h3>
+                <div class="w-full flex gap-[.5rem] px-[1rem] pt-[.5rem]">
+                    <router-link to="/login" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Login</router-link>
+                    <router-link to="/register" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Register</router-link>
                 </div>
             </div>
         </section>
@@ -67,6 +83,7 @@ export default {
             showSide: true,
             width,
             currentTheme: localStorage.getItem('theme-color'),
+            user: null,
         }
     },
     methods: {
@@ -75,7 +92,6 @@ export default {
         },
         changeShowSide(){
             showSide = !showSide
-
         },
         switchTheme(){
             const storedTheme = localStorage.getItem('theme-color')
@@ -101,6 +117,10 @@ export default {
                 document.documentElement.style.setProperty('--selection', '#eae883b9')       
             }
         },
+        logout: function (){
+            localStorage.setItem('token', '')
+            window.location.reload()
+        }
     },
     computed: {
         showSidebar: function (){
@@ -108,6 +128,11 @@ export default {
             return store.getters.getShowSidebar
         },
         
+    },
+    mounted(){
+        axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
+            this.user = response.data
+        })
     },
     created(){
         const storedTheme = localStorage.getItem('theme-color')

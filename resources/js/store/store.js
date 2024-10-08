@@ -7,7 +7,7 @@ export default createStore({
             showSidebar: true,
             user: {
                 data: {},
-                tokrn: localStorage.getItem('token')
+                token: localStorage.getItem('token')
             }
         }
     },
@@ -16,11 +16,17 @@ export default createStore({
         getShowSidebar: function (state){
             return state.showSidebar
         },
+        getUser: function (state){
+            return state.user
+        }
     },
 
     mutations: {
         setShowSidebar: function (state, newValue){
             state.showSidebar = newValue
         },
+        setUser: function (state, newUser){
+            state.user.data = newUser
+        }
     }
 })

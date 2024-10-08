@@ -23,61 +23,73 @@ const routes = [
     {
         path: '/about',
         component: About,
+        name: 'About',
         meta: {title: 'About Us'}
     },
     {
         path: '/courses',
         component: Courses,
+        name: 'Courses',
         meta: {title: 'Courses'}
     },
     {
         path: '/teachers',
         component: Teachers,
+        name: 'Teachers',
         meta: {title: 'Teachers'}
     },
     {
         path: '/contact',
         component: Contact,
+        name: 'Contact',
         meta: {title: 'Contact Us'}
     },
     {
         path: '/login',
         component: Login,
+        name: 'Login',
         meta: {title: 'Authorization'}
     },
     {
         path: '/register',
         component: Register,
+        name: 'Register',
         meta: {title: 'Authorization'}
     },
     {
         path: '/profile',
         component: Profile,
+        name: 'Profile',
         meta: {title: 'Profile'}
     },
     {
         path: '/update',
         component: Update,
+        name: 'Update',
         meta: {title: 'Update Profile'}    
     },
     {
         path: '/playlist',
         component: Playlist,
+        name: 'Playlist',
         meta: {title: 'Playlist'}    
     },
     {
         path: '/watch_video',
         component: Watch_Video,
+        name: 'Watch_Video',
         meta: {title: 'Video'}
     },
     {
         path: '/teacher_profile',
         component: Teacher_Profile,
+        name: 'Teacher_Profile',
         meta: {title: 'Profile'}
     },
     {
         path: '/dashboard',
         component: Dashboard,
+        name: 'Dashboard',
         meta: {title: 'Dashboard'}
     },
 ]
@@ -87,8 +99,15 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach((to, from, next) => {
     document.title = to.meta.title;
+    const token = localStorage.getItem('token')
+    if((to.name === 'Login' || to.name === 'Register') && token != ''){
+        return next({
+            name: 'Home',
+        })
+    }
+    next()
 })
 
 export default router
