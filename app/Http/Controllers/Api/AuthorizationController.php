@@ -83,7 +83,7 @@ class AuthorizationController extends Controller
             $token = $logged_user->createToken('Logged')->plainTextToken;
             return response()->json(['message' => array('You succesfully logged in!'), 'status' => 200, 'data' => $user, 'token' => $token], 200);
         }else{
-            if(Hash::check($request->password, $user->password)){
+            if(!Hash::check($request->password, $user->password)){
                 return response()->json(['message' => array('Password is incorrect'), 'status' => 500], 500);
             }
         }

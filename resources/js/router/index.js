@@ -107,6 +107,11 @@ router.beforeEach((to, from, next) => {
             name: 'Home',
         })
     }
+    if(to.name === 'Dashboard' && token === ''){
+        return next({
+            name: 'Home'
+        })
+    }
     next()
 })
 

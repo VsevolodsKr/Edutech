@@ -57,7 +57,7 @@ export default{
                 this.errorList = response.data.message
                 this.status = response.data.status
                 setTimeout(() => {
-                    this.$router.push('/', data)
+                    this.$router.push('/dashboard', data)
                 }, 500)
             }catch(err){
                 console.log(err.response.data)
