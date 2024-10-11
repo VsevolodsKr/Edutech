@@ -14,7 +14,7 @@
             </div>
             <div v-if="show == true && user != null" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
                 <div class="flex justify-center">
-                    <img src="../images/pic-9.png" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
+                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
                 <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
                 <p class="text-[1.3rem] text-text_light">role</p>
@@ -42,7 +42,7 @@
             </div>
             <div v-if="show == true && user != null" class="absolute top-[120%] right-[1rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
                 <div class="flex justify-center">
-                    <img src="../images/pic-9.png" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
+                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
                 <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">{{ user.name }}</h3>
                 <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">role</p>
@@ -139,6 +139,7 @@ export default {
     mounted(){
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
             this.user = response.data
+            this.user.image = new URL(this.user.image, import.meta.url)
         })
     }
 }

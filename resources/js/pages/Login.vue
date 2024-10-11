@@ -4,8 +4,8 @@
     <form method="post" class="bg-base rounded-lg p-[1rem] w-[50rem]">
         <h3 class="text-[1.5rem] capitalize text-text_dark text-center [@media(max-width:550px)]:text-[1.2rem]">Login Now</h3>
         <ul :class="[status == 500 ? 'bg-[#fcb6b6] text-[#912020]' : 'bg-[#b6f5b5] text-[#378c35]' , 'rounded-xl']" v-if="errorList.length > 0">
-                <li class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]" v-for="(error, index) in errorList" :key="index"><i :class="[status == 500 ? 'fa fa-warning' : 'fa fa-check']"></i> {{ error }}</li>
-            </ul>
+            <li class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]" v-for="(error, index) in errorList" :key="index"><i :class="[status == 500 ? 'fa fa-warning' : 'fa fa-check']"></i> {{ error }}</li>
+        </ul>
         <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your email <span class="text-[#ff0000]">*</span></p>
         <input v-model="email" type="email" name="email" placeholder="Enter your email..." required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
         <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Your password <span class="text-[#ff0000]">*</span></p>

@@ -5,8 +5,8 @@
 <hr class="border-[#ccc] mb-[2rem]">
 <div class="bg-base rounded-lg p-[1.5rem]">
     <div class="flex flex-col items-center justify-center">
-        <img src="../images/pic-9.png" class="h-[5rem] w-[5rem] rounded-[50%] object-cover mb-[1rem] [@media(max-width:550px)]:w-[3rem] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:mb-0">
-        <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">username</h3>
+        <img :src="user.image" class="h-[5rem] w-[5rem] rounded-[50%] object-cover mb-[1rem] [@media(max-width:550px)]:w-[3rem] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:mb-0">
+        <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">{{ user.name }}</h3>
         <p class="text-[1.3rem] text-text_light px-[.3rem] mb-[.5rem] [@media(max-width:550px)]:text-[1rem]">role</p>
         <router-link to="/update" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[15rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[6rem]">Update Profile</router-link>
     </div>
@@ -66,13 +66,29 @@ export default{
     },
     data: () => {
         return{
-          width  
+            width,
+            user: null  
         }
     },
     computed: {
         showSidebar: function (){
             return store.getters.getShowSidebar
         }
+    },
+    mounted(){
+        axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
+            this.user = response.data
+            this.user.image = new URL(this.user.image, import.meta.url)
+        })
+        if(localStorage.getItem('token') == ''){
+            this.$router.push('/').then(() =>{this.$router.go(0)})
+        }
+    },
+    created(){
+        axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
+            this.user = response.data
+            this.user.image = new URL(this.user.image, import.meta.url)
+        })
     }
 }
 </script>

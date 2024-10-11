@@ -107,7 +107,7 @@ router.beforeEach((to, from, next) => {
             name: 'Home',
         })
     }
-    if(to.name === 'Dashboard' && token === ''){
+    if((to.name === 'Dashboard' || to.name === 'Profile' || to.name === 'Update') && token === ''){
         return next({
             name: 'Home'
         })

@@ -7,7 +7,7 @@
         </div>  
         <div v-if="user != null" class="py-[3rem] px-[2rem] text-center">
             <div class="flex justify-center">
-                <img :src="user.image" class="h-[8rem] w-[8rem] rounded-full object-contain mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]">
+                <img :src="user.image" class="h-[9rem] w-[9rem] rounded-full object-contain mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]">
             </div>
             <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]"><span v-if="user != null">{{ user.name }}</span><span v-else>username</span></h3>
             <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">role</p>
@@ -61,7 +61,7 @@ export default {
     mounted(){
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
             this.user = response.data
-            this.user.image = '../../../storage/app/public/' + response.data.image
+            this.user.image = new URL(this.user.image, import.meta.url)
         })
     },
     watch: {
