@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Teachers extends Model
+class Teachers extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
+    protected $guard = 'teacher';
     protected $fillable = [
         'name',
         'profession',
@@ -15,4 +18,5 @@ class Teachers extends Model
         'password',
         'image',
     ];
+    public $timestamps = false;
 }

@@ -56,8 +56,13 @@ export default{
                 store.commit('setUser', response.data.data)
                 this.errorList = response.data.message
                 this.status = response.data.status
+                console.log(response.data.is_teacher)
                 setTimeout(() => {
-                    this.$router.push('/dashboard', data)
+                    if(response.data.is_teacher){
+                        this.$router.push('/dashboard', response.data)
+                    }else{
+                        this.$router.push('/', response.data)
+                    }
                 }, 500)
             }catch(err){
                 console.log(err.response.data)

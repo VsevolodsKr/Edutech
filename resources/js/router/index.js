@@ -12,6 +12,8 @@ import Playlist from '../pages/Playlist.vue';
 import Watch_Video from '../pages/Watch_Video.vue';
 import Teacher_Profile from "../pages/Teacher_Profile.vue";
 import Dashboard from "../admin/Dashboard.vue";
+import Admin_Profile from "../admin/Admin_Profile.vue";
+import Admin_Update from "../admin/Admin_Update.vue";
 
 const routes = [
     {
@@ -91,6 +93,18 @@ const routes = [
         component: Dashboard,
         name: 'Dashboard',
         meta: {title: 'Dashboard'}
+    },
+    {
+        path: '/admin_profile',
+        component: Admin_Profile,
+        name: 'Admin_Profile',
+        meta: {title: 'Profile'}
+    },
+    {
+        path: '/admin_update',
+        component: Admin_Update,
+        name: 'Admin_Update',
+        meta: {title: 'Update Profile'}
     },
 ]
 

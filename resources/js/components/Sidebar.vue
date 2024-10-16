@@ -10,7 +10,7 @@
                 <img :src="user.image" class="h-[9rem] w-[9rem] rounded-full object-contain mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]">
             </div>
             <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]"><span v-if="user != null">{{ user.name }}</span><span v-else>username</span></h3>
-            <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">role</p>
+            <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">student</p>
             <router-link to="/profile" class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:text-button hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Profile</router-link>
         </div>
         <div v-else>

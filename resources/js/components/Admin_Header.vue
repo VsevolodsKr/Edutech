@@ -1,7 +1,7 @@
 <template>
     <header v-if="showSidebar == true && width > 1180" class="sticky z-[120] top-0 right-0 left-0 border-b-2 bg-base pl-[20rem]">
         <section class="flex items-center justify-between relative py-[.5rem] px-[1.5rem]">
-            <h1 class="text-[2rem] text-text_dark mr-[.7rem]">Admin</h1>
+            <router-link to="/dashboard"><h1 class="text-[2rem] text-text_dark mr-[.7rem]">Admin</h1></router-link>
             <form class="w-[50rem] rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-background" method="post" action="">
                 <input class="w-full text-[1.3rem] bg-transparent outline-none text-text_light focus:outline-none"type="text" name="search_box" required placeholder="search courses..." maxlength="100">
                 <button class="bg-transparent text-[1rem] cursor-pointer text-text_dark fa fa-search hover:text-button" type="submit"></button>
@@ -12,12 +12,12 @@
                 <button @click="show = !show" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem]"><div class="fa fa-user"></div></button>
                 <button @click="switchTheme();" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem]"><div :class="[currentTheme === 'theme-light' ? 'fas fa-sun' : 'fas fa-moon']"></div></button>
             </div>
-            <div v-if="show == true && user != null" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
+            <div v-if="show == true && teacher != null" class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
                 <div class="flex justify-center">
-                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
+                    <img :src="teacher.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
-                <p class="text-[1.3rem] text-text_light">role</p>
+                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ teacher.name }}</h3>
+                <p class="text-[1.3rem] text-text_light">{{ teacher.profession }}</p>
                 <router-link to="/profile" class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem]">View Profile</router-link>
                 <div class="flex gap-[1rem]">
                     <router-link to="/login" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base">Login</router-link>
@@ -40,12 +40,12 @@
                 <button @click="show = !show" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"><div class="fa fa-user"></div></button>
                 <button @click="switchTheme();" class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"><div :class="[currentTheme === 'theme-light' ? 'fas fa-sun' : 'fas fa-moon']"></div></button>
             </div>
-            <div v-if="show == true && user != null" class="absolute top-[120%] right-[1rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
+            <div v-if="show == true && teacher != null" class="absolute top-[120%] right-[1rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100">
                 <div class="flex justify-center">
-                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
+                    <img :src="teacher.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">{{ user.name }}</h3>
-                <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">role</p>
+                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">{{ teacher.name }}</h3>
+                <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">{{ teacher.profession }}</p>
                 <router-link to="/profile" class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem] [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Profile</router-link>
                 <div class="flex gap-[1rem]">
                     <router-link to="/login" class="bg-button2 text-base border-2 border-button2 rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Login</router-link>
@@ -69,7 +69,7 @@ export default {
             showSide: true,
             width,
             currentTheme: localStorage.getItem('theme-color'),
-            user: null,
+            teacher: null,
         }
     },
     methods: {
@@ -138,8 +138,8 @@ export default {
     },
     mounted(){
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-            this.user = response.data
-            this.user.image = new URL(this.user.image, import.meta.url)
+            this.teacher = response.data
+            this.teacher.image = new URL(this.teacher.image, import.meta.url)
         })
     }
 }

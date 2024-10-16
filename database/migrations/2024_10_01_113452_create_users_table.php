@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email', 50)->unique();
             $table->string('password', 100);
             $table->string('image', 100);
+            $table->rememberToken();
         });
     }
 

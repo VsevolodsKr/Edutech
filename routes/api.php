@@ -11,3 +11,4 @@ Route::get('/user', function (Request $request) {
 Route::post('/register/send', [AuthorizationController::class, 'registration_store']);
 Route::post('/login/send', [AuthorizationController::class, 'login_store']);
 Route::post('/update/send', [AuthorizationController::class, 'update_store']);
+Route::post('/admin_update/send', [AuthorizationController::class, 'admin_update_store']);

@@ -6,8 +6,8 @@
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
             <div class="bg-base rounded-lg p-[2rem] w-full">
                 <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">Welcome back!</h2>
-                <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">{{ user.name }}</div>
-                <router-link to="/profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Profile</router-link>
+                <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">{{ teacher.name }}</div>
+                <router-link to="/admin_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Profile</router-link>
             </div>
             <div class="bg-base rounded-lg p-[2rem] w-full">
                 <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">8</h2>
@@ -25,7 +25,7 @@
                 <button class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Likes</button>
             </div>
             <div class="bg-base rounded-lg p-[2rem] w-full">
-                <h2 class="text-center text-text_dark text-[2rem] mb-[1rem][@media(max-width:550px)]:text-[1.5rem]">4</h2>
+                <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">4</h2>
                 <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">Total Comments</div>
                 <button class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Comments</button>
             </div>
@@ -39,11 +39,11 @@
             </div>
         </div>
 </section>
-<Sidebar />
+<Admin_Sidebar />
 </template>
 <script>
-import Admin_Header from './Admin_Header.vue';
-import Sidebar from '../components/Sidebar.vue';
+import Admin_Header from '../components/Admin_Header.vue';
+import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
 
@@ -51,12 +51,12 @@ const {width} = useWindowSize()
 export default {
     components: {
         Admin_Header,
-        Sidebar
+        Admin_Sidebar,
     },
     data: () => {
         return{
             width,
-            user: null,  
+            teacher: null,  
         }
     },
     computed: {
@@ -66,7 +66,7 @@ export default {
     },
     mounted(){
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-            this.user = response.data
+            this.teacher = response.data
         })
         if(localStorage.getItem('token') == ''){
             this.$router.push('/').then(() =>{this.$router.go(0)})
@@ -74,7 +74,7 @@ export default {
     },
     created(){
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-            this.user = response.data
+            this.teacher = response.data
         })
         if(localStorage.getItem('token') == ''){
             this.$router.push('/').then(() =>{this.$router.go(0)})
