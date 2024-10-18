@@ -14,6 +14,10 @@ import Teacher_Profile from "../pages/Teacher_Profile.vue";
 import Dashboard from "../admin/Dashboard.vue";
 import Admin_Profile from "../admin/Admin_Profile.vue";
 import Admin_Update from "../admin/Admin_Update.vue";
+import Admin_Login from "../admin/Admin_Login.vue";
+import Admin_Register from "../admin/Admin_Register.vue";
+import Admin_Playlists from "../admin/Admin_Playlists.vue";
+import Admin_Add_Playlist from "../admin/Admin_Add_Playlist.vue";
 
 const routes = [
     {
@@ -106,6 +110,30 @@ const routes = [
         name: 'Admin_Update',
         meta: {title: 'Update Profile'}
     },
+    {
+        path: '/admin_login',
+        component: Admin_Login,
+        name: 'Admin_Login',
+        meta: {title: 'Authorization'}
+    },
+    {
+        path: '/admin_register',
+        component: Admin_Register,
+        name: 'Admin_Register',
+        meta: {title: 'Authorization'}
+    },
+    {
+        path: '/admin_playlists',
+        component: Admin_Playlists,
+        name: 'Admin_Playlists',
+        meta: {title: 'Playlists'}
+    },
+    {
+        path: '/admin_add_playlist',
+        component: Admin_Add_Playlist,
+        name: 'Admin_Add_Playlist',
+        meta: {title: 'Add Playlist'}
+    },
 ]
 
 const router = createRouter({
@@ -121,7 +149,7 @@ router.beforeEach((to, from, next) => {
             name: 'Home',
         })
     }
-    if((to.name === 'Dashboard' || to.name === 'Profile' || to.name === 'Update') && token === ''){
+    if((to.name === 'Dashboard' || to.name.includes('Admin')) && token === ''){
         return next({
             name: 'Home'
         })

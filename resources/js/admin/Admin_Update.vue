@@ -13,17 +13,25 @@
                     <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Update profession</p>
                     <select v-model="profession" name="profession" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-full">
                         <option value="" selected>Select your profession</option>
-                        <option value="developer">Developer</option>
-                        <option value="designer">Designer</option>
-                        <option value="musician">Musician</option>
-                        <option value="biologist">Biologist</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="engineer">Engineer</option>
-                        <option value="lawyer">Lawyer</option>
-                        <option value="accountant">Accountant</option>
-                        <option value="doctor">Doctor</option>
-                        <option value="journalist">Lournalist</option>
-                        <option value="photographer">Photographer</option>
+                        <option value="english">English teacher</option>
+                        <option value="math">Math teacher</option>
+                        <option value="art">Art teacher</option>
+                        <option value="science">Science teacher</option>
+                        <option value="history">History teacher</option>
+                        <option value="music">Music teacher</option>
+                        <option value="geography">Geography teacher</option>
+                        <option value="PE">Physical education (PE) teacher</option>
+                        <option value="biology">Biology teacher</option>
+                        <option value="chemistry">Chemistry teacher</option>
+                        <option value="physics">Physics teacher</option>
+                        <option value="IT">Information technology (IT) teacher</option>
+                        <option value="social">Social studies teacher</option>
+                        <option value="technology">Technology teacher</option>
+                        <option value="philosophy">Philosophy teacher</option>
+                        <option value="design">Design teacher</option>
+                        <option value="literature">Literature teacher</option>
+                        <option value="algebra">Algebra teacher</option>
+                        <option value="geometry">Geometry teacher</option>
                     </select>
                     <p class="text-[1.2rem] text-text_light pt-[1rem] [@media(max-width:550px)]:text-[.9rem]">Update email</p>
                     <input v-model="email" type="email" name="email" :placeholder="teacher.email" required maxlength="50" class="text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">

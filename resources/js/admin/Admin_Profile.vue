@@ -15,7 +15,7 @@
             <div class="flex items-center justify-center flex-col gap-[.5rem] mb-[1rem]">
                 <span class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.2rem]">5</span>
                 <p class="text-text_light text-center text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Total Playlists</p>
-                <router-link to="#" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Playlists</router-link>
+                <router-link to="/admin_playlists" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Playlists</router-link>
             </div>
         </div>
         <div class="bg-background rounded-lg p-[1rem] flex-[1_1_8rem] [@media(max-width:550px)]:w-full">

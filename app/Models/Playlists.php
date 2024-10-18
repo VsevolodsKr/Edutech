@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Playlist extends Model
+class Playlists extends Model
 {
     use HasFactory;
     protected $fillable = [
@@ -16,4 +16,5 @@ class Playlist extends Model
         'date',
         'status',
     ];
+    public $timestamps = false;
 }
