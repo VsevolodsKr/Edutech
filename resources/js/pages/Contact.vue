@@ -1,4 +1,5 @@
 <template>
+<Preloader />
 <Header />
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
     <div :class="[(showSidebar == true && width > 1180) ? '' : (showSidebar == false || (showSidebar == true && width < 1180)) ? '' : '', 'flex items-center flex-wrap gap-[1.5rem] [@media(max-width:1715px)]:flex [@media(max-width:1715px)]:flex-col-reverse']">
@@ -39,12 +40,14 @@ import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
+import Preloader from '../components/Preloader.vue'
 
 const {width} = useWindowSize()
 export default{
     components: {
         Header,
-        Sidebar
+        Sidebar,
+        Preloader,
     },
     data: () => {
         return{

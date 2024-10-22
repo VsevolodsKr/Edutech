@@ -18,6 +18,9 @@ import Admin_Login from "../admin/Admin_Login.vue";
 import Admin_Register from "../admin/Admin_Register.vue";
 import Admin_Playlists from "../admin/Admin_Playlists.vue";
 import Admin_Add_Playlist from "../admin/Admin_Add_Playlist.vue";
+import Admin_Update_Playlist from "../admin/Admin_Update_Playlist.vue";
+import Admin_Contents from "../admin/Admin_Contents.vue";
+import Admin_Add_Content from "../admin/Admin_Add_Content.vue";
 
 const routes = [
     {
@@ -133,6 +136,24 @@ const routes = [
         component: Admin_Add_Playlist,
         name: 'Admin_Add_Playlist',
         meta: {title: 'Add Playlist'}
+    },
+    {
+        path: '/admin_playlists/update/:id',
+        component: Admin_Update_Playlist,
+        name: 'Admin_Update_Playlist',
+        meta: {title: 'Update Playlist'}
+    },
+    {
+        path: '/admin_contents',
+        component: Admin_Contents,
+        name: 'Admin_Contents',
+        meta: {title: 'Contents'}
+    },
+    {
+        path: '/admin_add_content',
+        component: Admin_Add_Content,
+        name: 'Admin_Add_Content',
+        meta: {title: 'Upload Content'}
     },
 ]
 

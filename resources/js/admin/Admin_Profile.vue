@@ -1,4 +1,5 @@
 <template>
+<Preloader />
 <Admin_Header />
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
 <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Profile Details</h1>
@@ -13,7 +14,7 @@
     <div class="flex flex-wrap gap-[1rem] mt-[2rem] [@media(max-width:550px)]:flex-col">
         <div class="bg-background rounded-lg p-[1rem] flex-[1_1_8rem] [@media(max-width:550px)]:w-full">
             <div class="flex items-center justify-center flex-col gap-[.5rem] mb-[1rem]">
-                <span class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.2rem]">5</span>
+                <span class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.2rem]">{{ countPlaylist }}</span>
                 <p class="text-text_light text-center text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Total Playlists</p>
                 <router-link to="/admin_playlists" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Playlists</router-link>
             </div>
@@ -22,7 +23,7 @@
             <div class="flex items-center justify-center flex-col gap-[.5rem] mb-[1rem]">
                 <span class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.2rem]">8</span>
                 <p class="text-text_light text-center text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Total Videos</p>
-                <router-link to="#" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Contents</router-link>
+                <router-link to="/admin_contents" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Contents</router-link>
             </div>
         </div>
         <div class="bg-background rounded-lg p-[1rem] flex-[1_1_8rem] [@media(max-width:550px)]:w-full">
@@ -49,6 +50,7 @@ import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core';
+import Preloader from '../components/Preloader.vue';
 
 const {width} = useWindowSize()
 export default {
@@ -56,11 +58,13 @@ export default {
         return{
             width,
             teacher: null,
+            countPlaylist: 0,
         }
     },
     components: {
         Admin_Header,
-        Admin_Sidebar
+        Admin_Sidebar,
+        Preloader
     },
     computed: {
         showSidebar: function (){
@@ -71,6 +75,10 @@ export default {
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
             this.teacher = response.data
             this.teacher.image = new URL(this.teacher.image, import.meta.url)
+        })
+        axios.get('/api/playlists/amount/' + this.teacher.id).then((response) => {
+            this.countPlaylist = response.data
+            console.log(this.countPlaylist)
         })
         if(localStorage.getItem('token') == ''){
             this.$router.push('/').then(() =>{this.$router.go(0)})

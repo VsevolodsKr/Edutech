@@ -1,4 +1,5 @@
 <template>
+<Preloader />
 <Header />
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] bg-background pr-[2rem]']">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Profile Details</h1>
@@ -64,12 +65,14 @@ import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
+import Preloader from '../components/Preloader.vue'
 
 const {width} = useWindowSize()
 export default{
     components: {
         Header,
-        Sidebar
+        Sidebar,
+        Preloader
     },
     data: () => {
         return{

@@ -14,8 +14,16 @@ use Carbon\Carbon;
 
 class PlaylistController extends Controller
 {
-    public function get_playlists(string $id){
+    public function get_teacher_playlists(string $id){
         return Playlists::where('teacher_id', $id)->orderBy('date', 'desc')->get();
+    }
+
+    public function get_single(string $id){
+        return Playlists::find($id);
+    }
+
+    public function get_amount(string $id){
+        return Playlists::where('teacher_id', $id)->count();
     }
 
     public function add_playlist(Request $request){
@@ -54,5 +62,55 @@ class PlaylistController extends Controller
         }else{
             return response()->json(['message' => array('You have succesfully created new playlist!'), 'status' => 200], 200);
         }
+    }
+
+    public function store(Request $request, string $id){
+        $rules = array(
+            'status' => 'required',
+            'title' => 'required|max:50',
+            'description' => 'required',
+        );
+        $messages = array(
+            'status.required' => 'Please, select playlist status',
+            'title.required' => 'Please, enter playlist title',
+            'description.required' => 'Please, enter playlist description',
+        );
+        $validator = Validator::make($request->input(), $rules, $messages);
+       if($validator->fails()){
+            $errors = $validator->messages()->all();
+            return response()->json(['message' => $errors, 'status' => 500], 500);
+        }
+        $playlist = Playlists::find($id);
+        if(!$playlist){
+            return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
+        }
+        if($request->image == ''){
+            $playlist->update([
+                'status' => $request->status,
+                'title' => $request->title,
+                'description' => $request->description 
+            ]);
+        }else{
+            $thumb_name = time() . '_' . $request->image->getClientOriginalName();
+            $thumb_path = $request->image->storeAs('playlist_thumbs', $thumb_name, 'public');
+            $thumb = '/storage/app/public/' . $thumb_path;
+            $playlist->update([
+                'status' => $request->status,
+                'title' => $request->title,
+                'description' => $request->description ,
+                'thumb' => $thumb
+            ]);
+        }
+        $save = $playlist->save();
+        if(!$save){
+            return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
+        }else{
+            return response()->json(['message' => array('You have successfully updated your playlist!'), 'status' => 200], 200);
+        }
+    }
+
+    public function delete(string $id){
+        $playlist = Playlists::find($id);
+        $playlist->delete();
     }
 }

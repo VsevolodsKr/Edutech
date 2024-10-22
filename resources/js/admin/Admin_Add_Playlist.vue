@@ -1,4 +1,5 @@
 <template>
+<Preloader />
 <Admin_Header />
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
         <h1 class="text-[1.5rem] text-text_dark capitalize">Create Playlist</h1>
@@ -31,6 +32,7 @@ import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core';
+import Preloader from '../components/Preloader.vue';
 
 const {width} = useWindowSize()
 export default {
@@ -47,7 +49,8 @@ export default {
     },
     components: {
         Admin_Header,
-        Admin_Sidebar
+        Admin_Sidebar,
+        Preloader
     },
     computed: {
         showSidebar: function (){

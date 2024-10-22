@@ -1,4 +1,5 @@
 <template>
+    <Preloader />
     <Admin_Header />
     <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[2rem] bg-background min-h-[calc(127.5vh-20rem)] flex items-center justify-center [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
         <div class="bg-base rounded-lg p-[1rem] w-[50rem]">
@@ -57,6 +58,7 @@
     import Admin_Sidebar from '../components/Admin_Sidebar.vue';
     import store from '../store/store';
     import { useWindowSize } from '@vueuse/core';
+    import Preloader from '../components/Preloader.vue';
     
     const {width} = useWindowSize()
     export default {
@@ -76,7 +78,8 @@
         },
         components: {
             Admin_Header,
-            Admin_Sidebar
+            Admin_Sidebar,
+            Preloader,
         },
         computed: {
             showSidebar: function (){

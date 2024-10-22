@@ -1,7 +1,8 @@
 <template>
+<Preloader />
 <Admin_Header />
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
-        <h1 class="text-[1.5rem] text-text_dark capitalize">Playlists</h1>
+        <h1 class="text-[1.5rem] text-text_dark capitalize">Your playlists</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
             <div class="bg-base rounded-lg p-[2rem] w-full">
@@ -20,8 +21,8 @@
                 <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">{{ playlist.title }}</h3>
                 <p class="text-text_light mb-[1rem]">{{ playlist.description }}</p>
                 <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
-                    <router-link to="/playlist" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Update</router-link>
-                    <router-link to="/playlist" class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Delete</router-link>
+                    <button @click="this.$router.push('/admin_playlists/update/' + playlist.id)" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Update</button>
+                    <button @click="deletePlaylist(playlist.id)" class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Delete</button>
                 </div>
                 <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Playlist</router-link>
             </div>
@@ -34,8 +35,11 @@ import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core';
+import Swal from 'sweetalert2';
+import Preloader from '../components/Preloader.vue'
 
 const {width} = useWindowSize()
+
 export default {
     data(){
         return{
@@ -46,7 +50,8 @@ export default {
     },
     components: {
         Admin_Header,
-        Admin_Sidebar
+        Admin_Sidebar,
+        Preloader,  
     },
     computed: {
         showSidebar: function (){
@@ -88,7 +93,36 @@ export default {
                 this.$router.push('/').then(() =>{this.$router.go(0)})
             }
             return this.teacher
+        },
+        deletePlaylist(id){
+            const background = getComputedStyle(document.documentElement).getPropertyValue('--background')
+            const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark')
+            const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4')
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Playlist will be deleted permanently!",
+                icon: "warning",
+                color: text_dark,
+                background: background,
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: button4,
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+            if (result.isConfirmed) {
+                axios.delete('/api/playlists/delete/' + id)
+                Swal.fire({
+                title: "Deleted!",
+                text: "Your file has been deleted.",
+                icon: "success",
+            }).then((result => {
+                if(result.isConfirmed){
+                    this.$router.push('/admin_playlists').then(() =>{this.$router.go(0)})
+                }
+            }));
         }
+        });
+        },
     }
 }
 </script>

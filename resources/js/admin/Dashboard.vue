@@ -1,4 +1,5 @@
 <template>
+<Preloader />
 <Admin_Header />
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
     <h1 class="text-[1.5rem] text-text_dark capitalize">Dashboard</h1>
@@ -15,7 +16,7 @@
                 <button class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Add New Content</button>
             </div>
             <div class="bg-base rounded-lg p-[2rem] w-full">
-                <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">5</h2>
+                <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">{{ countPlaylist }}</h2>
                 <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">Total Playlists</div>
                 <router-link to="/admin_playlists" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Add New Playlist</router-link>
             </div>
@@ -46,17 +47,20 @@ import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
+import Preloader from '../components/Preloader.vue';
 
 const {width} = useWindowSize()
 export default {
     components: {
         Admin_Header,
         Admin_Sidebar,
+        Preloader,
     },
     data: () => {
         return{
             width,
-            teacher: null,  
+            teacher: null,
+            countPlaylist: 0, 
         }
     },
     computed: {
@@ -67,6 +71,10 @@ export default {
     mounted(){
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
             this.teacher = response.data
+        })
+        axios.get('/api/playlists/amount/' + this.teacher.id).then((response) => {
+            this.countPlaylist = response.data
+            console.log(this.countPlaylist)
         })
         if(localStorage.getItem('token') == ''){
             this.$router.push('/').then(() =>{this.$router.go(0)})
