@@ -98,7 +98,7 @@ export default {
             if(storedTheme === 'theme-dark'){
                 localStorage.setItem('theme-color', 'theme-light')
                 this.currentTheme = localStorage.getItem('theme-color')
-                document.documentElement.style.setProperty('--background', '#eee')
+                document.documentElement.style.setProperty('--background', '#ddd')
                 document.documentElement.style.setProperty('--base', '#fff')
                 document.documentElement.style.setProperty('--text_dark', '#000')
                 document.documentElement.style.setProperty('--text_light', '#777')
@@ -138,7 +138,7 @@ export default {
     created(){
         const storedTheme = localStorage.getItem('theme-color')
             if(storedTheme === 'theme-light'){
-                document.documentElement.style.setProperty('--background', '#eee')
+                document.documentElement.style.setProperty('--background', '#ddd')
                 document.documentElement.style.setProperty('--base', '#fff')
                 document.documentElement.style.setProperty('--text_dark', '#000')
                 document.documentElement.style.setProperty('--text_light', '#777')

@@ -4,25 +4,30 @@
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
     <div class="bg-base rounded-lg p-[1rem]">
         <div class="relative mb-[1rem]">
-            <video src="../videos/vid-1.mp4" controls poster="../images/post-2-1.png" class="rounded-lg w-full object-contain bg-[#000]"></video>
+            <video :src="content.video" controls :poster="content.thumb" class="rounded-lg w-full object-contain bg-[#000]"></video>
         </div>
-        <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">Complete CSS tutorial (part 01)</h3>
+        <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">{{ content.title }}</h3>
         <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
-            <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]"><i class="fas fa-calendar text-button"></i> <span class="text-text_light">02-09-2024</span></p>
+            <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]"><i class="fas fa-calendar text-button"></i> <span class="text-text_light">{{ content.date }}</span></p>
             <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]"><i class="fas fa-heart text-button"></i> <span class="text-text_light">4 likes</span></p>
         </div>
         <div class="flex items-center gap-[1rem] mb-[1rem]">
-            <img src="../images/pic-1.png" class="rounded-[50%] h-[5rem] w-[5rem] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
+            <img :src="teacher.image" class="rounded-[50%] h-[5rem] w-[5rem] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
             <div>
-                <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
+                <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">{{ teacher.name }}</h3>
+                <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">{{ teacher.profession }}</span>
             </div>
         </div>
-        <form method="post" class="flex items-center justify-between gap-[1rem]">
-            <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[6rem]">View Playlist</router-link>
-            <button class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[4.4rem]"><i class="far fa-heart text-[1rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">Like</span></button>
+        <form class="flex items-center justify-between gap-[1rem]">
+            <button @click="this.$router.push('/playlist/' + content.playlist_id)" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[6rem]">View Playlist</button>
+            <div v-if="status && user">
+                <button @click="deleteLike" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[4.4rem]"><i class="far fa-heart text-[1rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">Unlike</span></button>
+            </div>
+            <div v-if="!status && user">
+                <button @click="addLike" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[4.4rem]"><i class="far fa-heart text-[1rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">Like</span></button>
+            </div>
         </form>
-        <p class="leading-1.5 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus unde quas repellat quaerat, voluptas aperiam culpa magnam. Odit, totam illo incidunt pariatur vitae consequuntur delectus exercitationem. Illum mollitia error magnam ab praesentium quis nulla? Officia, modi adipisci error blanditiis, ipsum sequi eligendi ad, facere dolor odio aspernatur. Quae sint iure dignissimos quas soluta est sit nostrum voluptatum, ipsa non voluptate.</p>
+        <p class="leading-1.5 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-1">{{ content.description }}</p>
     </div>
 </section>
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
@@ -71,20 +76,114 @@ import { useWindowSize } from '@vueuse/core'
 import Preloader from '../components/Preloader.vue'
 
 const {width} = useWindowSize()
-export default{
+export default {
+    data(){
+        return{
+            width,
+            user: null,
+            teacher: null,
+            content: null,
+            status: null,
+            likeID: null,
+        }
+    },
     components: {
         Header,
         Sidebar,
-        Preloader,
-    },
-    data: () => {
-        return{
-          width  
-        }
+        Preloader,  
     },
     computed: {
         showSidebar: function (){
             return store.getters.getShowSidebar
+        }
+    },
+    mounted(){
+        this.getContents()
+        this.checkLike()
+    },
+    created(){
+        this.getContents()
+    },
+    methods: {
+        async getContents(){
+            axios.get('/api/contents/find/' + this.$route.params.id).then((response) => {
+                this.content = response.data;
+                this.content.thumb = new URL(this.content.thumb, import.meta.url)
+                this.content.video = new URL(this.content.video, import.meta.url)
+                axios.get('/api/playlists/'+ this.content.teacher_id +'/teacher').then((response) => {
+                    this.teacher = response.data
+                    this.teacher.image = new URL(this.teacher.image, import.meta.url)
+                })
+            }).catch((err) => {
+                console.error(err);
+            });
+        },
+        async getUser(){
+            await axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
+                this.user = response.data
+                this.user.image = new URL(this.user.image, import.meta.url)
+            })
+            if(localStorage.getItem('token') == ''){
+                this.$router.push('/').then(() =>{this.$router.go(0)})
+            }
+            return this.user
+        },
+        async addLike(e){
+            if(e && e.preventDefault){
+                e.preventDefault()
+            }
+            let data = new FormData()
+            axios.get('/api/contents/find/' + this.$route.params.id).then((response1) => {
+                this.getUser().then(value => {
+                    data.append('user_id', value.id)
+                    axios.get('/api/playlists/'+ this.content.teacher_id +'/teacher').then((response) => {
+                        data.append('teacher_id', response.data.id)
+                        data.append('content_id', response1.data.id)
+                        axios.post('/api/likes/add', data)
+                        this.likeID = this.checkLike()
+                    })
+                })
+            }).catch((err) => {
+                console.error(err);
+            });
+        },
+        async checkLike(){
+            let data = new FormData()
+            axios.get('/api/contents/find/' + this.$route.params.id).then((response1) => {
+                this.getUser().then(value => {
+                    data.append('user_id', value.id)
+                    axios.get('/api/playlists/'+ this.content.teacher_id +'/teacher').then((response) => {
+                        data.append('teacher_id', response.data.id)
+                        data.append('content_id', response1.data.id)
+                        axios.post('/api/likes/check', data).then((response2) => {
+                            this.status = response2.data.status
+                            this.likeID = response2.data.id
+                            return response2.data.id
+                        })
+                    })
+                })
+            }).catch((err) => {
+                console.error(err);
+            });
+        },
+        async deleteLike(e){
+            if(e && e.preventDefault){
+                e.preventDefault()
+            }
+            let data = new FormData()
+            axios.get('/api/contents/find/' + this.$route.params.id).then((response1) => {
+                this.getUser().then(value => {
+                    data.append('user_id', value.id)
+                    axios.get('/api/playlists/'+ this.content.teacher_id +'/teacher').then((response) => {
+                        data.append('teacher_id', response.data.id)
+                        data.append('content_id', response1.data.id)
+                        axios.delete('/api/likes/delete/'+ this.likeID)
+                        this.checkLike()
+                    })
+                })
+            }).catch((err) => {
+                console.error(err);
+            });
         }
     }
 }

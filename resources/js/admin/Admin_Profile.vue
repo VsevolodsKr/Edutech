@@ -21,7 +21,7 @@
         </div>
         <div class="bg-background rounded-lg p-[1rem] flex-[1_1_8rem] [@media(max-width:550px)]:w-full">
             <div class="flex items-center justify-center flex-col gap-[.5rem] mb-[1rem]">
-                <span class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.2rem]">8</span>
+                <span class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.2rem]">{{ countContents }}</span>
                 <p class="text-text_light text-center text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Total Videos</p>
                 <router-link to="/admin_contents" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem]">View Contents</router-link>
             </div>
@@ -59,6 +59,7 @@ export default {
             width,
             teacher: null,
             countPlaylist: 0,
+            countContents: 0,
         }
     },
     components: {
@@ -79,6 +80,9 @@ export default {
         axios.get('/api/playlists/amount/' + this.teacher.id).then((response) => {
             this.countPlaylist = response.data
             console.log(this.countPlaylist)
+        })
+        axios.get('/api/contents/amount/' + this.teacher.id).then((response) => {
+            this.countContents = response.data
         })
         if(localStorage.getItem('token') == ''){
             this.$router.push('/').then(() =>{this.$router.go(0)})

@@ -11,9 +11,9 @@
                 <router-link to="/admin_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Profile</router-link>
             </div>
             <div class="bg-base rounded-lg p-[2rem] w-full">
-                <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">8</h2>
+                <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">{{ countContents }}</h2>
                 <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">Total Contents</div>
-                <button class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Add New Content</button>
+                <router-link to="/admin_contents" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Add New Content</router-link>
             </div>
             <div class="bg-base rounded-lg p-[2rem] w-full">
                 <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">{{ countPlaylist }}</h2>
@@ -60,7 +60,8 @@ export default {
         return{
             width,
             teacher: null,
-            countPlaylist: 0, 
+            countPlaylist: 0,
+            countContents: 0, 
         }
     },
     computed: {
@@ -74,7 +75,9 @@ export default {
         })
         axios.get('/api/playlists/amount/' + this.teacher.id).then((response) => {
             this.countPlaylist = response.data
-            console.log(this.countPlaylist)
+        })
+        axios.get('/api/contents/amount/' + this.teacher.id).then((response) => {
+            this.countContents = response.data
         })
         if(localStorage.getItem('token') == ''){
             this.$router.push('/').then(() =>{this.$router.go(0)})

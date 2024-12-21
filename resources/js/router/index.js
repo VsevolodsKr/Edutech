@@ -21,6 +21,9 @@ import Admin_Add_Playlist from "../admin/Admin_Add_Playlist.vue";
 import Admin_Update_Playlist from "../admin/Admin_Update_Playlist.vue";
 import Admin_Contents from "../admin/Admin_Contents.vue";
 import Admin_Add_Content from "../admin/Admin_Add_Content.vue";
+import Admin_Watch_Playlist from "../admin/Admin_Watch_Playlist.vue";
+import Admin_Update_Content from "../admin/Admin_Update_Content.vue";
+import Admin_Watch_Content from "../admin/Admin_Watch_Content.vue";
 
 const routes = [
     {
@@ -78,19 +81,19 @@ const routes = [
         meta: {title: 'Update Profile'}    
     },
     {
-        path: '/playlist',
+        path: '/playlist/:id',
         component: Playlist,
         name: 'Playlist',
         meta: {title: 'Playlist'}    
     },
     {
-        path: '/watch_video',
+        path: '/watch_video/:id',
         component: Watch_Video,
         name: 'Watch_Video',
         meta: {title: 'Video'}
     },
     {
-        path: '/teacher_profile',
+        path: '/teacher_profile/:id',
         component: Teacher_Profile,
         name: 'Teacher_Profile',
         meta: {title: 'Profile'}
@@ -155,6 +158,24 @@ const routes = [
         name: 'Admin_Add_Content',
         meta: {title: 'Upload Content'}
     },
+    {
+        path: '/admin_playlists/:id',
+        component: Admin_Watch_Playlist,
+        name: 'Admin_Watch_Playlist',
+        meta: {title: 'Playlist'}
+    },
+    {
+        path: '/admin_contents/update/:id',
+        component: Admin_Update_Content,
+        name: 'Admin_Update_Content',
+        meta: {title: 'Update Content'}
+    },
+    {
+        path: '/admin_contents/:id',
+        component: Admin_Watch_Content,
+        name: 'Admin_Watch_Content',
+        meta: {title: 'Content'}
+    },
 ]
 
 const router = createRouter({
@@ -170,7 +191,7 @@ router.beforeEach((to, from, next) => {
             name: 'Home',
         })
     }
-    if((to.name === 'Dashboard' || to.name.includes('Admin')) && token === ''){
+    if((to.name === 'Dashboard' || to.name.includes('Admin')) && token == ''){
         return next({
             name: 'Home'
         })

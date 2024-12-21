@@ -47,7 +47,7 @@
             </div>
             <div class="bg-base rounded-lg p-[1rem] w-full">
                 <h3 class="text-[1.3rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1rem]">Become a Teacher</h3>
-                <p class="py-[1rem] text-[1rem] text-text_light leading-2 [@media(max-width:550px)]:text-[.7rem]">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Mollitia, minima?</p>
+                <p class="py-[1rem] text-[1rem] text-text_light leading-2 [@media(max-width:550px)]:text-[.7rem]">Inspire Future Generations: Become an Edutech Teacher</p>
                 <router-link to="/teachers" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">Get Started</router-link>
             </div>
         </div>
@@ -56,95 +56,20 @@
         <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Our Courses</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1.5rem] [@media(max-width:550px)]:mr-[.5rem]">
         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-[.5rem]">
-            <div class="bg-base rounded-lg p-[2rem] w-full">
+                <div v-for="(playlist, index) in playlists.slice(0, 7)" :key="index" class="bg-base rounded-lg p-[2rem] w-full">
                 <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                    <img src="../images/pic-1.png" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
+                    <img :src="teachers[index].image" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
                     <div>
-                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">publisher</h3>
-                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">02-09-2024</span>
+                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">{{ teachers[index].name }}</h3>
+                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">{{ playlist.date }}</span>
                     </div>
                 </div>
                 <div class="relative">
-                    <img src="../images/thumb-2.png" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">10 videos</span>
+                    <img :src="playlist.thumb" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
+                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">{{ contentsCount[index] }} videos</span>
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">Complete CSS tutorial</h3>
-                <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</router-link>
-            </div>
-            <div class="bg-base rounded-lg p-[2rem] w-full">
-                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                    <img src="../images/pic-2.png" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                    <div>
-                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">publisher</h3>
-                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">02-09-2024</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img src="../images/thumb-1.png" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">10 videos</span>
-                </div>
-                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">Complete HTML tutorial</h3>
-                <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</router-link>
-            </div>
-            <div class="bg-base rounded-lg p-[2rem] w-full">
-                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                    <img src="../images/pic-3.png" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                    <div>
-                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">publisher</h3>
-                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">02-09-2024</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img src="../images/thumb-3.png" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">10 videos</span>
-                </div>
-                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">Complete JavaScript tutorial</h3>
-                <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</router-link>
-            </div>
-            <div class="bg-base rounded-lg p-[2rem] w-full">
-                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                    <img src="../images/pic-4.png" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                    <div>
-                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">publisher</h3>
-                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">02-09-2024</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img src="../images/thumb-7.png" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">10 videos</span>
-                </div>
-                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">Complete PHP tutorial</h3>
-                <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</router-link>
-            </div>
-            <div class="bg-base rounded-lg p-[2rem] w-full">
-                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                    <img src="../images/pic-5.png" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                    <div>
-                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">publisher</h3>
-                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">02-09-2024</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img src="../images/thumb-9.png" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">10 videos</span>
-                </div>
-                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">Complete React tutorial</h3>
-                <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</router-link>
-            </div>
-            <div class="bg-base rounded-lg p-[2rem] w-full">
-                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                    <img src="../images/pic-6.png" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                    <div>
-                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">publisher</h3>
-                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">02-09-2024</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img src="../images/thumb-4.png" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.5rem]">10 videos</span>
-                </div>
-                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">Complete Bootstrap tutorial</h3>
-                <router-link to="/playlist" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</router-link>
+                <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">{{ playlist.title }}</h3>
+                <button @click="this.$router.push('/playlist/' + playlist.id)" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlist</button>
             </div>
         </div>
         <div class="flex justify-center text-center mt-[2rem] pb-[2rem]">
@@ -158,7 +83,6 @@ import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
 import { useWindowSize } from '@vueuse/core'
-import axios from 'axios';
 import Preloader from '../components/Preloader.vue'
 
 const {width} = useWindowSize()
@@ -172,6 +96,9 @@ export default {
         return{
             width,
             user: null,
+            playlists: [],
+            teachers: [],
+            contentsCount: [],
         }
     },
     computed: {
@@ -186,6 +113,26 @@ export default {
         axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
             this.user = response.data
         })
+        this.getPlaylists()
     },
+    methods: {
+        async getPlaylists(){
+            axios.get('/api/playlists/all').then((response) => {
+            this.playlists = response.data
+            this.playlists.forEach((playlist) => {
+                playlist.thumb = new URL(playlist.thumb, import.meta.url)
+                axios.get('/api/playlists/'+ playlist.teacher_id +'/teacher').then((response) => {
+                    this.teachers.push(response.data)
+                    this.teachers.forEach(teacher => {
+                        teacher.image = new URL(teacher.image, import.meta.url)
+                    });
+                })
+                axios.get('/api/contents/playlist/'+ playlist.id +'/amount').then((response) => {
+                    this.contentsCount.push(response.data)
+                })
+            })
+        })
+        }
+    }
 }
 </script>

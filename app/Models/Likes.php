@@ -13,4 +13,6 @@ class Likes extends Model
         'teacher_id',
         'content_id',
     ];
+
+    public $timestamps = false;
 }

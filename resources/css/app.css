@@ -13,19 +13,19 @@
 }
 
 :root{
-    --background: #eee;
+    --background: #ddd;
     --base: #fff;
     --text_dark: #000;
     --text_light: #777;
     --button: #7499f8;
-    --button2: #ea7d10;
+    --button2: #df7d10;
     --button3: #abd032;
     --button4: #de5753;
     --selection: #749af8b9;
     --line: #ccc;
 }
 
-*::selection{
+::selection{
     background-color: var(--selection);
     color: var(--base);
 }

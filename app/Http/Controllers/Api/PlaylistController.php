@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Playlists;
+use App\Models\Teachers;
 use Illuminate\Support\Facades\Validator;
 use Auth;
 use Illuminate\Validation\ValidationException;
@@ -14,6 +15,10 @@ use Carbon\Carbon;
 
 class PlaylistController extends Controller
 {
+    public function get_all(){
+        return Playlists::where('status', 'active')->get();
+    }
+
     public function get_teacher_playlists(string $id){
         return Playlists::where('teacher_id', $id)->orderBy('date', 'desc')->get();
     }
@@ -24,6 +29,11 @@ class PlaylistController extends Controller
 
     public function get_amount(string $id){
         return Playlists::where('teacher_id', $id)->count();
+    }
+
+    public function get_teacher(string $id){
+        $teacher = Teachers::find($id);
+        return $teacher;
     }
 
     public function add_playlist(Request $request){

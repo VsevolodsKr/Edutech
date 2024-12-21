@@ -29,7 +29,7 @@
     </header>
     <header v-if="showSidebar == false || (showSidebar == true && width < 1180)" class="sticky z-[120] top-0 right-0 left-0 border-b-2 bg-base">
         <section class="flex items-center justify-between relative py-[.5rem] px-[1.5rem]">
-            <router-link to="/"><h1 class="text-[2rem] text-text_dark mr-[.7rem] [@media(max-width:970px)]:text-[1.5rem]">EduTech</h1></router-link>
+            <router-link to="/dashboard"><h1 class="text-[2rem] text-text_dark mr-[.7rem] [@media(max-width:970px)]:text-[1.5rem]">Admin</h1></router-link>
             <form class="w-[50rem] rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-background [@media(max-width:700px)]:absolute [@media(max-width:700px)]:top-[99%] [@media(max-width:700px)]:left-[0] [@media(max-width:700px)]:right-[0] [@media(max-width:700px)]:border-t [@media(max-width:700px)]:border-b [@media(max-width:700px)]:rounded-none [@media(max-width:700px)]:w-auto [@media(max-width:700px)]:p-8 [@media(max-width:700px)]:[clip-path:polygon(0_0,_100%_0,_100%_0,_0_0)] [@media(max-width:700px)]:[transition:.2s_linear] [@media(max-width:700px)]:active:[clip-path:polygon(0_0,_100%_0,_100%_100%,_0_100%)]" method="post" action="">
                 <input class="w-full text-[1.3rem] bg-transparent outline-none text-text_light focus:outline-none [@media(max-width:970px)]:text-[1rem]"type="text" name="search_box" required placeholder="search courses..." maxlength="100">
                 <button class="bg-transparent text-[1rem] cursor-pointer text-text_dark fa fa-search hover:text-button" type="submit"></button>
@@ -85,7 +85,7 @@ export default {
             if(storedTheme === 'theme-dark'){
                 localStorage.setItem('theme-color', 'theme-light')
                 this.currentTheme = localStorage.getItem('theme-color')
-                document.documentElement.style.setProperty('--background', '#eee')
+                document.documentElement.style.setProperty('--background', '#ddd')
                 document.documentElement.style.setProperty('--base', '#fff')
                 document.documentElement.style.setProperty('--text_dark', '#000')
                 document.documentElement.style.setProperty('--text_light', '#777')
@@ -119,7 +119,7 @@ export default {
     created(){
         const storedTheme = localStorage.getItem('theme-color')
             if(storedTheme === 'theme-light'){
-                document.documentElement.style.setProperty('--background', '#eee')
+                document.documentElement.style.setProperty('--background', '#ddd')
                 document.documentElement.style.setProperty('--base', '#fff')
                 document.documentElement.style.setProperty('--text_dark', '#000')
                 document.documentElement.style.setProperty('--text_light', '#777')

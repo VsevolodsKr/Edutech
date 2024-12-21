@@ -1,7 +1,7 @@
 <template>
 <Preloader />
 <Header />
-<section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1.5rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
+<section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1.5rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Expert Teachers</h1>
     <hr class="border-[#ccc] mb-[2rem]">
     <form class="w-full rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-base" method="post" action="">
@@ -11,87 +11,22 @@
     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start mt-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
         <div class="bg-base rounded-lg p-[2rem] text-center">
             <h3 class="text-[2rem] text-text_dark capitalize pb-[.5rem] [@media(max-width:550px)]:text-[1.5rem]">Become A Teacher</h3>
-            <p class="leading-1.7 py-[.5rem] text-text_light text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex dolores, animi fuga suscipit ullam repellendus in facere natus. A sit soluta eligendi accusamus quasi odit!</p>
+            <p class="leading-1.7 py-[.5rem] text-text_light text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Step into a network of passionate educators, innovators, and mentors. Share your insights and make a meaningful difference by helping students achieve their goals</p>
             <div class="flex justify-center">
                 <router-link to="/register" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[.7rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">Get Started</router-link>
             </div>
         </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
+        <div v-for="(teacher, index) in teachers" :key="index" class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
             <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-1.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
+                <img :src="teacher.image" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
                 <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
+                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">{{ teacher.name }}</h3>
+                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">{{ teacher.profession }}</span>
                 </div>
             </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
-        </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
-            <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-2.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
-                </div>
-            </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
-        </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
-            <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-3.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
-                </div>
-            </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
-        </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
-            <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-4.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
-                </div>
-            </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
-        </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
-            <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-5.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
-                </div>
-            </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
-        </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
-            <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-6.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
-                </div>
-            </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
-        </div>
-        <div class="rounded-lg bg-base p-[2rem] pt-0 mb-[2rem] [@media(max-width:550px)]:mb-0">
-            <div class="mt-[2rem] flex items-start gap-[.5rem] mb-[1rem]">
-                <img src="../images/pic-7.png" class="h-[5rem] w-[5rem] object-cover rounded-[50%] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
-                <div class="flex flex-col">
-                    <h3 class="text-[1.3rem] text-text_dark pt-[.3rem] [@media(max-width:550px)]:text-[1rem]">publisher</h3>
-                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">teacher</span>
-                </div>
-            </div>
-            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta architecto reiciendis quidem veritatis ea ipsa alias, molestias libero nostrum tenetur dolorem delectus, commodi magni repudiandae in quis esse amet obcaecati.</p>
-            <router-link to="/teacher_profile" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] mt-[1rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Profile</router-link>
+            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Total playlists: <span class="text-button">{{ countPlaylists[index] }}</span></p>
+            <p class="leading-[1.7rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-[1rem]">Total contents: <span class="text-button">{{ countContents[index] }}</span></p>
+            <button @click="this.$router.push('/teacher_profile/' + teacher.id)" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[7rem]">View Profile</button>
         </div>
     </div>
 </section>
@@ -113,12 +48,34 @@ export default{
     },
     data: () => {
         return{
-          width  
+            width,
+            teachers: [],
+            countPlaylists: [],
+            countContents: [],  
         }
     },
     computed: {
         showSidebar: function (){
             return store.getters.getShowSidebar
+        }
+    },
+    mounted(){
+        this.getTeachers()
+    },
+    methods: {
+        async getTeachers(){
+            axios.get('/api/teachers/all').then((response) => {
+                this.teachers = response.data
+                this.teachers.forEach((teacher) => {
+                    teacher.image = new URL(teacher.image, import.meta.url)
+                    axios.get('/api/playlists/amount/' + teacher.id).then((response) => {
+                        this.countPlaylists.push(response.data)
+                    })
+                    axios.get('/api/contents/amount/' + teacher.id).then((response) => {
+                        this.countContents.push(response.data)
+                    })
+                })
+            })
         }
     }
 }
