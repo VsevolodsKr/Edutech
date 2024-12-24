@@ -5,13 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Likes extends Model
+class Bookmarks extends Model
 {
     use HasFactory;
     protected $fillable = [
         'user_id',
-        'teacher_id',
-        'content_id',
+        'playlist_id',
     ];
 
     public $timestamps = false;
@@ -20,11 +19,7 @@ class Likes extends Model
         return $this->hasOne('App\Models\Users', 'id', 'user_id');
     }
 
-    public function teacher() {
-        return $this->hasOne('App\Models\Teachers', 'id', 'teacher_id');
-    }
-
-    public function content() {
-        return $this->hasOne('App\Models\Contents', 'id', 'content_id');
+    public function playlist() {
+        return $this->hasOne('App\Models\Playlists', 'id', 'playlist_id');
     }
 }

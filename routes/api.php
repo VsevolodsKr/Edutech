@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PlaylistController;
 use App\Http\Controllers\Api\ContentsController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\LikesController;
+use App\Http\Controllers\Api\BookmarksController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -37,7 +38,17 @@ Route::post('contents/update/{id}/send', [ContentsController::class, 'store']);
 Route::delete('contents/delete/{id}', [ContentsController::class, 'delete']);
 
 Route::get('teachers/all', [TeacherController::class, 'get_all']);
+Route::get('teachers/find/{id}', [TeacherController::class, 'find_teacher']);
 
+Route::get('likes/count_content/{id}', [LikesController::class, 'count_content_likes']);
+Route::get('likes/count_user/{id}', [LikesController::class, 'count_user_likes']);
+Route::get('likes/user/{id}', [LikesController::class, 'get_user_likes']);
 Route::post('likes/check', [LikesController::class, 'check_like']);
 Route::post('likes/add', [LikesController::class, 'add_like']);
 Route::delete('likes/delete/{id}', [LikesController::class, 'delete_like']);
+
+Route::get('bookmarks/count_user/{id}', [BookmarksController::class, 'count_user_bookmarks']);
+Route::get('bookmarks/user/{id}', [BookmarksController::class, 'get_user_bookmarks']);
+Route::post('bookmarks/check', [BookmarksController::class, 'check_bookmark']);
+Route::post('bookmarks/add', [BookmarksController::class, 'add_bookmark']);
+Route::delete('bookmarks/delete/{id}', [BookmarksController::class, 'delete_bookmark']);

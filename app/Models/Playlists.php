@@ -17,4 +17,8 @@ class Playlists extends Model
         'status',
     ];
     public $timestamps = false;
+
+    public function teacher() {
+        return $this->hasOne('App\Models\Teachers', 'id', 'teacher_id');
+    }
 }

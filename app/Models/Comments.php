@@ -15,4 +15,16 @@ class Comments extends Model
         'comment',
         'date'
     ];
+
+    public function content() {
+        return $this->hasOne('App\Models\Contents', 'id', 'content_id');
+    }
+
+    public function user() {
+        return $this->hasOne('App\Models\Users', 'id', 'user_id');
+    }
+
+    public function teacher() {
+        return $this->hasOne('App\Models\Teachers', 'id', 'teacher_id');
+    }
 }

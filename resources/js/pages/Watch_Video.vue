@@ -9,7 +9,7 @@
         <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">{{ content.title }}</h3>
         <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
             <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]"><i class="fas fa-calendar text-button"></i> <span class="text-text_light">{{ content.date }}</span></p>
-            <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]"><i class="fas fa-heart text-button"></i> <span class="text-text_light">4 likes</span></p>
+            <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]"><i class="fas fa-heart text-button"></i> <span class="text-text_light">{{ likesAmount }} likes</span></p>
         </div>
         <div class="flex items-center gap-[1rem] mb-[1rem]">
             <img :src="teacher.image" class="rounded-[50%] h-[5rem] w-[5rem] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
@@ -21,7 +21,7 @@
         <form class="flex items-center justify-between gap-[1rem]">
             <button @click="this.$router.push('/playlist/' + content.playlist_id)" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[6rem]">View Playlist</button>
             <div v-if="status && user">
-                <button @click="deleteLike" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[4.4rem]"><i class="far fa-heart text-[1rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">Unlike</span></button>
+                <button @click="deleteLike" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[4.4rem]"><i class="fa-solid fa-heart text-[1rem] text-button [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">Unlike</span></button>
             </div>
             <div v-if="!status && user">
                 <button @click="addLike" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[4.4rem]"><i class="far fa-heart text-[1rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">Like</span></button>
@@ -85,6 +85,7 @@ export default {
             content: null,
             status: null,
             likeID: null,
+            likesAmount: null,
         }
     },
     components: {
@@ -100,6 +101,7 @@ export default {
     mounted(){
         this.getContents()
         this.checkLike()
+        this.countLikes()
     },
     created(){
         this.getContents()
@@ -129,6 +131,7 @@ export default {
             return this.user
         },
         async addLike(e){
+            this.status = true
             if(e && e.preventDefault){
                 e.preventDefault()
             }
@@ -148,6 +151,7 @@ export default {
             });
         },
         async checkLike(){
+            this.countLikes()
             let data = new FormData()
             axios.get('/api/contents/find/' + this.$route.params.id).then((response1) => {
                 this.getUser().then(value => {
@@ -167,6 +171,7 @@ export default {
             });
         },
         async deleteLike(e){
+            this.status = false
             if(e && e.preventDefault){
                 e.preventDefault()
             }
@@ -182,8 +187,16 @@ export default {
                     })
                 })
             }).catch((err) => {
-                console.error(err);
+                console.error(err)
             });
+        },
+
+        async countLikes() {
+            await axios.get('/api/likes/count_content/' + this.$route.params.id).then((response) => {
+                this.likesAmount = response.data
+            }).catch((err) => {
+                console.log(err)
+            })
         }
     }
 }

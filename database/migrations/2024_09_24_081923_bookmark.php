@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Bookmark', function (Blueprint $table) {
+        Schema::create('Bookmarks', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id');
-            $table->string('playlist_id');
+            $table->foreignId('user_id')->reference('id')->on('Users');
+            $table->foreignId('playlist_id')->reference('id')->on('Playlists');
         });
     }
 
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::drop('Bookmark');
+        Schema::dropIfExists('Bookmarks');
     }
 };

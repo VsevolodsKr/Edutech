@@ -7,12 +7,12 @@
         <div class="grid grid-cols-[repeat(auto-fit,_24rem)] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
             <div v-if="user != null" class="bg-base rounded-lg p-[1rem] w-full">
                 <h3 class="text-[1.3rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1rem]">Likes and comments</h3>
-                <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total likes: <span class="text-button">14</span></p>
-                <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[6rem]">View Likes</router-link>
+                <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total likes: <span class="text-button">{{ likesAmount || 0 }}</span></p>
+                <router-link to="/likes" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[6rem]">View Likes</router-link>
                 <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total comments: <span class="text-button">2</span></p>
                 <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[8rem]">View Comments</router-link>
-                <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total playlists: <span class="text-button">3</span></p>
-                <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]">View Playlists</router-link>
+                <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total bookmarked: <span class="text-button">{{ bookmarksAmount || 0 }}</span></p>
+                <router-link to="/bookmarks" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[10rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[9rem]">View Bookmarked</router-link>
             </div>
             <div v-else class="bg-base rounded-lg p-[1rem] w-full">
                 <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">Please login or register</h3>
@@ -99,6 +99,8 @@ export default {
             playlists: [],
             teachers: [],
             contentsCount: [],
+            likesAmount: null,
+            bookmarksAmount: null,
         }
     },
     computed: {
@@ -110,12 +112,23 @@ export default {
         }
     },
     mounted(){
-        axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-            this.user = response.data
-        })
+        this.getUser()
         this.getPlaylists()
+        this.countLikes()
+        this.countBookmarks()
     },
     methods: {
+        async getUser(){
+            await axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
+                this.user = response.data
+                this.user.image = new URL(this.user.image, import.meta.url)
+            })
+            if(localStorage.getItem('token') == ''){
+                this.$router.push('/').then(() =>{this.$router.go(0)})
+            }
+            return this.user
+        },
+
         async getPlaylists(){
             axios.get('/api/playlists/all').then((response) => {
             this.playlists = response.data
@@ -132,6 +145,26 @@ export default {
                 })
             })
         })
+        },
+
+        async countLikes() {
+            this.getUser().then((value) => {
+                axios.get('/api/likes/count_user/' + value.id).then((response) => {
+                    this.likesAmount = response.data
+                }).catch((err) => {
+                    console.log(err)
+                })
+            })
+        },
+
+        async countBookmarks() {
+            this.getUser().then((value) => {
+                axios.get('/api/bookmarks/count_user/' + value.id).then((response) => {
+                    this.bookmarksAmount = response.data
+                }).catch((err) => {
+                    console.log(err)
+                })
+            })
         }
     }
 }

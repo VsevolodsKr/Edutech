@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('Comments', function (Blueprint $table) {
             $table->id();
-            $table->string('content_id');
-            $table->string('user_id');
-            $table->string('teacher_id');
+            $table->foreignId('content_id')->reference('id')->on('Contents');
+            $table->foreignId('user_id')->reference('id')->on('Users');
+            $table->foreignId('teacher_id')->reference('id')->on('Teachers');
             $table->text('comment');
             $table->date('date');
         });

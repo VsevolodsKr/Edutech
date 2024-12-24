@@ -6,9 +6,14 @@
     <hr class="border-[#ccc] mb-[2rem]">
     <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
         <div class="flex-[1_1_20rem]">
-            <form method="post" class="mb-[1rem]">
-                <button type="submit" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]"><i class="far fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">Save Playlist</span></button>
-            </form>
+            <div class="mb-[1rem]">
+                <div v-if="!status && user">
+                    <button @click="addBookmark" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]"><i class="far fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">Save Playlist</span></button>
+                </div>
+                <div v-if = "status && user">
+                    <button @click="deleteBookmark" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]"><i class="fa-solid text-button fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">Remove Playlist</span></button>
+                </div>
+            </div>
             <div class="relative">
                 <img :src="playlist.thumb" class="h-[30rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]">
                 <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem]">{{ countContents }} videos</span>
@@ -62,6 +67,8 @@ export default {
             playlist: null,
             countContents: 0,
             contents: [],
+            status: null,
+            bookmarkID: null,
         }
     },
     components: {
@@ -75,8 +82,10 @@ export default {
         }
     },
     mounted(){
+        this.getUser()
         this.getPlaylists()
         this.getContents()
+        this.checkBookmark()
     },
     created(){
         this.getPlaylists()
@@ -85,14 +94,12 @@ export default {
     methods: {
         async getPlaylists() {
             axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
-                this.playlist = response.data;
+                this.playlist = response.data.playlist
                 this.playlist.thumb = new URL(this.playlist.thumb, import.meta.url)
+                this.teacher = response.data.teacher
+                this.teacher.image = new URL(this.teacher.image, import.meta.url)
                 axios.get('/api/contents/playlist/'+ this.playlist.id +'/amount').then((response) => {
                     this.countContents = response.data
-                })
-                axios.get('/api/playlists/'+ this.playlist.teacher_id +'/teacher').then((response) => {
-                    this.teacher = response.data
-                    this.teacher.image = new URL(this.teacher.image, import.meta.url)
                 })
             }).catch((err) => {
                 console.error(err);
@@ -120,6 +127,42 @@ export default {
                 this.$router.push('/').then(() =>{this.$router.go(0)})
             }
             return this.teacher
+        },
+
+        async addBookmark(e) {
+            this.status = true
+            if(e && e.preventDefault){
+                e.preventDefault()
+            }
+            let data = new FormData()
+                axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
+                    data.append('user_id', this.user.id)
+                    data.append('playlist_id', response.data.playlist.id)
+                    axios.post('/api/bookmarks/add', data)
+                    this.bookmarkID = this.checkBookmark()
+                })
+        },
+
+        async checkBookmark() {
+            let data = new FormData()
+            axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
+                data.append('user_id', this.user.id)
+                data.append('playlist_id', response.data.playlist.id)
+                axios.post('/api/bookmarks/check', data).then((response1) => {
+                    this.status = response1.data.status
+                    response1.data.id ? this.bookmarkID = response1.data.id : ''
+                    return response1.data.id
+                })
+            })
+        },
+
+        async deleteBookmark(e){
+            this.status = false
+            if(e && e.preventDefault){
+                e.preventDefault()
+            }
+           await axios.delete('/api/bookmarks/delete/' + this.bookmarkID)
+            this.checkBookmark()
         },
     }
 }

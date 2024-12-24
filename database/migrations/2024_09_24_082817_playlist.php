@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('Playlist', function (Blueprint $table) {
             $table->id();
-            $table->string('teacher_id');
+            $table->foreignId('teacher_id')->reference('id')->on('Teachers');
             $table->string('title', 100);
             $table->text('description');
             $table->string('thumb', 100);

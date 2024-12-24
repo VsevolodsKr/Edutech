@@ -24,7 +24,9 @@ class PlaylistController extends Controller
     }
 
     public function get_single(string $id){
-        return Playlists::find($id);
+        $playlist =  Playlists::find($id);
+        $teacher = $playlist->teacher;
+        return response()->json(['playlist' => $playlist, 'teacher' => $teacher]);
     }
 
     public function get_amount(string $id){

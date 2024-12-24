@@ -24,6 +24,8 @@ import Admin_Add_Content from "../admin/Admin_Add_Content.vue";
 import Admin_Watch_Playlist from "../admin/Admin_Watch_Playlist.vue";
 import Admin_Update_Content from "../admin/Admin_Update_Content.vue";
 import Admin_Watch_Content from "../admin/Admin_Watch_Content.vue";
+import Likes from "../pages/Likes.vue";
+import Bookmarks from "../pages/Bookmarks.vue";
 
 const routes = [
     {
@@ -175,6 +177,18 @@ const routes = [
         component: Admin_Watch_Content,
         name: 'Admin_Watch_Content',
         meta: {title: 'Content'}
+    },
+    {
+        path: '/likes',
+        component: Likes,
+        name: 'Likes',
+        meta: {title: 'Your likes'} 
+    },
+    {
+        path: '/bookmarks',
+        component: Bookmarks,
+        name: 'Bookmarks',
+        meta: {title: 'Your bookmarks'} 
     },
 ]
 

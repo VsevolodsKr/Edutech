@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('Likes');
         Schema::create('Likes', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id');
-            $table->string('teacher_id');
-            $table->string('content_id');
+            $table->foreignId('user_id')->reference('id')->on('Users');
+            $table->foreignId('teacher_id')->reference('id')->on('Teachers');
+            $table->foreignId('content_id')->reference('id')->on('Contents');
         });
     }
 
