@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ContentsController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\LikesController;
 use App\Http\Controllers\Api\BookmarksController;
+use App\Http\Controllers\Api\ContactController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -52,3 +53,5 @@ Route::get('bookmarks/user/{id}', [BookmarksController::class, 'get_user_bookmar
 Route::post('bookmarks/check', [BookmarksController::class, 'check_bookmark']);
 Route::post('bookmarks/add', [BookmarksController::class, 'add_bookmark']);
 Route::delete('bookmarks/delete/{id}', [BookmarksController::class, 'delete_bookmark']);
+
+Route::post('contact/send', [ContactController::class, 'send']);
