@@ -23,7 +23,10 @@ class ContentsController extends Controller
     }
 
     public function get_single(string $id){
-        return Contents::find($id);
+        $content =  Contents::find($id);
+        $teacher = $content->teacher;
+        $playlist = $content->playlist;
+        return response()->json(['content' => $content, 'teacher' => $teacher, 'playlist' => $playlist]);
     }
 
     public function get_amount(string $id){

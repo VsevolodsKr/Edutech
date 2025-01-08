@@ -8,7 +8,8 @@ export default createStore({
             user: {
                 data: {},
                 token: localStorage.getItem('token')
-            }
+            },
+            searchPlaylist: '',
         }
     },
 
@@ -18,6 +19,9 @@ export default createStore({
         },
         getUser: function (state){
             return state.user
+        },
+        getSearchPlaylist: function (state){
+            return state.searchPlaylist
         }
     },
 
@@ -27,6 +31,9 @@ export default createStore({
         },
         setUser: function (state, newUser){
             state.user.data = newUser
+        },
+        setSearchPlaylist: function (state, newSearchPlaylist){
+            state.searchPlaylist = newSearchPlaylist
         }
     }
 })

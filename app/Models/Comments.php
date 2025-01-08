@@ -16,6 +16,8 @@ class Comments extends Model
         'date'
     ];
 
+    public $timestamps = false;
+
     public function content() {
         return $this->hasOne('App\Models\Contents', 'id', 'content_id');
     }

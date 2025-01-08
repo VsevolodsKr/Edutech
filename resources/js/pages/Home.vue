@@ -9,8 +9,8 @@
                 <h3 class="text-[1.3rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1rem]">Likes and comments</h3>
                 <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total likes: <span class="text-button">{{ likesAmount || 0 }}</span></p>
                 <router-link to="/likes" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[8rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[6rem]">View Likes</router-link>
-                <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total comments: <span class="text-button">2</span></p>
-                <router-link to="/" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[8rem]">View Comments</router-link>
+                <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total comments: <span class="text-button">{{ commentsAmount || 0 }}</span></p>
+                <router-link to="/comments" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[9rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[8rem]">View Comments</router-link>
                 <p class="mt-[1rem] text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">Total bookmarked: <span class="text-button">{{ bookmarksAmount || 0 }}</span></p>
                 <router-link to="/bookmarks" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[10rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[9rem]">View Bookmarked</router-link>
             </div>
@@ -101,6 +101,7 @@ export default {
             contentsCount: [],
             likesAmount: null,
             bookmarksAmount: null,
+            commentsAmount: null,
         }
     },
     computed: {
@@ -116,6 +117,7 @@ export default {
         this.getPlaylists()
         this.countLikes()
         this.countBookmarks()
+        this.countComments()
     },
     methods: {
         async getUser(){
@@ -165,7 +167,17 @@ export default {
                     console.log(err)
                 })
             })
-        }
+        },
+
+        async countComments() {
+            this.getUser().then((value) => {
+                axios.get('/api/comments/count_user/' + value.id).then((response) => {
+                    this.commentsAmount = response.data
+                }).catch((err) => {
+                    console.log(err)
+                })
+            })
+        },
     }
 }
 </script>

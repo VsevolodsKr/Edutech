@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\LikesController;
 use App\Http\Controllers\Api\BookmarksController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\CommentsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,6 +22,7 @@ Route::post('admin_update/send', [AuthorizationController::class, 'admin_update_
 Route::post('admin_register/send', [AuthorizationController::class, 'admin_registration_store']);
 
 Route::get('playlists/all', [PlaylistController::class, 'get_all']);
+Route::post('playlists/search', [PlaylistController::class, 'search_playlists']);
 Route::get('playlists/{id}', [PlaylistController::class, 'get_teacher_playlists']);
 Route::get('playlists/find/{id}', [PlaylistController::class, 'get_single']);
 Route::get('playlists/{id}/teacher', [PlaylistController::class, 'get_teacher']);
@@ -39,6 +41,7 @@ Route::post('contents/update/{id}/send', [ContentsController::class, 'store']);
 Route::delete('contents/delete/{id}', [ContentsController::class, 'delete']);
 
 Route::get('teachers/all', [TeacherController::class, 'get_all']);
+Route::post('teachers/search', [TeacherController::class, 'search_teachers']);
 Route::get('teachers/find/{id}', [TeacherController::class, 'find_teacher']);
 
 Route::get('likes/count_content/{id}', [LikesController::class, 'count_content_likes']);
@@ -55,3 +58,12 @@ Route::post('bookmarks/add', [BookmarksController::class, 'add_bookmark']);
 Route::delete('bookmarks/delete/{id}', [BookmarksController::class, 'delete_bookmark']);
 
 Route::post('contact/send', [ContactController::class, 'send']);
+
+Route::get('comments/content_amount/{id}', [CommentsController::class, 'count_comments']);
+Route::get('comments/count_user/{id}', [CommentsController::class, 'count_user']);
+Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comments']);
+Route::get('comments/user/{id}', [CommentsController::class, 'get_user_comments']);
+Route::get('comments/find/{id}', [CommentsController::class, 'find']);
+Route::post('comments/add', [CommentsController::class, 'add_comment']);
+Route::post('comments/{id}/edit', [CommentsController::class, 'edit_comment']);
+Route::delete('comments/delete/{id}', [CommentsController::class, 'delete_comment']);

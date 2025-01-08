@@ -10,18 +10,18 @@
                 <button type="submit" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]"><i class="far fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]"></i> <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">Save Playlist</span></button>
             </form>
             <div class="relative">
-                <img :src="playlist.thumb" class="h-[20rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]">
+                <img :src="playlist.playlist.thumb" class="h-[20rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]">
                 <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem]">{{ countContents }}</span>
             </div>
         </div>
         <div class="flex-[1_1_40rem]">
             <div>
-                <h3 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">{{ playlist.title }}</h3>
-                <p class="py-[1rem] leading-2 text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">{{ playlist.description }}</p>
+                <h3 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">{{ playlist.playlist.title }}</h3>
+                <p class="py-[1rem] leading-2 text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">{{ playlist.playlist.description }}</p>
             </div>
             <div class="flex gap-[1rem]">
-                <button @click="this.$router.push('/admin_playlists/update/' + playlist.id)" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Update Playlist</button>
-                <button @click="deletePlaylist(playlist.id)" class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Delete Playlist</button>
+                <button @click="this.$router.push('/admin_playlists/update/' + playlist.playlist.id)" class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Update Playlist</button>
+                <button @click="deletePlaylist(playlist.playlist.id)" class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Delete Playlist</button>
             </div>
         </div>
     </div>
@@ -91,14 +91,14 @@ export default {
         async getPlaylists() {
             axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
                 this.playlist = response.data;
-                this.playlist.thumb = new URL(this.playlist.thumb, import.meta.url)
-                axios.get('/api/contents/playlist/'+ this.playlist.id +'/amount').then((response) => {
-                    this.countContents = response.data
+                this.playlist.playlist.thumb = new URL(this.playlist.playlist.thumb, import.meta.url)
+                axios.get('/api/contents/playlist/'+ this.playlist.playlist.id +'/amount').then((response1) => {
+                    this.countContents = response1.data
                 })
             }).catch((err) => {
                 console.error(err);
             });
-            return this.playlist
+            return this.playlist.playlist
         },
         async getContents(){
             this.getPlaylists().then(value => {
@@ -111,16 +111,6 @@ export default {
                     console.error(err);
                 });
             })
-        },
-        async getUser(){
-            await axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-                this.teacher = response.data
-                this.teacher.image = new URL(this.teacher.image, import.meta.url)
-            })
-            if(localStorage.getItem('token') == ''){
-                this.$router.push('/').then(() =>{this.$router.go(0)})
-            }
-            return this.teacher
         },
         deletePlaylist(id){
             const background = getComputedStyle(document.documentElement).getPropertyValue('--background')

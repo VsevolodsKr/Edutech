@@ -26,6 +26,9 @@ import Admin_Update_Content from "../admin/Admin_Update_Content.vue";
 import Admin_Watch_Content from "../admin/Admin_Watch_Content.vue";
 import Likes from "../pages/Likes.vue";
 import Bookmarks from "../pages/Bookmarks.vue";
+import Edit_Comment from "../pages/Edit_Comment.vue";
+import Comments from "../pages/Comments.vue";
+import Search from "../pages/Search.vue";
 
 const routes = [
     {
@@ -190,6 +193,24 @@ const routes = [
         name: 'Bookmarks',
         meta: {title: 'Your bookmarks'} 
     },
+    {
+        path: '/edit_comment/:id',
+        component: Edit_Comment,
+        name: 'Comment',
+        meta: {title: 'Edit Comment'} 
+    },
+    {
+        path: '/comments',
+        component: Comments,
+        name: 'Comments',
+        meta: {title: 'Your comments'} 
+    },
+    {
+        path: '/search',
+        component: Search,
+        name: 'Search',
+        meta: {title: 'Playlists'}
+    }
 ]
 
 const router = createRouter({

@@ -4,12 +4,12 @@
 <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1.5rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">Expert Teachers</h1>
     <hr class="border-[#ccc] mb-[2rem]">
-    <form class="w-full rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-base" method="post" action="">
-        <input class="w-full text-[1.3rem] bg-transparent outline-none border-transparent text-text_light focus:outline-none [@media(max-width:550px)]:text-[1rem]"type="text" name="search_box" required placeholder="search teachers..." maxlength="100">
-        <button class="bg-transparent text-[1rem] cursor-pointer text-text_light fa fa-search hover:text-button" type="submit"></button>
-    </form>
+    <div class="w-full rounded-lg bg-[#eee] py-[.5rem] px-[1.5rem] flex gap-[2rem] bg-base">
+        <input v-model="searchTeacher" class="w-full text-[1.3rem] bg-transparent outline-none border-transparent text-text_light focus:outline-none [@media(max-width:550px)]:text-[1rem]"type="text" name="search_box" required placeholder="search teachers..." maxlength="100">
+        <button type="submit" @click="searchTeachers" class="bg-transparent text-[1rem] cursor-pointer text-text_light fa fa-search hover:text-button"></button>
+    </div>
     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start mt-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
-        <div class="bg-base rounded-lg p-[2rem] text-center">
+        <div class="bg-base rounded-lg p-[2rem] text-center" v-if="show">
             <h3 class="text-[2rem] text-text_dark capitalize pb-[.5rem] [@media(max-width:550px)]:text-[1.5rem]">Become A Teacher</h3>
             <p class="leading-1.7 py-[.5rem] text-text_light text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Step into a network of passionate educators, innovators, and mentors. Share your insights and make a meaningful difference by helping students achieve their goals</p>
             <div class="flex justify-center">
@@ -51,7 +51,9 @@ export default{
             width,
             teachers: [],
             countPlaylists: [],
-            countContents: [],  
+            countContents: [],
+            searchTeacher: '',
+            show: true,  
         }
     },
     computed: {
@@ -64,6 +66,7 @@ export default{
     },
     methods: {
         async getTeachers(){
+            this.show = true
             axios.get('/api/teachers/all').then((response) => {
                 this.teachers = response.data
                 this.teachers.forEach((teacher) => {
@@ -76,6 +79,28 @@ export default{
                     })
                 })
             })
+        },
+
+        searchTeachers(){
+            if(this.searchTeacher){
+                this.show = false
+                let data = new FormData()
+                data.append('name', this.searchTeacher)
+                axios.post('/api/teachers/search', data).then((response) => {
+                this.teachers = response.data
+                this.teachers.forEach((teacher) => {
+                    teacher.image = new URL(teacher.image, import.meta.url)
+                    axios.get('/api/playlists/amount/' + teacher.id).then((response1) => {
+                        this.countPlaylists.push(response1.data)
+                    })
+                    axios.get('/api/contents/amount/' + teacher.id).then((response1) => {
+                        this.countContents.push(response1.data)
+                    })
+                })
+            })
+            } else {
+                this.getTeachers()
+            }
         }
     }
 }

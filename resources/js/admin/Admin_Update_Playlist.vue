@@ -16,12 +16,12 @@
                 <option value="deactive">deactive</option>
             </select>
             <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist title <span class="text-button4">*</span></p>
-            <input id="title" :value="this.playlist.title" type="name" placeholder="Enter playlist title..." required maxlength="50" class="text-[1rem] text-text_dark rounded-lg p-[.5rem] my-[1rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
+            <input id="title" :value="this.playlist.playlist.title" type="name" placeholder="Enter playlist title..." required maxlength="50" class="text-[1rem] text-text_dark rounded-lg p-[.5rem] my-[1rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
             <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist description <span class="text-button4">*</span></p>
-            <textarea id="description" :value="this.playlist.description" placeholder="Enter playlist description..." required maxlength="1000" cols="30" rows="10" class="h-[20rem] resize-none w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:mb-0"></textarea>
+            <textarea id="description" :value="this.playlist.playlist.description" placeholder="Enter playlist description..." required maxlength="1000" cols="30" rows="10" class="h-[20rem] resize-none w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:mb-0"></textarea>
             <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist thumbnail <span class="text-button4">*</span></p>
             <div class="relative">
-                    <img :src="this.playlist.thumb" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
+                    <img :src="this.playlist.playlist.thumb" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
                     <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[1rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1.2rem] [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.7rem]">5</span>
                 </div>
             <input id="img" type="file" accept="image/*" required class="text-[1rem] text-text_dark rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none my-[1rem] h-[3rem] [@media(max-width:550px)]:text-[.7rem]">
@@ -62,7 +62,7 @@ export default {
     mounted(){
         axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
             this.playlist = response.data;
-            this.playlist.thumb = new URL(this.playlist.thumb, import.meta.url)
+            this.playlist.playlist.thumb = new URL(this.playlist.playlist.thumb, import.meta.url)
         }).catch((err) => {
             console.error(err);
         });
@@ -70,7 +70,7 @@ export default {
     created(){
         axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
             this.playlist = response.data;
-            this.playlist.thumb = new URL(this.playlist.thumb, import.meta.url)
+            this.playlist.playlist.thumb = new URL(this.playlist.playlist.thumb, import.meta.url)
         }).catch((err) => {
             console.error(err);
         });

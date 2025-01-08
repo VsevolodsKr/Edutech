@@ -19,4 +19,16 @@ class Contents extends Model
         'status',
     ];
     public $timestamps = false;
+
+    public function user() {
+        return $this->hasOne('App\Models\Users', 'id', 'user_id');
+    }
+
+    public function teacher() {
+        return $this->hasOne('App\Models\Teachers', 'id', 'teacher_id');
+    }
+
+    public function playlist() {
+        return $this->hasOne('App\Models\Contents', 'id', 'playlist_id');
+    } 
 }

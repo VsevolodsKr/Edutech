@@ -91,7 +91,7 @@ export default {
     methods: {
         async getContents(){
             axios.get('/api/contents/find/' + this.$route.params.id).then((response) => {
-                this.content = response.data;
+                this.content = response.data.content;
                 this.content.thumb = new URL(this.content.thumb, import.meta.url)
                 this.content.video = new URL(this.content.video, import.meta.url)
             }).catch((err) => {

@@ -4,7 +4,11 @@
     <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
         <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-        <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
+        <div class="w-full rounded-lg bg-[#eee] py-[.5rem] mb-[1rem] px-[1.5rem] flex gap-[2rem] bg-base">
+            <input v-model="searchCourse" class="w-full text-[1.3rem] bg-transparent outline-none border-transparent text-text_light focus:outline-none [@media(max-width:550px)]:text-[1rem]"type="text" name="search_box" required placeholder="search courses..." maxlength="100">
+            <button type="submit" @click="searchCourses" class="bg-transparent text-[1rem] cursor-pointer text-text_light fa fa-search hover:text-button"></button>
+        </div>
+        <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
             <div v-for="(playlist, index) in playlists" :key="index" class="bg-base rounded-lg p-[2rem] w-full">
                 <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                     <img :src="teachers[index].image" class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
@@ -43,7 +47,8 @@ export default{
             width,
             playlists: [], 
             teachers: [],
-            contentsCount: [], 
+            contentsCount: [],
+            searchCourse: '', 
         }
     },
     computed: {
@@ -71,6 +76,47 @@ export default{
                 })
             })
         })
+        },
+
+        async searchCourses(){
+            this.teachers = []
+            this.contentsCount = []
+            if(this.searchCourse){
+                let data = new FormData()
+                data.append('name', this.searchCourse)
+                axios.post('/api/playlists/search', data).then((response) => {
+                    this.playlists = response.data
+                    this.playlists.forEach((playlist) => {
+                        playlist.thumb = new URL(playlist.thumb, import.meta.url)
+                        axios.get('/api/playlists/'+ playlist.teacher_id +'/teacher').then((response) => {
+                            this.teachers.push(response.data)
+                            this.teachers.forEach(teacher => {
+                                teacher.image = new URL(teacher.image, import.meta.url)
+                            });
+                        })
+                        axios.get('/api/contents/playlist/'+ playlist.id +'/amount').then((response) => {
+                            this.contentsCount.push(response.data)
+                        })
+                    })
+                })
+            } else {
+                axios.get('/api/playlists/all').then((response) => {
+                    this.playlists = response.data
+                    this.playlists.forEach((playlist) => {
+                        playlist.thumb = new URL(playlist.thumb, import.meta.url)
+                        axios.get('/api/playlists/'+ playlist.teacher_id +'/teacher').then((response) => {
+                            this.teachers.push(response.data)
+                            this.teachers.forEach(teacher => {
+                                teacher.image = new URL(teacher.image, import.meta.url)
+                            });
+                        })
+                        axios.get('/api/contents/playlist/'+ playlist.id +'/amount').then((response) => {
+                            this.contentsCount.push(response.data)
+                        })
+                    })
+                })
+            }
+            
         },
     }
 }

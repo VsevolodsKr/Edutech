@@ -38,6 +38,23 @@ class PlaylistController extends Controller
         return $teacher;
     }
 
+    public function search_playlists(Request $request){
+        $playlists = Playlists::where('title', 'like', '%'.$request->name.'%')->orWhere('description', 'like', '%'.$request->name.'%')->get();
+        if(count($playlists) > 0){
+            return $playlists;
+        } else {
+            $playlists = Playlists::where('status', 'active')->get();
+            $needed_playlists = array();
+            foreach($playlists as $playlist){
+                $teacher_name = strtolower($playlist->teacher->name);
+                if(str_contains($teacher_name, strtolower($request->name))){
+                    array_push($needed_playlists, $playlist);
+                }
+            }
+            return $needed_playlists;
+        }
+    }
+
     public function add_playlist(Request $request){
         $rules = array(
             'status' => 'required',
