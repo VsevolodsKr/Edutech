@@ -22,7 +22,7 @@
                     <p class="text-text_light text-[1.3rem] [@media(max-width:550px)]:text-[1rem]">Saved Playlist</p>
                 </div>
             </div>
-            <router-link to="/bookmarks" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[10rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[6rem]">View Playlists</router-link>
+            <router-link to="/bookmarks" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-[10rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-[6rem]">View Bookmarks</router-link>
         </div>
         <div class="bg-background rounded-lg p-[1rem] flex-[1_1_25rem]">
             <div class="flex items-start gap-[1.5rem] mb-[1rem]">
