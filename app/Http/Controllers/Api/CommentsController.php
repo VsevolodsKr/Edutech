@@ -92,7 +92,9 @@ class CommentsController extends Controller
     }
 
     public function count_user(string $id) {
-        return Comments::where('user_id', $id)->count();
+        return response()->json([
+            'data' => Comments::where('user_id', $id)->count()
+        ]);
     }
 
     public function get_user_comments(string $id) {

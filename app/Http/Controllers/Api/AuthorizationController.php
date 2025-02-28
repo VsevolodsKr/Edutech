@@ -15,307 +15,374 @@ use App\Models\Teachers;
 
 class AuthorizationController extends Controller
 {
-    public function registration_store(Request $request){
-        $rules = array(
+    private const DEFAULT_IMAGE = '/storage/app/public/default.png';
+    private const UPLOAD_PATH = 'uploads';
+
+    /**
+     * Register a new user
+     */
+    public function registration_store(Request $request)
+    {
+        try {
+            $validator = $this->validateRegistration($request);
+            if ($validator->fails()) {
+                return $this->errorResponse($validator->messages()->all());
+            }
+
+            if ($request->password !== $request->conf_password) {
+                return $this->errorResponse(['Passwords do not match']);
+            }
+
+            if (Users::where('email', $request->email)->exists()) {
+                return $this->errorResponse(['Email already exists in database. Try to login!']);
+            }
+
+            $user = new Users();
+            $user->fill([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'image' => $this->handleImageUpload($request->image)
+            ]);
+
+            $user->save();
+
+            return $this->successResponse(
+                'You have successfully registered to Edutech',
+                ['data' => $user]
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(['Registration failed. Please try again later.']);
+        }
+    }
+
+    /**
+     * Handle user login
+     */
+    public function login_store(Request $request)
+    {
+        try {
+            $validator = $this->validateLogin($request);
+            if ($validator->fails()) {
+                return $this->errorResponse($validator->messages()->all());
+            }
+
+            $user = Users::where('email', $request->email)->first();
+            $teacher = Teachers::where('email', $request->email)->first();
+
+            if (!$user && !$teacher) {
+                return $this->errorResponse(['Email not found. Please register first.']);
+            }
+
+            if (Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                $token = $user->createToken('MyApp')->plainTextToken;
+                return $this->successResponse('Login successful', [
+                    'data' => $user,
+                    'token' => $token,
+                    'is_teacher' => false
+                ]);
+            }
+
+            if (Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                $token = $teacher->createToken('MyApp')->plainTextToken;
+                return $this->successResponse('Login successful', [
+                    'data' => $teacher,
+                    'token' => $token,
+                    'is_teacher' => true
+                ]);
+            }
+
+            return $this->errorResponse(['Invalid credentials']);
+        } catch (\Exception $e) {
+            return $this->errorResponse(['Login failed. Please try again later.']);
+        }
+    }
+
+    /**
+     * Update user profile
+     */
+    public function update_store(Request $request)
+    {
+        try {
+            $validator = $this->validateUpdate($request);
+            if ($validator->fails()) {
+                return $this->errorResponse($validator->messages()->all());
+            }
+
+            $user = Users::where('email', $request->old_email)->firstOrFail();
+
+            if ($this->shouldChangePassword($request)) {
+                $passwordValidator = $this->validatePasswordChange($request);
+                if ($passwordValidator->fails()) {
+                    return $this->errorResponse($passwordValidator->messages()->all());
+                }
+
+                if (!Hash::check($request->p_password, $user->password)) {
+                    return $this->errorResponse(['Previous password is incorrect']);
+                }
+
+                if ($request->n_password !== $request->c_password) {
+                    return $this->errorResponse(['New passwords do not match']);
+                }
+
+                $user->password = Hash::make($request->n_password);
+            }
+
+            if ($request->email !== $request->old_email && Users::where('email', $request->email)->exists()) {
+                return $this->errorResponse(['Email already exists']);
+            }
+
+            $user->fill([
+                'name' => $request->name,
+                'email' => $request->email,
+                'image' => $request->hasFile('image') ? $this->handleImageUpload($request->image) : $user->image
+            ]);
+
+            $user->save();
+
+            return $this->successResponse(
+                'Profile updated successfully',
+                ['data' => $user]
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(['Update failed. Please try again later.']);
+        }
+    }
+
+    /**
+     * Update teacher profile
+     */
+    public function admin_update_store(Request $request)
+    {
+        try {
+            $validator = $this->validateAdminUpdate($request);
+            if ($validator->fails()) {
+                return $this->errorResponse($validator->messages()->all());
+            }
+
+            $teacher = Teachers::where('email', $request->old_email)->firstOrFail();
+
+            if ($this->shouldChangePassword($request)) {
+                $passwordValidator = $this->validatePasswordChange($request);
+                if ($passwordValidator->fails()) {
+                    return $this->errorResponse($passwordValidator->messages()->all());
+                }
+
+                if (!Hash::check($request->p_password, $teacher->password)) {
+                    return $this->errorResponse(['Previous password is incorrect']);
+                }
+
+                if ($request->n_password !== $request->c_password) {
+                    return $this->errorResponse(['New passwords do not match']);
+                }
+
+                $teacher->password = Hash::make($request->n_password);
+            }
+
+            if ($request->email !== $request->old_email && Teachers::where('email', $request->email)->exists()) {
+                return $this->errorResponse(['Email already exists']);
+            }
+
+            $teacher->fill([
+                'name' => $request->name,
+                'email' => $request->email,
+                'profession' => $request->profession . ' teacher',
+                'image' => $request->hasFile('image') ? $this->handleImageUpload($request->image) : $teacher->image
+            ]);
+
+            $teacher->save();
+
+            return $this->successResponse(
+                'Profile updated successfully',
+                ['data' => $teacher]
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(['Update failed. Please try again later.']);
+        }
+    }
+
+    /**
+     * Register a new teacher
+     */
+    public function admin_registration_store(Request $request)
+    {
+        try {
+            $validator = $this->validateAdminRegistration($request);
+            if ($validator->fails()) {
+                return $this->errorResponse($validator->messages()->all());
+            }
+
+            if ($request->password !== $request->conf_password) {
+                return $this->errorResponse(['Passwords do not match']);
+            }
+
+            if (Teachers::where('email', $request->email)->exists()) {
+                return $this->errorResponse(['Email already exists. Try to login!']);
+            }
+
+            if (Users::where('email', $request->email)->exists()) {
+                return $this->errorResponse(['Email already exists in User database']);
+            }
+
+            $teacher = new Teachers();
+            $teacher->fill([
+                'name' => $request->name,
+                'email' => $request->email,
+                'profession' => $request->profession . ' teacher',
+                'password' => Hash::make($request->password),
+                'image' => $this->handleImageUpload($request->image)
+            ]);
+
+            $teacher->save();
+
+            return $this->successResponse(
+                'Teacher registered successfully',
+                ['data' => $teacher]
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(['Registration failed. Please try again later.']);
+        }
+    }
+
+    /**
+     * Handle image upload
+     */
+    private function handleImageUpload($image)
+    {
+        if (!$image) {
+            return self::DEFAULT_IMAGE;
+        }
+
+        $imageName = time() . '_' . $image->getClientOriginalName();
+        $imagePath = $image->storeAs(self::UPLOAD_PATH, $imageName, 'public');
+        return '/storage/app/public/' . $imagePath;
+    }
+
+    /**
+     * Check if password should be changed
+     */
+    private function shouldChangePassword(Request $request)
+    {
+        return $request->filled(['p_password', 'n_password', 'c_password']);
+    }
+
+    /**
+     * Validate registration request
+     */
+    private function validateRegistration(Request $request)
+    {
+        return Validator::make($request->all(), [
             'name' => 'required|max:50',
             'email' => 'required|email|max:50',
             'password' => 'required|max:50',
-            'conf_password' => 'required|max:50',
-        );
-        $messages = array(
-            'name.required' => 'Please, enter your name',
-            'email.required' => 'Please, enter your email',
-            'password.required' => 'Please, enter your password',
-            'conf_password.required' => 'Please, confirm your password',
-        );
-        $validator = Validator::make($request->input(), $rules, $messages);
-       if($validator->fails()){
-            $errors = $validator->messages()->all();
-            return response()->json(['message' => $errors, 'status' => 500], 500);
-        }
-        if($request->password != $request->conf_password){
-            return response()->json(['message' => array('Passwords are not the same!'), 'status' => 500], 500);
-        }
-        if(Users::where('email', $request->email)->first()){
-            return response()->json(['message' => array('Email already exists in database. Try to login!'), 'status' => 500], 500);
-        }
-            $user = new Users;
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            if($request->image){
-                $image_name = time() . '_' . $request->image->getClientOriginalName();
-                $image_path = $request->image->storeAs('uploads', $image_name, 'public');
-                $user->image = '/storage/app/public/' . $image_path;
-                $save = $user->save();
-            }else{
-                $user->image = '/storage/app/public/default.png';
-                $save = $user->save();
-            }
-            if(!$save){
-                return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
-            }else{
-                return response()->json(['message' => array('You have succesfully registered to Edutech'), 'data' => $user, 'status' => 200], 200);
-        }
+            'conf_password' => 'required|max:50'
+        ], [
+            'name.required' => 'Please enter your name',
+            'email.required' => 'Please enter your email',
+            'password.required' => 'Please enter your password',
+            'conf_password.required' => 'Please confirm your password'
+        ]);
     }
 
-    public function login_store(Request $request){
-        $rules = array(
+    /**
+     * Validate login request
+     */
+    private function validateLogin(Request $request)
+    {
+        return Validator::make($request->all(), [
             'email' => 'required|email|max:50',
-            'password' => 'required|max:50',
-        );
-        $messages = array(
-            'email.required' => 'Please, enter your email',
-            'password.required' => 'Please, enter your password',
-        );
-        $validator = Validator::make($request->input(), $rules, $messages);
-        if($validator->fails()){
-            $errors = $validator->messages()->all();
-            return response()->json(['message' => $errors, 'status' => 500], 500);
-        }
-        $user = Users::where('email', $request->email)->first();
-        $teacher = Teachers::where('email', $request->email)->first();
-        if(!$user && !$teacher){
-            return response()->json(['message' => array('Provided email does not exist in database. Try to register!'), 'status' => 500], 500);
-        }
-        if(Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])){
-            $token = $user->createToken('MyApp')->plainTextToken;
-            return response()->json(['message' => array('You succesfully logged in!'), 'status' => 200, 'data' => $user, 'token' => $token, 'is_teacher' => false], 200);
-        }else if(Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])){
-            $token = $teacher->createToken('MyApp')->plainTextToken;
-            return response()->json(['message' => array('You succesfully logged in!'), 'status' => 200, 'data' => $teacher, 'token' => $token, 'is_teacher' => true], 200);
-        }else{
-            if(!Hash::check($request->password, $user->password) || !Hash::check($request->password, $teacher->password)){
-                return response()->json(['message' => array('Password is incorrect'), 'status' => 500], 500);
-            }
-        }
+            'password' => 'required|max:50'
+        ], [
+            'email.required' => 'Please enter your email',
+            'password.required' => 'Please enter your password'
+        ]);
     }
 
-    public function update_store(Request $request){
-        $rules = array(
+    /**
+     * Validate update request
+     */
+    private function validateUpdate(Request $request)
+    {
+        return Validator::make($request->all(), [
             'name' => 'required|max:50',
-            'email' => 'required|email|max:50',
-            'p_password' => 'max:50',
-            'n_password' => 'max:50',
-            'c_password' => 'max:50',
-        );
-        $messages = array(
-            'name.required' => 'Please, enter your name',
-            'email.required' => 'Please, enter your email',
-        );
-        $validator = Validator::make($request->input(), $rules, $messages);
-        if($validator->fails()){
-            $errors = $validator->messages()->all();
-            return response()->json(['message' => $errors, 'status' => 500], 500);
-        }
-        $user = Users::where('email', $request->old_email)->first();
-        if(!$user){
-            return response()->json(['message' => array('Provided email does not exist in database. Try to register!'), 'status' => 500], 500);
-        }
-        $changePassword = false;
-        if($request->p_password != '' || $request->n_password != '' || $request->c_password != ''){
-            $password_rules = array(
-                'p_password' => 'required|max:50',
-                'n_password' => 'required|max:50',
-                'c_password' => 'required|max:50',
-            );
-            $password_messages = array(
-                'p_password.required' => 'Please, enter your previous password',
-                'n_password.required' => 'Please, enter your new password',
-                'c_password.required' => 'Please, confirm your password',
-            );
-            $validator = Validator::make($request->input(), $password_rules, $password_messages);
-            if($validator->fails()){
-                $errors = $validator->messages()->all();
-                return response()->json(['message' => $errors, 'status' => 500], 500);
-            }
-            if(!Hash::check($request->p_password, $user->password)){
-                return response()->json(['message' => array('Previous password does not match that is written in database!'), 'status' => 500], 500);
-            }
-            if($request->n_password != $request->c_password){
-                return response()->json(['message' => array('Password does not confirmed!'), 'status' => 500], 500);
-            }
-            $changePassword = true;
-        }
-        if(Users::where('email', $request->email)->first() && $request->old_email != $request->email){
-            return response()->json(['message' => array('Email already exists in database!'), 'status' => 500], 500);
-        }
-        if($changePassword){
-            $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->n_password),
-            ]);
-        }else{
-            $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
-            ]);
-        }
-        $save = $user->save();
-        if($request->image){
-            $image_name = time() . '_' . $request->image->getClientOriginalName();
-            $image_path = $request->image->storeAs('uploads', $image_name, 'public');
-            $image = '/storage/app/public/' . $image_path;
-            $user->update([
-                'image' => $image
-            ]);
-            $save = $user->save();
-        }else{
-            $image = '/storage/app/public/default.png';
-            $user->update([
-                'image' => $image
-            ]);
-            $save = $user->save();
-        }
-        if(!$save){
-            return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
-        }else{
-            return response()->json(['message' => array('You have succesfully updated your profile'), 'data' => $user, 'status' => 200], 200);
-    }
+            'email' => 'required|email|max:50'
+        ], [
+            'name.required' => 'Please enter your name',
+            'email.required' => 'Please enter your email'
+        ]);
     }
 
-    public function admin_update_store(Request $request){
-        $rules = array(
+    /**
+     * Validate admin update request
+     */
+    private function validateAdminUpdate(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'name' => 'required|max:50',
+            'profession' => 'required',
+            'email' => 'required|email|max:50'
+        ], [
+            'name.required' => 'Please enter your name',
+            'profession.required' => 'Please select your profession',
+            'email.required' => 'Please enter your email'
+        ]);
+    }
+
+    /**
+     * Validate admin registration request
+     */
+    private function validateAdminRegistration(Request $request)
+    {
+        return Validator::make($request->all(), [
             'name' => 'required|max:50',
             'profession' => 'required',
             'email' => 'required|email|max:50',
-            'p_password' => 'max:50',
-            'n_password' => 'max:50',
-            'c_password' => 'max:50',
-        );
-        $messages = array(
-            'name.required' => 'Please, enter your name',
-            'profession.required' => 'Please, select your profession',
-            'email.required' => 'Please, enter your email',
-        );
-        $validator = Validator::make($request->input(), $rules, $messages);
-        if($validator->fails()){
-            $errors = $validator->messages()->all();
-            return response()->json(['message' => $errors, 'status' => 500], 500);
-        }
-        $teacher = Teachers::where('email', $request->old_email)->first();
-        if(!$teacher){
-            return response()->json(['message' => array('Provided email does not exist in database. Try to register!'), 'status' => 500], 500);
-        }
-        $changePassword = false;
-        if($request->p_password != '' || $request->n_password != '' || $request->c_password != ''){
-            $password_rules = array(
-                'p_password' => 'required|max:50',
-                'n_password' => 'required|max:50',
-                'c_password' => 'required|max:50',
-            );
-            $password_messages = array(
-                'p_password.required' => 'Please, enter your previous password',
-                'n_password.required' => 'Please, enter your new password',
-                'c_password.required' => 'Please, confirm your password',
-            );
-            $password_validator = Validator::make($request->input(), $password_rules, $password_messages);
-            if($password_validator->fails()){
-                $password_errors = $password_validator->messages()->all();
-                return response()->json(['message' => $password_errors, 'status' => 500], 500);
-            }
-            if(!Hash::check($request->p_password, $teacher->password)){
-                return response()->json(['message' => array('Previous password does not match that is written in database!'), 'status' => 500], 500);
-            }
-            if($request->n_password != $request->c_password){
-                return response()->json(['message' => array('Password does not confirmed!'), 'status' => 500], 500);
-            }
-            $changePassword = true;
-        }
-        if(Teachers::where('email', $request->email)->first() && $request->old_email != $request->email){
-            return response()->json(['message' => array('Email already exists in database!'), 'status' => 500], 500);
-        }
-        if($request->profession == ''){
-            return response()->json(['message' => array('Please, select your profession'), 'status' => 500], 500);
-        }
-        if($changePassword){
-            $teacher->update([
-                'name' => $request->name,
-                'profession' => $request->profession . ' teacher',
-                'email' => $request->email,
-                'password' => Hash::make($request->n_password),
-            ]);
-        }else{
-            $teacher->update([
-                'name' => $request->name,
-                'profession' => $request->profession . ' teacher',
-                'email' => $request->email,
-            ]);
-        }
-        $save = $teacher->save();
-        if($request->image){
-            $image_name = time() . '_' . $request->image->getClientOriginalName();
-            $image_path = $request->image->storeAs('uploads', $image_name, 'public');
-            $image = '/storage/app/public/' . $image_path;
-            $teacher->update([
-                'image' => $image
-            ]);
-            $save = $teacher->save();
-        }else{
-            $image = '/storage/app/public/default.png';
-            $teacher->update([
-                'image' => $image
-            ]);
-            $save = $teacher->save();
-        }
-        if(!$save){
-            return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
-        }else{
-            return response()->json(['message' => array('You have succesfully updated your profile'), 'data' => $teacher, 'status' => 200], 200);
-    }
+            'password' => 'required|max:50',
+            'conf_password' => 'required|max:50'
+        ], [
+            'name.required' => 'Please enter your name',
+            'profession.required' => 'Please select your profession',
+            'email.required' => 'Please enter your email',
+            'password.required' => 'Please enter your password',
+            'conf_password.required' => 'Please confirm your password'
+        ]);
     }
 
-    public function admin_registration_store(Request $request){
-        $rules = array(
-            'name' => 'required|max:50',
-            'profession' => 'required',
-            'email' => 'required|email|max:50',
-            'password' => 'required|max:50',
-            'conf_password' => 'required|max:50',
-        );
-        $messages = array(
-            'name.required' => 'Please, enter your name!',
-            'profession.required' => 'Please, select your profession!',
-            'email.required' => 'Please, enter your email!',
-            'password.required' => 'Please, enter your password!',
-            'conf_password.required' => 'Please, confirm your password!',
-        );
-        $validator = Validator::make($request->input(), $rules, $messages);
-       if($validator->fails()){
-            $errors = $validator->messages()->all();
-            return response()->json(['message' => $errors, 'status' => 500], 500);
-        }
-        if($request->password != $request->conf_password){
-            return response()->json(['message' => array('Passwords are not the same!'), 'status' => 500], 500);
-        }
-        if(Teachers::where('email', $request->email)->first()){
-            return response()->json(['message' => array('Email already exists in database. Try to login!'), 'status' => 500], 500);
-        }
-        if(Users::where('email', $request->email)->first()){
-            return response()->json(['message' => array('Provided email already exists in User database. Change email!'), 'status' => 500], 500);
-        }
-        if($request->profession == ''){
-            return response()->json(['message' => array('Please, select your profession!'), 'status' => 500], 500);
-        }
-            $teacher = new Teachers;
-            $teacher->name = $request->name;
-            $teacher->profession = $request->profession . ' teacher';
-            $teacher->email = $request->email;
-            $teacher->password = Hash::make($request->password);
-            if($request->image){
-                $image_name = time() . '_' . $request->image->getClientOriginalName();
-                $image_path = $request->image->storeAs('uploads', $image_name, 'public');
-                $teacher->image = '/storage/app/public/' . $image_path;
-                $save = $teacher->save();
-            }else{
-                $teacher->image = '/storage/app/public/default.png';
-                $save = $teacher->save();
-            }
-            if(!$save){
-                return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
-            }else{
-                return response()->json(['message' => array('You have succesfully registered to Edutech'), 'data' => $teacher, 'status' => 200], 200);
-        }
+    /**
+     * Validate password change request
+     */
+    private function validatePasswordChange(Request $request)
+    {
+        return Validator::make($request->all(), [
+            'p_password' => 'required|max:50',
+            'n_password' => 'required|max:50',
+            'c_password' => 'required|max:50'
+        ], [
+            'p_password.required' => 'Please enter your previous password',
+            'n_password.required' => 'Please enter your new password',
+            'c_password.required' => 'Please confirm your password'
+        ]);
+    }
+
+    /**
+     * Format error response
+     */
+    private function errorResponse(array $messages, int $status = 500)
+    {
+        return response()->json([
+            'message' => $messages,
+            'status' => $status
+        ], $status);
+    }
+
+    /**
+     * Format success response
+     */
+    private function successResponse(string $message, array $data = [], int $status = 200)
+    {
+        return response()->json(array_merge([
+            'message' => [$message],
+            'status' => $status
+        ], $data), $status);
     }
 }

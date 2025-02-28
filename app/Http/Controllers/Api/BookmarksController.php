@@ -31,7 +31,9 @@ class BookmarksController extends Controller
     }
 
     public function count_user_bookmarks(string $id){
-        return Bookmarks::where('user_id', $id)->count();
+        return response()->json([
+            'data' => Bookmarks::where('user_id', $id)->count()
+        ]);
     }
 
     public function get_user_bookmarks(string $id){

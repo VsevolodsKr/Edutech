@@ -12,5 +12,4 @@ class Users extends Authenticatable
     use HasFactory, HasApiTokens;
     protected $guard = 'user';
     protected $fillable = ['name', 'email', 'password', 'image'];
-    public $timestamps = false;
 }

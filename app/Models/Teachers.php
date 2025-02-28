@@ -19,4 +19,33 @@ class Teachers extends Authenticatable
         'image',
     ];
     public $timestamps = false;
+
+    protected $appends = ['formatted_image'];
+
+    public function getFormattedImageAttribute()
+    {
+        if (!$this->image) {
+            return '/storage/default.png';
+        }
+
+        if (str_starts_with($this->image, 'http')) {
+            return $this->image;
+        }
+
+        // Clean the path from any storage/public prefixes and normalize it
+        $path = str_replace([
+            '/storage/', 
+            'storage/', 
+            '/app/public/', 
+            'app/public/',
+            'uploads/uploads/'
+        ], '', $this->image);
+
+        // Ensure the path starts with uploads/ if it doesn't already
+        if (!str_starts_with($path, 'uploads/')) {
+            $path = 'uploads/' . $path;
+        }
+
+        return '/storage/' . $path;
+    }
 }
