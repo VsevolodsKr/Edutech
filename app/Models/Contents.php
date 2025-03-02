@@ -29,6 +29,6 @@ class Contents extends Model
     }
 
     public function playlist() {
-        return $this->hasOne('App\Models\Contents', 'id', 'playlist_id');
+        return $this->belongsTo('App\Models\Playlists', 'playlist_id', 'id');
     } 
 }

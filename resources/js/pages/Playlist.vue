@@ -131,6 +131,7 @@ import { useWindowSize } from '@vueuse/core';
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import Swal from 'sweetalert2';
 
 const route = useRoute();
 const router = useRouter();
@@ -192,37 +193,65 @@ const loadPlaylistData = async () => {
         isLoading.value = true;
         error.value = null;
 
-        const response = await axios.get(`/api/playlists/find/${route.params.id}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        };
+
+        const response = await axios.get(`/api/playlists/find/${route.params.id}`, { headers });
         
         if (!response.data?.playlist) {
             throw new Error('Playlist not found');
         }
 
-        // Safely handle playlist thumbnail
+        // Handle playlist data
+        const playlistData = response.data.playlist;
+        
+        // Clean up thumbnail path
+        const cleanThumbPath = playlistData.thumb
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+            
         playlist.value = {
-            ...response.data.playlist,
-            thumb: response.data.playlist?.thumb ? 
-                new URL(response.data.playlist.thumb, import.meta.url).href :
-                '/storage/app/public/default-thumbnail.png'
+            ...playlistData,
+            thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        // Safely handle teacher data and image
+        // Handle teacher data
         if (response.data?.teacher) {
+            const teacherData = response.data.teacher;
+            const cleanTeacherImagePath = teacherData.image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
             teacher.value = {
-                ...response.data.teacher,
-                image: response.data.teacher?.image ?
-                    new URL(response.data.teacher.image, import.meta.url).href :
-                    '/storage/app/public/default.png'
+                ...teacherData,
+                image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
             };
         } else {
             teacher.value = {
                 name: 'Unknown Teacher',
-                image: '/storage/app/public/default.png'
+                image: '/storage/default-avatar.png'
             };
         }
 
-        const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`);
+        // Get content count
+        const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`, { headers });
         contentCount.value = countResponse.data;
+
+        // Load contents
+        await loadContents();
+
+        // Check bookmark status if user is logged in
+        if (user.value) {
+            await checkBookmarkStatus();
+        }
 
     } catch (err) {
         console.error('Error loading playlist:', err);
@@ -238,16 +267,26 @@ const loadContents = async () => {
     try {
         if (!playlist.value) return;
 
-        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
-        contents.value = response.data.map(content => ({
-            ...content,
-            thumb: content?.thumb ? 
-                new URL(content.thumb, import.meta.url).href :
-                '/storage/app/public/default-thumbnail.png'
-        }));
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        contents.value = response.data.map(content => {
+            const cleanThumbPath = content.thumb
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+                
+            return {
+                ...content,
+                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
+            };
+        });
     } catch (err) {
         console.error('Error loading contents:', err);
-        error.value = 'Failed to load video contents. Please try again.';
         contents.value = [];
     }
 };
@@ -256,15 +295,23 @@ const checkBookmarkStatus = async () => {
     try {
         if (!user.value || !playlist.value) return;
 
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        };
+
         const formData = new FormData();
         formData.append('user_id', user.value.id);
         formData.append('playlist_id', playlist.value.id);
 
-        const response = await axios.post('/api/bookmarks/check', formData);
+        const response = await axios.post('/api/bookmarks/check', formData, { headers });
         isBookmarked.value = response.data.status;
         bookmarkId.value = response.data.id;
     } catch (err) {
         console.error('Error checking bookmark status:', err);
+        isBookmarked.value = false;
+        bookmarkId.value = null;
     }
 };
 
@@ -272,20 +319,69 @@ const toggleBookmark = async () => {
     try {
         isBookmarkLoading.value = true;
 
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        };
+
+        // Get computed styles for SweetAlert
+        const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
+        const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
+        const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
+
         if (isBookmarked.value) {
-            await axios.delete(`/api/bookmarks/delete/${bookmarkId.value}`);
-            isBookmarked.value = false;
-            bookmarkId.value = null;
+            // Show confirmation dialog
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: 'This playlist will be removed from your bookmarks.',
+                icon: 'warning',
+                color: text_dark,
+                background: background,
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: button4,
+                confirmButtonText: 'Yes, remove it!'
+            });
+
+            if (result.isConfirmed) {
+                await axios.delete(`/api/bookmarks/delete/${bookmarkId.value}`, { headers });
+                isBookmarked.value = false;
+                bookmarkId.value = null;
+
+                await Swal.fire({
+                    title: 'Removed!',
+                    text: 'Playlist has been removed from your bookmarks.',
+                    icon: 'success',
+                    color: text_dark,
+                    background: background,
+                });
+            }
         } else {
             const formData = new FormData();
             formData.append('user_id', user.value.id);
             formData.append('playlist_id', playlist.value.id);
 
-            await axios.post('/api/bookmarks/add', formData);
+            await axios.post('/api/bookmarks/add', formData, { headers });
             await checkBookmarkStatus();
+
+            await Swal.fire({
+                title: 'Bookmarked!',
+                text: 'Playlist has been added to your bookmarks.',
+                icon: 'success',
+                color: text_dark,
+                background: background,
+            });
         }
     } catch (err) {
         console.error('Error toggling bookmark:', err);
+        await Swal.fire({
+            title: 'Error!',
+            text: 'Failed to update bookmark. Please try again.',
+            icon: 'error',
+            color: text_dark,
+            background: background,
+        });
     } finally {
         isBookmarkLoading.value = false;
     }

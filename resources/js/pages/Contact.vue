@@ -5,8 +5,20 @@
             <section :class="sectionClasses">
                 <h1 class="text-[1.5rem] text-text_dark capitalize">Contact Us</h1>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-                <div class="flex items-center justify-center">
-                    <form @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[2rem] w-[50rem]">
+                
+                <!-- Contact Image and Form Container -->
+                <div class="flex flex-wrap items-center justify-between mb-[2rem] [@media(max-width:1024px)]:justify-center [@media(max-width:1024px)]:gap-[2rem]">
+                    <!-- Contact Image -->
+                    <div class="w-[50%] pr-[1rem] [@media(max-width:1024px)]:w-full [@media(max-width:1024px)]:pr-0">
+                        <img 
+                            src="../images/contact-img.svg" 
+                            alt="Contact Us"
+                            class="w-full h-auto"
+                        >
+                    </div>
+
+                    <!-- Contact Form -->
+                    <form @submit.prevent="handleSubmit" class="w-[50%] bg-base rounded-lg p-[2rem] [@media(max-width:1024px)]:w-full">
                         <div v-if="errorList.length" class="bg-[#fcb6b6] text-[#912020] rounded-xl mb-[1rem]">
                             <p v-for="(error, index) in errorList" 
                                :key="index" 
@@ -78,6 +90,33 @@
                             Send Message
                         </button>
                     </form>
+                </div>
+
+                <!-- Contact Info Boxes -->
+                <div class="grid grid-cols-[repeat(auto-fit,_minmax(20rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
+                    <!-- Email Box -->
+                    <div class="bg-base rounded-lg p-[2rem] flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow duration-300">
+                        <i class="fas fa-envelope text-[2.5rem] text-button mb-4"></i>
+                        <h3 class="text-[1.3rem] text-text_dark mb-2">Email Address</h3>
+                        <p class="text-text_light">info@edutech.com</p>
+                        <p class="text-text_light">support@edutech.com</p>
+                    </div>
+
+                    <!-- Phone Box -->
+                    <div class="bg-base rounded-lg p-[2rem] flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow duration-300">
+                        <i class="fas fa-phone text-[2.5rem] text-button mb-4"></i>
+                        <h3 class="text-[1.3rem] text-text_dark mb-2">Phone Number</h3>
+                        <p class="text-text_light">+371 12345678</p>
+                        <p class="text-text_light">+371 87654321</p>
+                    </div>
+
+                    <!-- Address Box -->
+                    <div class="bg-base rounded-lg p-[2rem] flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow duration-300">
+                        <i class="fas fa-map-marker-alt text-[2.5rem] text-button mb-4"></i>
+                        <h3 class="text-[1.3rem] text-text_dark mb-2">Office Address</h3>
+                        <p class="text-text_light">Riga, Latvia</p>
+                        <p class="text-text_light">LV-1050</p>
+                    </div>
                 </div>
             </section>
         </div>

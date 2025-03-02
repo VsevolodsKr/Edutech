@@ -86,13 +86,19 @@ const userRoutes = [
         path: '/profile',
         name: 'profile',
         component: () => import('../pages/ViewProfile.vue'),
-        meta: { requiresAuth: true }
+        meta: { 
+            title: 'Profile',
+            requiresAuth: true 
+        }
     },
     {
         path: '/update-profile',
         name: 'update-profile',
         component: () => import('../pages/UpdateProfile.vue'),
-        meta: { requiresAuth: true }
+        meta: { 
+            title: 'Update Profile',
+            requiresAuth: true 
+        }
     },
     {
         path: '/playlist/:id',

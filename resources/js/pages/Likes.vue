@@ -168,14 +168,44 @@ const loadLikedContent = async () => {
         const response = await axios.get(`/api/likes/user/${userData.id}`, { headers });
 
         // Transform and combine data
-        contents.value = response.data.contents.map((content, index) => ({
+        contents.value = response.data.contents.map((content, index) => {
+            // Clean up thumbnail path
+            const cleanThumbPath = content.thumb
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            // Clean up teacher image path
+            const cleanTeacherImagePath = response.data.teachers[index].image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            return {
+                ...content,
+                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
+                teacher: {
+                    ...response.data.teachers[index],
+                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+                }
+            };
+        });
+
+        // Get like IDs for each content
+        const likePromises = contents.value.map(content => 
+            axios.post('/api/likes/check', {
+                user_id: userData.id,
+                teacher_id: content.teacher.id,
+                content_id: content.id
+            }, { headers })
+        );
+
+        const likeResponses = await Promise.all(likePromises);
+        
+        // Add like IDs to content objects
+        contents.value = contents.value.map((content, index) => ({
             ...content,
-            thumb: new URL(content.thumb, import.meta.url),
-            teacher: {
-                ...response.data.teachers[index],
-                image: new URL(response.data.teachers[index].image, import.meta.url)
-            }
+            like_id: likeResponses[index].data.id
         }));
+
     } catch (err) {
         console.error('Error loading liked content:', err);
         error.value = 'Failed to load liked content. Please try again.';
@@ -190,6 +220,13 @@ const deleteLike = async (contentId) => {
         const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
         const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
         const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
+
+        // Find the content with its like ID
+        const content = contents.value.find(c => c.id === contentId);
+        if (!content?.like_id) {
+            console.error('Like ID not found for content:', contentId);
+            return;
+        }
 
         // Show confirmation dialog
         const result = await Swal.fire({
@@ -211,10 +248,10 @@ const deleteLike = async (contentId) => {
                 Accept: 'application/json'
             };
 
-            await axios.delete(`/api/likes/delete/${contentId}`, { headers });
+            await axios.delete(`/api/likes/delete/${content.like_id}`, { headers });
 
             // Remove the content from the list
-            contents.value = contents.value.filter(content => content.id !== contentId);
+            contents.value = contents.value.filter(c => c.id !== contentId);
 
             await Swal.fire({
                 title: 'Removed!',

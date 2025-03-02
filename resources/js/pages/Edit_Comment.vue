@@ -160,17 +160,44 @@ const loadComment = async () => {
         error.value = null;
         validationErrors.value = [];
 
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
         const userData = await loadUser();
         if (!userData) return;
 
         user.value = userData;
-        const response = await axios.get(`/api/comments/find/${route.params.id}`);
+        const response = await axios.get(`/api/comments/find/${route.params.id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.data?.comment) {
+            error.value = 'Comment not found';
+            return;
+        }
 
         comment.value = response.data.comment;
+
+        // Clean up thumbnail path
+        const cleanThumbPath = response.data.content.thumb
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+            
+        // Clean up video path
+        const cleanVideoPath = response.data.content.video
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+
         content.value = {
             ...response.data.content,
-            thumb: new URL(response.data.content.thumb, import.meta.url),
-            video: new URL(response.data.content.video, import.meta.url)
+            thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
+            video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null
         };
 
         commentText.value = comment.value.comment;
@@ -182,6 +209,9 @@ const loadComment = async () => {
     } catch (err) {
         console.error('Error loading comment:', err);
         error.value = 'Failed to load comment. Please try again.';
+        if (err.response?.status === 401) {
+            router.push('/');
+        }
     } finally {
         isLoading.value = false;
     }
@@ -191,6 +221,12 @@ const handleSubmit = async () => {
     try {
         validationErrors.value = [];
         isSubmitting.value = true;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            validationErrors.value.push('You must be logged in to edit a comment');
+            return;
+        }
 
         // Validate comment
         if (!commentText.value.trim()) {
@@ -209,7 +245,12 @@ const handleSubmit = async () => {
         formData.append('comment', commentText.value.trim());
 
         // Submit update
-        await axios.post(`/api/comments/${route.params.id}/edit`, formData);
+        await axios.post(`/api/comments/${route.params.id}/edit`, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
 
         // Show success message
         await Swal.fire({
@@ -224,6 +265,11 @@ const handleSubmit = async () => {
         router.push(`/watch_video/${content.value.id}`);
     } catch (err) {
         console.error('Error updating comment:', err);
+        
+        if (err.response?.status === 401) {
+            router.push('/');
+            return;
+        }
         
         if (err.response?.data?.message) {
             validationErrors.value = Array.isArray(err.response.data.message) 

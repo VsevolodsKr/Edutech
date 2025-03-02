@@ -36,4 +36,8 @@ class Playlists extends Model
     public function teacher() {
         return $this->hasOne('App\Models\Teachers', 'id', 'teacher_id');
     }
+
+    public function contents() {
+        return $this->hasMany('App\Models\Contents', 'playlist_id', 'id');
+    }
 }

@@ -236,21 +236,60 @@ const formatDate = (dateString) => {
 const loadContent = async () => {
     try {
         isLoading.value = true;
-        const response = await axios.get(`/api/contents/find/${route.params.id}`);
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
+        const response = await axios.get(`/api/contents/find/${route.params.id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.data?.content) {
+            console.error('Content not found');
+            return;
+        }
+        
+        // Clean up thumbnail path
+        const cleanThumbPath = response.data.content.thumb
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+            
+        // Clean up video path
+        const cleanVideoPath = response.data.content.video
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
         
         content.value = {
             ...response.data.content,
-            thumb: new URL(response.data.content.thumb, import.meta.url),
-            video: new URL(response.data.content.video, import.meta.url)
+            thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
+            video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null
         };
         
+        if (!response.data?.teacher) {
+            console.error('Teacher data not found');
+            return;
+        }
+
+        // Clean up teacher image path
+        const cleanTeacherImagePath = response.data.teacher.image
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+            
         teacher.value = {
             ...response.data.teacher,
-            image: new URL(response.data.teacher.image, import.meta.url)
+            image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
         };
     } catch (err) {
         console.error('Error loading content:', err);
-        router.push('/');
+        if (err.response?.status === 401) {
+            router.push('/');
+        }
     } finally {
         isLoading.value = false;
     }
@@ -268,9 +307,14 @@ const loadUser = async () => {
             headers: { Authorization: `Bearer ${token}` }
         });
 
+        // Clean up user image path
+        const cleanUserImagePath = response.data.image
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+
         user.value = {
             ...response.data,
-            image: new URL(response.data.image, import.meta.url)
+            image: cleanUserImagePath ? `/storage/${cleanUserImagePath}` : '/storage/default-avatar.png'
         };
     } catch (err) {
         console.error('Error loading user:', err);
@@ -282,12 +326,18 @@ const checkLikeStatus = async () => {
     try {
         if (!user.value || !teacher.value) return;
 
+        const token = localStorage.getItem('token');
         const formData = new FormData();
         formData.append('user_id', user.value.id);
         formData.append('teacher_id', teacher.value.id);
         formData.append('content_id', route.params.id);
 
-        const response = await axios.post('/api/likes/check', formData);
+        const response = await axios.post('/api/likes/check', formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
         isLiked.value = response.data.status;
         likeId.value = response.data.id;
     } catch (err) {
@@ -297,7 +347,13 @@ const checkLikeStatus = async () => {
 
 const loadLikesCount = async () => {
     try {
-        const response = await axios.get(`/api/likes/count_content/${route.params.id}`);
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/likes/count_content/${route.params.id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
         likesCount.value = response.data;
     } catch (err) {
         console.error('Error loading likes count:', err);
@@ -307,9 +363,15 @@ const loadLikesCount = async () => {
 const toggleLike = async () => {
     try {
         isLikeLoading.value = true;
+        const token = localStorage.getItem('token');
 
         if (isLiked.value) {
-            await axios.delete(`/api/likes/delete/${likeId.value}`);
+            await axios.delete(`/api/likes/delete/${likeId.value}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
             isLiked.value = false;
             likesCount.value--;
         } else {
@@ -318,7 +380,12 @@ const toggleLike = async () => {
             formData.append('teacher_id', teacher.value.id);
             formData.append('content_id', route.params.id);
 
-            await axios.post('/api/likes/add', formData);
+            await axios.post('/api/likes/add', formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
             isLiked.value = true;
             likesCount.value++;
             await checkLikeStatus(); // Get the new like ID
@@ -332,25 +399,46 @@ const toggleLike = async () => {
 
 const loadComments = async () => {
     try {
-        const response = await axios.get(`/api/comments/video/${route.params.id}`);
-        comments.value = response.data.comments.map((comment, index) => ({
-            ...comment,
-            user: {
-                ...response.data.users[index],
-                image: new URL(response.data.users[index].image, import.meta.url)
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/comments/video/${route.params.id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
             }
-        }));
+        });
+        comments.value = response.data.comments.map((comment, index) => {
+            // Clean up user image path
+            const cleanUserImagePath = response.data.users[index].image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            return {
+                ...comment,
+                user: {
+                    ...response.data.users[index],
+                    image: cleanUserImagePath ? `/storage/${cleanUserImagePath}` : '/storage/default-avatar.png'
+                }
+            };
+        });
     } catch (err) {
         console.error('Error loading comments:', err);
+        comments.value = [];
     }
 };
 
 const loadCommentsCount = async () => {
     try {
-        const response = await axios.get(`/api/comments/content_amount/${route.params.id}`);
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/comments/content_amount/${route.params.id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
         commentsCount.value = response.data;
     } catch (err) {
         console.error('Error loading comments count:', err);
+        commentsCount.value = 0;
     }
 };
 
@@ -359,18 +447,31 @@ const handleAddComment = async () => {
         isCommentLoading.value = true;
         errors.value = [];
 
+        const token = localStorage.getItem('token');
+        if (!token) {
+            errors.value = ['You must be logged in to add a comment'];
+            return;
+        }
+
         const formData = new FormData();
         formData.append('comment', newComment.value.trim());
         formData.append('content_id', route.params.id);
         formData.append('user_id', user.value.id);
         formData.append('teacher_id', teacher.value.id);
 
-        await axios.post('/api/comments/add', formData);
+        await axios.post('/api/comments/add', formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
 
         await Swal.fire({
             title: 'Comment Added!',
             text: 'Thank you for sharing your thoughts!',
             icon: 'success',
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+            background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
         });
 
         newComment.value = '';
@@ -390,8 +491,21 @@ const handleAddComment = async () => {
 
 const handleDeleteComment = async (commentId) => {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'You must be logged in to delete a comment',
+                icon: 'error',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
+            });
+            return;
+        }
+
         const result = await Swal.fire({
             title: 'Are you sure?',
+            text: 'This action cannot be undone.',
             icon: 'warning',
             color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
@@ -403,12 +517,19 @@ const handleDeleteComment = async (commentId) => {
 
         if (result.isConfirmed) {
             isDeletingComment.value = commentId;
-            await axios.delete(`/api/comments/delete/${commentId}`);
+            await axios.delete(`/api/comments/delete/${commentId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
             
             await Swal.fire({
                 title: 'Deleted!',
                 text: 'Your comment has been deleted.',
-                icon: 'success'
+                icon: 'success',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
             });
 
             await Promise.all([
@@ -418,10 +539,16 @@ const handleDeleteComment = async (commentId) => {
         }
     } catch (err) {
         console.error('Error deleting comment:', err);
+        if (err.response?.status === 401) {
+            router.push('/');
+            return;
+        }
         Swal.fire({
             title: 'Error!',
             text: 'Failed to delete comment',
-            icon: 'error'
+            icon: 'error',
+            color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+            background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
         });
     } finally {
         isDeletingComment.value = null;
@@ -430,18 +557,21 @@ const handleDeleteComment = async (commentId) => {
 
 // Initialize
 onMounted(async () => {
-    await Promise.all([
-        loadContent(),
-        loadUser()
-    ]);
-
-    if (content.value && user.value) {
-        await Promise.all([
-            checkLikeStatus(),
-            loadLikesCount(),
-            loadComments(),
-            loadCommentsCount()
-        ]);
+    try {
+        await loadContent();
+        if (content.value) {
+            await loadUser();
+            if (user.value) {
+                await Promise.all([
+                    checkLikeStatus(),
+                    loadLikesCount(),
+                    loadComments(),
+                    loadCommentsCount()
+                ]);
+            }
+        }
+    } catch (err) {
+        console.error('Error initializing video page:', err);
     }
 });
 </script>

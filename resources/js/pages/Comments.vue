@@ -174,6 +174,18 @@ const loadComments = async () => {
 
 const deleteComment = async (commentId) => {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'You must be logged in to delete a comment',
+                icon: 'error',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
+            });
+            return;
+        }
+
         // Get computed styles for SweetAlert
         const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
         const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
@@ -195,7 +207,12 @@ const deleteComment = async (commentId) => {
         if (result.isConfirmed) {
             isDeleting.value = commentId;
 
-            await axios.delete(`/api/comments/delete/${commentId}`);
+            await axios.delete(`/api/comments/delete/${commentId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
 
             // Remove the comment from the list
             comments.value = comments.value.filter(comment => comment.id !== commentId);
@@ -210,6 +227,10 @@ const deleteComment = async (commentId) => {
         }
     } catch (err) {
         console.error('Error deleting comment:', err);
+        if (err.response?.status === 401) {
+            router.push('/');
+            return;
+        }
         Swal.fire({
             title: 'Error!',
             text: 'Failed to delete the comment. Please try again.',

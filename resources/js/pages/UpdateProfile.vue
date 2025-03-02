@@ -189,18 +189,39 @@ const handleSubmit = async () => {
         isLoading.value = true;
         errorList.value = [];
 
-        // Validate passwords match if new password is being set
-        if (formData.value.new_password && formData.value.new_password !== formData.value.confirm_password) {
-            errorList.value = ['New password and confirmation do not match'];
-            return;
+        // Validate password fields only if any password field is filled
+        const isChangingPassword = formData.value.old_password || formData.value.new_password || formData.value.confirm_password;
+        
+        if (isChangingPassword) {
+            // Check if all password fields are filled when changing password
+            if (!formData.value.old_password || !formData.value.new_password || !formData.value.confirm_password) {
+                errorList.value = ['All password fields are required when changing password'];
+                return;
+            }
+            // Validate passwords match
+            if (formData.value.new_password !== formData.value.confirm_password) {
+                errorList.value = ['New password and confirmation do not match'];
+                return;
+            }
         }
 
         const data = new FormData();
-        Object.entries(formData.value).forEach(([key, value]) => {
-            if (value !== null && value !== '') {
-                data.append(key, value);
-            }
-        });
+        
+        // Always include name and email
+        data.append('name', formData.value.name);
+        data.append('email', formData.value.email);
+        
+        // Only include password fields if changing password
+        if (isChangingPassword) {
+            data.append('old_password', formData.value.old_password);
+            data.append('new_password', formData.value.new_password);
+            data.append('confirm_password', formData.value.confirm_password);
+        }
+        
+        // Only include image if a new file was selected
+        if (formData.value.image instanceof File) {
+            data.append('image', formData.value.image);
+        }
 
         await axios.post('/api/user/update-profile', data, {
             headers: {
@@ -222,7 +243,12 @@ const handleSubmit = async () => {
         // Navigate back to profile view
         router.push('/profile');
     } catch (error) {
-        errorList.value = error.response?.data?.message || ['An error occurred while updating your profile'];
+        if (error.response?.data?.errors) {
+            // Handle validation errors from the server
+            errorList.value = Object.values(error.response.data.errors).flat();
+        } else {
+            errorList.value = [error.response?.data?.message || 'An error occurred while updating your profile'];
+        }
     } finally {
         isLoading.value = false;
     }

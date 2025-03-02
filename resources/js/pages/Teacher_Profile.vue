@@ -3,87 +3,93 @@
         <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">Teacher Profile</h1>
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-[1.5rem] text-text_dark capitalize">Teacher Profile</h1>
+                    <router-link 
+                        to="/teachers"
+                        class="bg-background text-text_dark px-4 py-2 rounded-lg hover:bg-base transition-colors duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:px-3 [@media(max-width:550px)]:py-1"
+                    >
+                        Back to Teachers
+                    </router-link>
+                </div>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
                 
                 <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                 </div>
                 
-                <div v-else-if="teacher" class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[2rem]">
+                <div v-else-if="teacher" class="grid grid-cols-1 lg:grid-cols-[1fr,_2fr] gap-[2rem]">
                     <!-- Teacher Info -->
-                    <div class="bg-base rounded-lg p-[2rem] text-center">
+                    <div class="bg-base rounded-lg p-[2rem] text-center h-fit">
                         <img 
                             :src="teacher.image" 
                             :alt="teacher.name"
-                            class="w-48 h-48 rounded-full mx-auto mb-4 object-cover"
+                            class="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-md"
                         >
-                        <h2 class="text-[2rem] text-text_dark mb-2">{{ teacher.name }}</h2>
-                        <p class="text-[1.3rem] text-text_light mb-4">{{ teacher.title || 'Teacher' }}</p>
+                        <h2 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.25rem]">{{ teacher.name }}</h2>
+                        <p class="text-[1rem] text-text_light mb-4 [@media(max-width:550px)]:text-[0.9rem]">{{ teacher.profession }}</p>
                         
-                        <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="grid grid-cols-2 gap-4 mb-6 bg-background rounded-lg p-4">
                             <div class="text-center">
-                                <h3 class="text-[1.8rem] text-button">{{ totalStudents }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Students</p>
+                                <h3 class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.25rem]">{{ totalPlaylists }}</h3>
+                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Playlists</p>
                             </div>
                             <div class="text-center">
-                                <h3 class="text-[1.8rem] text-button">{{ totalCourses }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Courses</p>
+                                <h3 class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.25rem]">{{ totalContents }}</h3>
+                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Contents</p>
                             </div>
-                        </div>
-                        
-                        <div class="text-left mb-6">
-                            <h3 class="text-[1.5rem] text-text_dark mb-2">About</h3>
-                            <p class="text-[1.2rem] text-text_light leading-relaxed">
-                                {{ teacher.bio || 'No bio available' }}
-                            </p>
-                        </div>
-                        
-                        <div class="flex justify-center space-x-4">
-                            <a v-if="teacher.website" 
-                               :href="teacher.website" 
-                               target="_blank"
-                               class="text-[1.5rem] text-button hover:text-text_dark transition-colors">
-                                <i class="fas fa-globe"></i>
-                            </a>
-                            <a v-if="teacher.linkedin" 
-                               :href="teacher.linkedin" 
-                               target="_blank"
-                               class="text-[1.5rem] text-button hover:text-text_dark transition-colors">
-                                <i class="fab fa-linkedin"></i>
-                            </a>
-                            <a v-if="teacher.github" 
-                               :href="teacher.github" 
-                               target="_blank"
-                               class="text-[1.5rem] text-button hover:text-text_dark transition-colors">
-                                <i class="fab fa-github"></i>
-                            </a>
                         </div>
                     </div>
                     
-                    <!-- Teacher Courses -->
+                    <!-- Teacher Playlists -->
                     <div class="space-y-4">
-                        <h3 class="text-[1.5rem] text-text_dark mb-4">Courses by {{ teacher.name }}</h3>
-                        <div v-if="courses.length === 0" class="text-center text-text_light text-[1.2rem]">
-                            No courses available
+                        <h3 class="text-[1.25rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.1rem]">
+                            Playlists by {{ teacher.name }}
+                        </h3>
+                        
+                        <div v-if="playlists.length === 0" 
+                             class="text-center text-text_light text-[1rem] bg-base rounded-lg p-8 [@media(max-width:550px)]:text-[0.9rem]">
+                            No playlists available yet
                         </div>
-                        <div v-else class="space-y-4">
-                            <div v-for="course in courses" 
-                                 :key="course.id"
-                                 class="bg-base rounded-lg p-4 flex items-center space-x-4">
-                                <img 
-                                    :src="course.thumbnail" 
-                                    :alt="course.title"
-                                    class="w-24 h-24 rounded-lg object-cover"
-                                >
-                                <div>
-                                    <h4 class="text-[1.3rem] text-text_dark mb-1">{{ course.title }}</h4>
-                                    <p class="text-[1.1rem] text-text_light mb-2">{{ course.description }}</p>
-                                    <router-link 
-                                        :to="'/course/' + course.id"
-                                        class="text-button hover:text-text_dark transition-colors text-[1.1rem]"
+                        
+                        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div v-for="playlist in playlists" 
+                                 :key="playlist.id"
+                                 class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
+                                
+                                <!-- Course Thumbnail -->
+                                <div class="relative group">
+                                    <img 
+                                        :src="playlist.thumb" 
+                                        :alt="playlist.title"
+                                        class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[12rem]"
                                     >
-                                        View Course →
+                                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                                        <router-link 
+                                            :to="'/playlist/' + playlist.id"
+                                            class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
+                                        >
+                                            View Course
+                                        </router-link>
+                                    </div>
+                                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
+                                        {{ playlist.content_count }} videos
+                                    </span>
+                                </div>
+
+                                <!-- Course Info -->
+                                <div class="mt-4">
+                                    <h3 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.2rem]">
+                                        {{ playlist.title }}
+                                    </h3>
+                                    <p v-if="playlist.description" class="text-text_light text-[1rem] mb-4 line-clamp-2">
+                                        {{ playlist.description }}
+                                    </p>
+                                    <router-link 
+                                        :to="'/playlist/' + playlist.id"
+                                        class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
+                                    >
+                                        Start Learning
                                     </router-link>
                                 </div>
                             </div>
@@ -91,8 +97,9 @@
                     </div>
                 </div>
                 
-                <div v-else class="text-center text-text_light text-[1.3rem]">
-                    Teacher not found
+                <div v-else class="flex flex-col items-center justify-center min-h-[50vh] bg-base rounded-lg p-8">
+                    <i class="fas fa-user-slash text-[2rem] text-text_light mb-4"></i>
+                    <p class="text-text_light text-[1.1rem] [@media(max-width:550px)]:text-[1rem]">Teacher not found</p>
                 </div>
             </section>
         </div>
@@ -113,10 +120,10 @@ const { width } = useWindowSize();
 
 // State
 const teacher = ref(null);
-const courses = ref([]);
+const playlists = ref([]);
 const isLoading = ref(true);
-const totalStudents = ref(0);
-const totalCourses = ref(0);
+const totalPlaylists = ref(0);
+const totalContents = ref(0);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
@@ -127,23 +134,94 @@ const sectionClasses = computed(() => [
 ]);
 
 // Methods
+const processPlaylist = async (playlist) => {
+    try {
+        if (!playlist) return null;
+
+        // Create a processed copy of the playlist
+        const processed = { ...playlist };
+
+        // Handle thumbnail path
+        if (processed.thumb) {
+            // Log the original thumb path for debugging
+            console.log('Original thumb path:', processed.thumb);
+            
+            // Clean up the path by removing duplicate /storage/ prefixes
+            let cleanPath = processed.thumb
+                .replace(/^\/storage\/+/g, '') // Remove leading /storage/ and any duplicate slashes
+                .replace(/^storage\/+/, '') // Also remove without leading slash
+                .replace(/\/+/g, '/'); // Replace any remaining multiple slashes with single slash
+            
+            // Add single /storage/ prefix
+            processed.thumb = `/storage/${cleanPath}`;
+            console.log('Processed thumb path:', processed.thumb);
+        } else {
+            processed.thumb = '/storage/default-thumbnail.png';
+            console.log('Using default thumbnail');
+        }
+
+        // Get content count
+        try {
+            const token = localStorage.getItem('token');
+            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+            processed.content_count = contentResponse.data || 0;
+        } catch (contentError) {
+            console.error('Error fetching content count:', contentError);
+            processed.content_count = 0;
+        }
+
+        return processed;
+    } catch (error) {
+        console.error(`Error processing playlist ${playlist?.id}:`, error);
+        return {
+            ...playlist,
+            thumb: '/storage/default-thumbnail.png',
+            content_count: 0
+        };
+    }
+};
+
 const loadTeacherData = async () => {
     try {
+        isLoading.value = true;
         const teacherId = route.params.id;
-        const [teacherResponse, coursesResponse, statsResponse] = await Promise.all([
-            axios.get(`/api/teachers/${teacherId}`),
-            axios.get(`/api/teachers/${teacherId}/courses`),
-            axios.get(`/api/teachers/${teacherId}/stats`)
-        ]);
-
-        teacher.value = teacherResponse.data;
-        courses.value = coursesResponse.data;
         
-        const stats = statsResponse.data;
-        totalStudents.value = stats.totalStudents;
-        totalCourses.value = stats.totalCourses;
+        // Fetch teacher data
+        const teacherResponse = await axios.get(`/api/teachers/find/${teacherId}`);
+        if (!teacherResponse.data.data) {
+            throw new Error('Teacher not found');
+        }
+        teacher.value = teacherResponse.data.data;
+
+        // Fetch playlists data
+        const playlistsResponse = await axios.get(`/api/playlists/${teacherId}`);
+        if (playlistsResponse.data.status === 200) {
+            const processedPlaylists = await Promise.all(
+                playlistsResponse.data.data.map(processPlaylist)
+            );
+            
+            playlists.value = processedPlaylists.filter(Boolean);
+            
+            // Calculate totals
+            totalPlaylists.value = playlists.value.length;
+            totalContents.value = playlists.value.reduce((sum, playlist) => sum + (playlist.content_count || 0), 0);
+        } else {
+            playlists.value = [];
+            totalPlaylists.value = 0;
+            totalContents.value = 0;
+        }
+
     } catch (error) {
         console.error('Error loading teacher data:', error);
+        teacher.value = null;
+        playlists.value = [];
+        totalPlaylists.value = 0;
+        totalContents.value = 0;
     } finally {
         isLoading.value = false;
     }

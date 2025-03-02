@@ -179,11 +179,35 @@ class PlaylistsController extends Controller
      */
     public function teacher_playlists($id)
     {
-        return Cache::remember("teacher.playlists.{$id}", self::CACHE_TTL, function () use ($id) {
-            return Playlists::where('teacher_id', $id)
-                ->orderBy('date', 'desc')
-                ->get();
-        });
+        try {
+            $playlists = Cache::remember("teacher.playlists.{$id}", self::CACHE_TTL, function () use ($id) {
+                return Playlists::where('teacher_id', $id)
+                    ->orderBy('date', 'desc')
+                    ->get()
+                    ->map(function ($playlist) {
+                        return [
+                            'id' => $playlist->id,
+                            'title' => $playlist->title,
+                            'description' => $playlist->description,
+                            'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,
+                            'date' => $playlist->date,
+                            'content_count' => $playlist->contents()->count()
+                        ];
+                    });
+            });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Playlists retrieved successfully',
+                'data' => $playlists
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Failed to retrieve playlists',
+                'data' => []
+            ], 500);
+        }
     }
 
     /**

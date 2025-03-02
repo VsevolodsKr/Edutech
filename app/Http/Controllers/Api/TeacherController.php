@@ -23,9 +23,17 @@ class TeacherController extends Controller
             // Use the formatted image from the accessor
             $teacher->image = $teacher->formatted_image;
             
-            return response()->json($teacher);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Teacher found successfully',
+                'data' => $teacher
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Teacher not found'], 404);
+            return response()->json([
+                'status' => 404,
+                'message' => 'Teacher not found',
+                'data' => null
+            ], 404);
         }
     }
 }

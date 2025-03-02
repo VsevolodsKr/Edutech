@@ -245,6 +245,86 @@ class AuthorizationController extends Controller
     }
 
     /**
+     * Get user profile
+     */
+    public function getProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return $this->errorResponse(['User not found'], 404);
+            }
+
+            return $this->successResponse('Profile retrieved successfully', [
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'image' => $user->image
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Profile retrieval error: ' . $e->getMessage());
+            return $this->errorResponse(['Failed to retrieve profile: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return $this->errorResponse(['User not found'], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id . ',id',
+                'old_password' => 'required_with:new_password',
+                'new_password' => 'nullable|min:6',
+                'confirm_password' => 'required_with:new_password|same:new_password',
+                'image' => 'nullable|image|max:2048'
+            ]);
+
+            if ($validator->fails()) {
+                return $this->errorResponse($validator->errors()->all(), 422);
+            }
+
+            // Check old password if trying to change password
+            if ($request->filled('old_password')) {
+                if (!Hash::check($request->old_password, $user->password)) {
+                    return $this->errorResponse(['Current password is incorrect'], 422);
+                }
+                $user->password = Hash::make($request->new_password);
+            }
+
+            $user->name = $request->name;
+            $user->email = $request->email;
+
+            // Handle image upload if provided
+            if ($request->hasFile('image')) {
+                // Delete old image if it exists and is not the default image
+                if ($user->image && $user->image !== self::DEFAULT_IMAGE) {
+                    Storage::delete(str_replace('/storage/', '', $user->image));
+                }
+                $user->image = $this->handleImageUpload($request->file('image'));
+            }
+
+            $user->save();
+
+            return $this->successResponse('Profile updated successfully', ['data' => $user]);
+        } catch (\Exception $e) {
+            \Log::error('Profile update error: ' . $e->getMessage());
+            return $this->errorResponse(['Failed to update profile: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Handle image upload
      */
     private function handleImageUpload($image)

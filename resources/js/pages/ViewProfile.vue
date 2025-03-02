@@ -7,7 +7,7 @@
                     <h1 class="text-[1.5rem] text-text_dark capitalize">Profile</h1>
                     <router-link 
                         to="/update-profile"
-                        class="bg-button text-base px-4 py-2 rounded-lg hover:bg-button1 transition-colors duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:px-3 [@media(max-width:550px)]:py-1"
+                        class="bg-button text-base border-2 border-button px-4 py-2 rounded-lg hover:bg-button1 transition-colors duration-200 hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:px-3 [@media(max-width:550px)]:py-1"
                     >
                         Edit Profile
                     </router-link>
@@ -114,7 +114,7 @@ const userData = computed(() => {
             name: user.name || 'Not set',
             email: user.email || 'Not set',
             image: user.image ? new URL(user.image, import.meta.url) : '/images/avatar.png',
-            created_at: 'Not available in database'
+            created_at: user.created_at ? formatDate(user.created_at) : 'Not available'
         };
     } catch (err) {
         console.error('Error accessing user data:', err);
@@ -122,7 +122,7 @@ const userData = computed(() => {
             name: 'Not set',
             email: 'Not set',
             image: '/images/avatar.png',
-            created_at: 'Not available in database'
+            created_at: 'Not available'
         };
     }
 });
@@ -140,7 +140,9 @@ const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
     } catch (err) {
         console.error('Error formatting date:', err);

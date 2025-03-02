@@ -11,8 +11,8 @@
                         <img src="../images/about-img.svg" alt="About Us" class="w-full h-[40rem] [@media(max-width:550px)]:h-[20rem]">
                     </div>
                     <div class="text-center">
-                        <h3 class="text-[2rem] text-text_dark mb-[2rem] [@media(max-width:550px)]:text-[1.5rem]">Why Choose Us?</h3>
-                        <p class="text-[1.7rem] text-text_light leading-[2] [@media(max-width:550px)]:text-[1rem]">
+                        <h3 class="text-[1.75rem] text-text_dark mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Why Choose Us?</h3>
+                        <p class="text-[1.1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.9rem]">
                             We are dedicated to providing high-quality education through our innovative online learning platform. 
                             Our courses are designed by industry experts and educators to ensure you receive the best possible learning experience.
                         </p>
@@ -20,10 +20,10 @@
                             <div v-for="(stat, index) in statistics" 
                                  :key="index"
                                  class="flex items-center gap-[1rem] h-[7rem] bg-base rounded-lg px-[1.2rem]">
-                                <i :class="stat.icon" class="text-[3rem] text-button"></i>
+                                <i :class="stat.icon" class="text-[2rem] text-button"></i>
                                 <div class="text-left">
-                                    <h3 class="text-[2rem] text-text_dark [@media(max-width:550px)]:text-[1.5rem]">{{ stat.value }}</h3>
-                                    <p class="text-[1.5rem] text-text_light [@media(max-width:550px)]:text-[1rem]">{{ stat.label }}</p>
+                                    <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.25rem]">{{ stat.value }}</h3>
+                                    <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[0.9rem]">{{ stat.label }}</p>
                                 </div>
                             </div>
                         </div>
@@ -31,14 +31,14 @@
                 </div>
 
                 <div class="mt-[3rem]">
-                    <h3 class="text-[2rem] text-text_dark text-center mb-[2rem] [@media(max-width:550px)]:text-[1.5rem]">Our Features</h3>
+                    <h3 class="text-[1.75rem] text-text_dark text-center mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Our Features</h3>
                     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem]">
                         <div v-for="(feature, index) in features" 
                              :key="index"
                              class="bg-base rounded-lg p-[2rem] text-center">
-                            <i :class="feature.icon" class="text-[3.5rem] text-button mb-[1.5rem] [@media(max-width:550px)]:text-[2.5rem]"></i>
-                            <h3 class="text-[2rem] text-text_dark mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">{{ feature.title }}</h3>
-                            <p class="text-[1.5rem] text-text_light leading-[2] [@media(max-width:550px)]:text-[1rem]">{{ feature.description }}</p>
+                            <i :class="feature.icon" class="text-[2.5rem] text-button mb-[1.5rem] [@media(max-width:550px)]:text-[2rem]"></i>
+                            <h3 class="text-[1.5rem] text-text_dark mb-[1rem] [@media(max-width:550px)]:text-[1.25rem]">{{ feature.title }}</h3>
+                            <p class="text-[1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.9rem]">{{ feature.description }}</p>
                         </div>
                     </div>
                 </div>

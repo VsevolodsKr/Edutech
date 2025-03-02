@@ -142,7 +142,7 @@ const processTeacher = async (teacher) => {
         
         return {
             ...teacher,
-            playlist_count: playlistCount.data,
+            playlist_count: playlistCount.data.data,
             content_count: contentCount.data
         };
     } catch (err) {

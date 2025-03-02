@@ -65,7 +65,7 @@
                         <!-- Action Buttons -->
                         <div class="flex gap-[1rem]">
                             <button 
-                                @click="$router.push('/update')" 
+                                @click="$router.push('/update-profile')" 
                                 class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                             >
                                 Update Profile
@@ -259,13 +259,21 @@ const processPlaylist = async (playlist) => {
                     }
                 });
                 
-                const teacherData = teacherResponse.data;
-                
-                if (teacherData) {
+                if (teacherResponse.data.data) {
+                    const teacherData = teacherResponse.data.data;
+                    // Clean up teacher image path
+                    let teacherImage = teacherData.image;
+                    if (teacherImage) {
+                        const cleanTeacherPath = teacherImage
+                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                            .replace(/^\//, '');
+                        teacherImage = `/storage/${cleanTeacherPath}`;
+                    }
+                    
                     processed.teacher = {
                         ...teacherData,
                         name: teacherData.name || 'Unknown Teacher',
-                        image: teacherData.image || '/images/default-avatar.png'
+                        image: teacherImage || '/storage/default-avatar.png'
                     };
                 } else {
                     throw new Error('No teacher data received');
@@ -274,13 +282,13 @@ const processPlaylist = async (playlist) => {
                 console.error('Error fetching teacher:', teacherError);
                 processed.teacher = {
                     name: 'Unknown Teacher',
-                    image: '/images/default-avatar.png'
+                    image: '/storage/default-avatar.png'
                 };
             }
         } else {
             processed.teacher = {
                 name: 'Unknown Teacher',
-                image: '/images/default-avatar.png'
+                image: '/storage/default-avatar.png'
             };
         }
 
@@ -304,10 +312,10 @@ const processPlaylist = async (playlist) => {
         console.error(`Error processing playlist ${playlist?.id}:`, error);
         return {
             ...playlist,
-            thumb: '/images/default-thumbnail.png',
+            thumb: '/storage/default-thumbnail.png',
             teacher: {
                 name: 'Unknown Teacher',
-                image: '/images/default-avatar.png'
+                image: '/storage/default-avatar.png'
             },
             content_count: 0
         };

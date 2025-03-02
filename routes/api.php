@@ -17,6 +17,10 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // User Profile Routes
+    Route::get('/user/profile', [AuthorizationController::class, 'getProfile']);
+    Route::post('/user/update-profile', [AuthorizationController::class, 'updateProfile']);
+
     // Playlist Routes
     Route::get('playlists/all', [PlaylistsController::class, 'all']);
     Route::get('playlists/latest', [PlaylistsController::class, 'latest']);

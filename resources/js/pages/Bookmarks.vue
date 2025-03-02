@@ -168,15 +168,27 @@ const loadBookmarks = async () => {
         const response = await axios.get(`/api/bookmarks/user/${userData.id}`, { headers });
 
         // Transform and combine data
-        playlists.value = response.data.playlists.map((playlist, index) => ({
-            ...playlist,
-            thumb: new URL(playlist.thumb, import.meta.url),
-            teacher: {
-                ...response.data.teachers[index],
-                image: new URL(response.data.teachers[index].image, import.meta.url)
-            },
-            bookmark_id: response.data.bookmarks[index].id
-        }));
+        playlists.value = response.data.playlists.map((playlist, index) => {
+            // Clean up playlist thumbnail path
+            const cleanThumbPath = playlist.thumb
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            // Clean up teacher image path
+            const cleanTeacherImagePath = response.data.teachers[index].image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            return {
+                ...playlist,
+                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
+                teacher: {
+                    ...response.data.teachers[index],
+                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+                },
+                bookmark_id: response.data.bookmarks[index].id
+            };
+        });
     } catch (err) {
         console.error('Error loading bookmarks:', err);
         error.value = 'Failed to load bookmarks. Please try again.';

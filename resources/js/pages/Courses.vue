@@ -156,18 +156,19 @@ const processPlaylist = async (playlist) => {
 
         // Handle thumbnail
         if (processed.thumb) {
-            processed.thumb = processed.thumb.startsWith('http') ? 
-                processed.thumb : 
-                `/storage/${processed.thumb.replace('/storage/', '')}`;
+            // Remove any storage/app/public prefixes and clean up the path
+            const cleanPath = processed.thumb
+                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                .replace(/^\//, '');
+            processed.thumb = `/storage/${cleanPath}`;
         } else {
-            processed.thumb = '/images/default-thumbnail.png';
+            processed.thumb = '/storage/default-thumbnail.png';
         }
 
         // Fetch teacher data if we have teacher_id
         if (processed.teacher_id) {
             try {
                 const token = localStorage.getItem('token');
-                console.log('Fetching teacher for ID:', processed.teacher_id); // Debug log
                 const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -175,14 +176,21 @@ const processPlaylist = async (playlist) => {
                     }
                 });
                 
-                console.log('Teacher Response:', teacherResponse.data); // Debug log
-                const teacherData = teacherResponse.data;
-                
-                if (teacherData) {
+                if (teacherResponse.data.data) {
+                    const teacherData = teacherResponse.data.data;
+                    // Clean up teacher image path
+                    let teacherImage = teacherData.image;
+                    if (teacherImage) {
+                        const cleanTeacherPath = teacherImage
+                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                            .replace(/^\//, '');
+                        teacherImage = `/storage/${cleanTeacherPath}`;
+                    }
+                    
                     processed.teacher = {
                         ...teacherData,
                         name: teacherData.name || 'Unknown Teacher',
-                        image: teacherData.image || '/images/default-avatar.png'
+                        image: teacherImage || '/storage/default-avatar.png'
                     };
                 } else {
                     throw new Error('No teacher data received');
@@ -191,13 +199,13 @@ const processPlaylist = async (playlist) => {
                 console.error('Error fetching teacher:', teacherError);
                 processed.teacher = {
                     name: 'Unknown Teacher',
-                    image: '/images/default-avatar.png'
+                    image: '/storage/default-avatar.png'
                 };
             }
         } else {
             processed.teacher = {
                 name: 'Unknown Teacher',
-                image: '/images/default-avatar.png'
+                image: '/storage/default-avatar.png'
             };
         }
 
@@ -216,16 +224,15 @@ const processPlaylist = async (playlist) => {
             processed.content_count = 0;
         }
 
-        console.log('Processed playlist:', processed); // Debug log
         return processed;
     } catch (error) {
         console.error(`Error processing playlist ${playlist?.id}:`, error);
         return {
             ...playlist,
-            thumb: '/images/default-thumbnail.png',
+            thumb: '/storage/default-thumbnail.png',
             teacher: {
                 name: 'Unknown Teacher',
-                image: '/images/default-avatar.png'
+                image: '/storage/default-avatar.png'
             },
             content_count: 0
         };
