@@ -143,9 +143,6 @@ const processPlaylist = async (playlist) => {
 
         // Handle thumbnail path
         if (processed.thumb) {
-            // Log the original thumb path for debugging
-            console.log('Original thumb path:', processed.thumb);
-            
             // Clean up the path by removing duplicate /storage/ prefixes
             let cleanPath = processed.thumb
                 .replace(/^\/storage\/+/g, '') // Remove leading /storage/ and any duplicate slashes
@@ -154,21 +151,13 @@ const processPlaylist = async (playlist) => {
             
             // Add single /storage/ prefix
             processed.thumb = `/storage/${cleanPath}`;
-            console.log('Processed thumb path:', processed.thumb);
         } else {
             processed.thumb = '/storage/default-thumbnail.png';
-            console.log('Using default thumbnail');
         }
 
-        // Get content count
+        // Get content count without authentication
         try {
-            const token = localStorage.getItem('token');
-            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
+            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
             processed.content_count = contentResponse.data || 0;
         } catch (contentError) {
             console.error('Error fetching content count:', contentError);
@@ -191,14 +180,24 @@ const loadTeacherData = async () => {
         isLoading.value = true;
         const teacherId = route.params.id;
         
-        // Fetch teacher data
+        // Fetch teacher data without authentication
         const teacherResponse = await axios.get(`/api/teachers/find/${teacherId}`);
         if (!teacherResponse.data.data) {
             throw new Error('Teacher not found');
         }
-        teacher.value = teacherResponse.data.data;
 
-        // Fetch playlists data
+        // Clean up teacher image path
+        const teacherData = teacherResponse.data.data;
+        const cleanTeacherImagePath = teacherData.image
+            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+            ?.replace(/^\//, '');
+
+        teacher.value = {
+            ...teacherData,
+            image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+        };
+
+        // Fetch playlists data without authentication
         const playlistsResponse = await axios.get(`/api/playlists/${teacherId}`);
         if (playlistsResponse.data.status === 200) {
             const processedPlaylists = await Promise.all(

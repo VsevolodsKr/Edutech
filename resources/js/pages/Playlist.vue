@@ -170,7 +170,7 @@ const loadUser = async () => {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/');
+            user.value = null;
             return;
         }
 
@@ -184,7 +184,7 @@ const loadUser = async () => {
         };
     } catch (err) {
         console.error('Error loading user:', err);
-        router.push('/');
+        user.value = null;
     }
 };
 
@@ -193,18 +193,7 @@ const loadPlaylistData = async () => {
         isLoading.value = true;
         error.value = null;
 
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return;
-        }
-
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-        };
-
-        const response = await axios.get(`/api/playlists/find/${route.params.id}`, { headers });
+        const response = await axios.get(`/api/playlists/find/${route.params.id}`);
         
         if (!response.data?.playlist) {
             throw new Error('Playlist not found');
@@ -242,7 +231,7 @@ const loadPlaylistData = async () => {
         }
 
         // Get content count
-        const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`, { headers });
+        const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`);
         contentCount.value = countResponse.data;
 
         // Load contents
@@ -267,13 +256,7 @@ const loadContents = async () => {
     try {
         if (!playlist.value) return;
 
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
+        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
 
         contents.value = response.data.map(content => {
             const cleanThumbPath = content.thumb
@@ -317,6 +300,11 @@ const checkBookmarkStatus = async () => {
 
 const toggleBookmark = async () => {
     try {
+        if (!user.value) {
+            router.push('/login');
+            return;
+        }
+
         isBookmarkLoading.value = true;
 
         const token = localStorage.getItem('token');
@@ -389,16 +377,13 @@ const toggleBookmark = async () => {
 
 // Initialize
 onMounted(async () => {
-    await Promise.all([
-        loadUser(),
-        loadPlaylistData()
-    ]);
-
-    if (playlist.value) {
+    try {
         await Promise.all([
-            loadContents(),
-            user.value && checkBookmarkStatus()
+            loadUser(),
+            loadPlaylistData()
         ]);
+    } catch (err) {
+        console.error('Error initializing playlist page:', err);
     }
 });
 </script>

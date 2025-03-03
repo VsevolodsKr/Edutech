@@ -3,89 +3,92 @@
         <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">Dashboard</h1>
-                <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-                
-                <!-- Loading State -->
-                <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
-                </div>
+                <!-- Dashboard Section (Only for authenticated users) -->
+                <template v-if="isAuthenticated">
+                    <h1 class="text-[1.5rem] text-text_dark capitalize">Dashboard</h1>
+                    <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
+                    
+                    <!-- Loading State -->
+                    <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+                        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
+                    </div>
 
-                <!-- Error State -->
-                <div v-else-if="error" class="bg-[#fcb6b6] text-[#912020] p-4 rounded-lg mb-4">
-                    <p class="flex items-center gap-2">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ error }}
-                    </p>
-                </div>
+                    <!-- Error State -->
+                    <div v-else-if="error" class="bg-[#fcb6b6] text-[#912020] p-4 rounded-lg mb-4">
+                        <p class="flex items-center gap-2">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}
+                        </p>
+                    </div>
 
-                <!-- Content -->
-                <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
-                    <div class="bg-base rounded-lg p-[2rem] w-full">
-                        <!-- User Profile -->
-                        <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                            <img 
-                                :src="userData?.image" 
-                                :alt="userData?.name"
-                                class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
-                            >
-                            <div>
-                                <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">
-                                    {{ userData?.name }}
-                                </h3>
-                                <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                    {{ userData?.profession || 'Student' }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Statistics -->
-                        <div class="grid grid-cols-3 gap-[1.5rem] mb-[2rem]">
-                            <div 
-                                v-for="(stat, index) in statistics" 
-                                :key="index"
-                                class="bg-background rounded-lg p-[1rem] text-center hover:shadow-md transition-shadow duration-300 relative group"
-                            >
-                                <h3 class="text-[1.5rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1.2rem]">
-                                    {{ stat.value }}
-                                </h3>
-                                <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] mb-2">
-                                    {{ stat.label }}
-                                </p>
-                                <router-link 
-                                    v-if="stat.link"
-                                    :to="stat.link"
-                                    class="text-button text-sm hover:text-text_dark transition-colors duration-200 opacity-0 group-hover:opacity-100 absolute bottom-2 left-1/2 transform -translate-x-1/2"
+                    <!-- Dashboard Content -->
+                    <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
+                        <div class="bg-base rounded-lg p-[2rem] w-full">
+                            <!-- User Profile -->
+                            <div class="flex items-center gap-[1.5rem] mb-[2rem]">
+                                <img 
+                                    :src="userData?.image" 
+                                    :alt="userData?.name"
+                                    class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                                 >
-                                    View All
-                                </router-link>
+                                <div>
+                                    <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">
+                                        {{ userData?.name }}
+                                    </h3>
+                                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
+                                        {{ userData?.profession || 'Student' }}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex gap-[1rem]">
-                            <button 
-                                @click="$router.push('/update-profile')" 
-                                class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                            >
-                                Update Profile
-                            </button>
-                            <button 
-                                @click="handleLogout" 
-                                :disabled="isLoggingOut"
-                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                            >
-                                <span v-if="isLoggingOut" class="flex items-center justify-center gap-2">
-                                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-base"></div>
-                                    Logging out...
-                                </span>
-                                <span v-else>Logout</span>
-                            </button>
+                            <!-- Statistics -->
+                            <div class="grid grid-cols-3 gap-[1.5rem] mb-[2rem]">
+                                <div 
+                                    v-for="(stat, index) in statistics" 
+                                    :key="index"
+                                    class="bg-background rounded-lg p-[1rem] text-center hover:shadow-md transition-shadow duration-300 relative group"
+                                >
+                                    <h3 class="text-[1.5rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1.2rem]">
+                                        {{ stat.value }}
+                                    </h3>
+                                    <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] mb-2">
+                                        {{ stat.label }}
+                                    </p>
+                                    <router-link 
+                                        v-if="stat.link"
+                                        :to="stat.link"
+                                        class="text-button text-sm hover:text-text_dark transition-colors duration-200 opacity-0 group-hover:opacity-100 absolute bottom-2 left-1/2 transform -translate-x-1/2"
+                                    >
+                                        View All
+                                    </router-link>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-[1rem]">
+                                <button 
+                                    @click="$router.push('/update-profile')" 
+                                    class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                                >
+                                    Update Profile
+                                </button>
+                                <button 
+                                    @click="handleLogout" 
+                                    :disabled="isLoggingOut"
+                                    class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                                >
+                                    <span v-if="isLoggingOut" class="flex items-center justify-center gap-2">
+                                        <div class="animate-spin rounded-full h-4 w-4 border-2 border-base"></div>
+                                        Logging out...
+                                    </span>
+                                    <span v-else>Logout</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </template>
 
-                <!-- Latest Playlists Section -->
+                <!-- Latest Courses Section (For all users) -->
                 <div class="mt-8">
                     <h2 class="text-[1.5rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.2rem]">Latest Courses</h2>
                     <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
@@ -198,6 +201,7 @@ const commentsAmount = ref(0);
 const isLoading = ref(true);
 const isLoggingOut = ref(false);
 const error = ref(null);
+const isAuthenticated = ref(false);
 
 // Latest Playlists State
 const latestPlaylists = ref([]);
@@ -234,12 +238,10 @@ const processPlaylist = async (playlist) => {
     try {
         if (!playlist) return null;
 
-        // Create a processed copy of the playlist
         const processed = { ...playlist };
 
         // Handle thumbnail
         if (processed.thumb) {
-            // Remove any storage/app/public prefixes and clean up the path
             const cleanPath = processed.thumb
                 .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 .replace(/^\//, '');
@@ -251,17 +253,10 @@ const processPlaylist = async (playlist) => {
         // Fetch teacher data if we have teacher_id
         if (processed.teacher_id) {
             try {
-                const token = localStorage.getItem('token');
-                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json'
-                    }
-                });
+                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
                 
                 if (teacherResponse.data.data) {
                     const teacherData = teacherResponse.data.data;
-                    // Clean up teacher image path
                     let teacherImage = teacherData.image;
                     if (teacherImage) {
                         const cleanTeacherPath = teacherImage
@@ -294,13 +289,7 @@ const processPlaylist = async (playlist) => {
 
         // Get content count
         try {
-            const token = localStorage.getItem('token');
-            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
+            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
             processed.content_count = contentResponse.data || 0;
         } catch (contentError) {
             console.error('Error fetching content count:', contentError);
@@ -325,20 +314,28 @@ const processPlaylist = async (playlist) => {
 // Methods
 const loadUserData = async () => {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            isAuthenticated.value = false;
+            return null;
+        }
+
         const response = await axios.get('/api/user', {
-            headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+            headers: { Authorization: `Bearer ${token}` }
         });
         userData.value = {
             ...response.data,
             image: new URL(response.data.image, import.meta.url)
         };
+        isAuthenticated.value = true;
         return userData.value;
     } catch (error) {
         console.error('Error loading user data:', error);
-        if (!localStorage.getItem('token')) {
-            router.push('/');
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            isAuthenticated.value = false;
         }
-        throw error;
+        return null;
     }
 };
 
@@ -346,7 +343,7 @@ const loadStatistics = async (userId) => {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/');
+            isAuthenticated.value = false;
             return;
         }
 
@@ -361,20 +358,14 @@ const loadStatistics = async (userId) => {
             axios.get(`/api/comments/count_user/${userId}`, { headers })
         ]);
         
-        // Handle responses that are wrapped in data property
         likesAmount.value = likes.data?.data || 0;
         bookmarksAmount.value = bookmarks.data?.data || 0;
         commentsAmount.value = comments.data?.data || 0;
     } catch (error) {
         console.error('Error loading statistics:', error);
-        // Set default values on error
-        likesAmount.value = 0;
-        bookmarksAmount.value = 0;
-        commentsAmount.value = 0;
-        
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
-            router.push('/');
+            isAuthenticated.value = false;
         }
     }
 };
@@ -382,9 +373,9 @@ const loadStatistics = async (userId) => {
 const handleLogout = async () => {
     try {
         isLoggingOut.value = true;
-        await axios.post('/api/logout');
         localStorage.removeItem('token');
-        router.push('/');
+        store.commit('setUser', null);
+        await router.push('/login');
     } catch (error) {
         console.error('Error during logout:', error);
     } finally {
@@ -396,20 +387,10 @@ const loadLatestPlaylists = async () => {
     try {
         isPlaylistsLoading.value = true;
         playlistsError.value = null;
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return;
-        }
-
-        const response = await axios.get('/api/playlists/latest', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-
+        
+        // Get latest playlists without authentication
+        const response = await axios.get('/api/playlists/latest');
+        
         if (!Array.isArray(response.data)) {
             throw new Error('Invalid response format');
         }
@@ -423,12 +404,7 @@ const loadLatestPlaylists = async () => {
         latestPlaylists.value = processedPlaylists.filter(Boolean);
     } catch (err) {
         console.error('Error loading playlists:', err);
-        if (err.response?.status === 401) {
-            localStorage.removeItem('token');
-            router.push('/');
-        } else {
-            playlistsError.value = 'Failed to load latest courses. Please try again.';
-        }
+        playlistsError.value = 'Failed to load latest courses. Please try again.';
     } finally {
         isPlaylistsLoading.value = false;
     }
@@ -437,19 +413,32 @@ const loadLatestPlaylists = async () => {
 // Lifecycle
 onMounted(async () => {
     try {
+        // Set initial loading state
         isLoading.value = true;
         error.value = null;
-        
-        const user = await loadUserData();
-        if (user) {
-            await Promise.all([
-                loadStatistics(user.id),
-                loadLatestPlaylists()
-            ]);
+
+        // Check authentication first
+        const token = localStorage.getItem('token');
+        isAuthenticated.value = !!token;
+
+        // Load latest playlists for all users
+        await loadLatestPlaylists();
+
+        // If authenticated, load dashboard data
+        if (isAuthenticated.value) {
+            const user = await loadUserData();
+            if (user) {
+                await loadStatistics(user.id);
+            }
         }
     } catch (err) {
-        error.value = 'Failed to load dashboard data. Please try again later.';
-        console.error('Dashboard error:', err);
+        console.error('Error in onMounted:', err);
+        if (err.response?.status === 401) {
+            localStorage.removeItem('token');
+            isAuthenticated.value = false;
+        } else {
+            error.value = 'Failed to load dashboard data. Please try again later.';
+        }
     } finally {
         isLoading.value = false;
     }

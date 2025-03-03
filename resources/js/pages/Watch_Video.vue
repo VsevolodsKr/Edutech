@@ -215,6 +215,7 @@ const isLoading = ref(true);
 const isLikeLoading = ref(false);
 const isCommentLoading = ref(false);
 const isDeletingComment = ref(null);
+const error = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
@@ -236,60 +237,71 @@ const formatDate = (dateString) => {
 const loadContent = async () => {
     try {
         isLoading.value = true;
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return;
-        }
+        error.value = null;
 
-        const response = await axios.get(`/api/contents/find/${route.params.id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-
+        const response = await axios.get(`/api/contents/find/${route.params.id}`);
         if (!response.data?.content) {
-            console.error('Content not found');
-            return;
+            throw new Error('Content not found');
         }
+
+        // Handle content data
+        const contentData = response.data.content;
         
         // Clean up thumbnail path
-        const cleanThumbPath = response.data.content.thumb
+        const cleanThumbPath = contentData.thumb
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
             
         // Clean up video path
-        const cleanVideoPath = response.data.content.video
+        const cleanVideoPath = contentData.video
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
-        
+
         content.value = {
-            ...response.data.content,
+            ...contentData,
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
             video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null
         };
-        
-        if (!response.data?.teacher) {
-            console.error('Teacher data not found');
-            return;
+
+        // Handle teacher data
+        if (response.data?.teacher) {
+            const teacherData = response.data.teacher;
+            const cleanTeacherImagePath = teacherData.image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            teacher.value = {
+                ...teacherData,
+                image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+            };
+        } else {
+            teacher.value = {
+                name: 'Unknown Teacher',
+                image: '/storage/default-avatar.png'
+            };
         }
 
-        // Clean up teacher image path
-        const cleanTeacherImagePath = response.data.teacher.image
-            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-            ?.replace(/^\//, '');
-            
-        teacher.value = {
-            ...response.data.teacher,
-            image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
-        };
+        // Load likes count and comments if user is logged in
+        if (user.value) {
+            await Promise.all([
+                checkLikeStatus(),
+                loadLikesCount(),
+                loadComments(),
+                loadCommentsCount()
+            ]);
+        } else {
+            // For unauthorized users, just load the counts
+            await Promise.all([
+                loadLikesCount(),
+                loadCommentsCount()
+            ]);
+        }
+
     } catch (err) {
         console.error('Error loading content:', err);
-        if (err.response?.status === 401) {
-            router.push('/');
-        }
+        error.value = 'Failed to load content. Please try again.';
+        content.value = null;
+        teacher.value = null;
     } finally {
         isLoading.value = false;
     }
@@ -299,7 +311,7 @@ const loadUser = async () => {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/');
+            user.value = null;
             return;
         }
 
@@ -318,7 +330,7 @@ const loadUser = async () => {
         };
     } catch (err) {
         console.error('Error loading user:', err);
-        router.push('/');
+        user.value = null;
     }
 };
 
@@ -347,65 +359,17 @@ const checkLikeStatus = async () => {
 
 const loadLikesCount = async () => {
     try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/likes/count_content/${route.params.id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
+        const response = await axios.get(`/api/likes/count_content/${route.params.id}`);
         likesCount.value = response.data;
     } catch (err) {
         console.error('Error loading likes count:', err);
-    }
-};
-
-const toggleLike = async () => {
-    try {
-        isLikeLoading.value = true;
-        const token = localStorage.getItem('token');
-
-        if (isLiked.value) {
-            await axios.delete(`/api/likes/delete/${likeId.value}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
-            isLiked.value = false;
-            likesCount.value--;
-        } else {
-            const formData = new FormData();
-            formData.append('user_id', user.value.id);
-            formData.append('teacher_id', teacher.value.id);
-            formData.append('content_id', route.params.id);
-
-            await axios.post('/api/likes/add', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
-            isLiked.value = true;
-            likesCount.value++;
-            await checkLikeStatus(); // Get the new like ID
-        }
-    } catch (err) {
-        console.error('Error toggling like:', err);
-    } finally {
-        isLikeLoading.value = false;
+        likesCount.value = 0;
     }
 };
 
 const loadComments = async () => {
     try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/comments/video/${route.params.id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
+        const response = await axios.get(`/api/comments/video/${route.params.id}`);
         comments.value = response.data.comments.map((comment, index) => {
             // Clean up user image path
             const cleanUserImagePath = response.data.users[index].image
@@ -428,13 +392,7 @@ const loadComments = async () => {
 
 const loadCommentsCount = async () => {
     try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/comments/content_amount/${route.params.id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
+        const response = await axios.get(`/api/comments/content_amount/${route.params.id}`);
         commentsCount.value = response.data;
     } catch (err) {
         console.error('Error loading comments count:', err);
@@ -444,15 +402,15 @@ const loadCommentsCount = async () => {
 
 const handleAddComment = async () => {
     try {
+        if (!user.value) {
+            router.push('/login');
+            return;
+        }
+
         isCommentLoading.value = true;
         errors.value = [];
 
         const token = localStorage.getItem('token');
-        if (!token) {
-            errors.value = ['You must be logged in to add a comment'];
-            return;
-        }
-
         const formData = new FormData();
         formData.append('comment', newComment.value.trim());
         formData.append('content_id', route.params.id);
@@ -491,18 +449,12 @@ const handleAddComment = async () => {
 
 const handleDeleteComment = async (commentId) => {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'You must be logged in to delete a comment',
-                icon: 'error',
-                color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
-                background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
-            });
+        if (!user.value) {
+            router.push('/login');
             return;
         }
 
+        const token = localStorage.getItem('token');
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: 'This action cannot be undone.',
@@ -540,7 +492,7 @@ const handleDeleteComment = async (commentId) => {
     } catch (err) {
         console.error('Error deleting comment:', err);
         if (err.response?.status === 401) {
-            router.push('/');
+            router.push('/login');
             return;
         }
         Swal.fire({
@@ -555,21 +507,58 @@ const handleDeleteComment = async (commentId) => {
     }
 };
 
+const toggleLike = async () => {
+    try {
+        if (!user.value) {
+            router.push('/login');
+            return;
+        }
+
+        isLikeLoading.value = true;
+        const token = localStorage.getItem('token');
+
+        if (isLiked.value) {
+            await axios.delete(`/api/likes/delete/${likeId.value}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+            isLiked.value = false;
+            likesCount.value--;
+        } else {
+            const formData = new FormData();
+            formData.append('user_id', user.value.id);
+            formData.append('teacher_id', teacher.value.id);
+            formData.append('content_id', route.params.id);
+
+            await axios.post('/api/likes/add', formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+            isLiked.value = true;
+            likesCount.value++;
+            await checkLikeStatus(); // Get the new like ID
+        }
+    } catch (err) {
+        console.error('Error toggling like:', err);
+        if (err.response?.status === 401) {
+            router.push('/login');
+        }
+    } finally {
+        isLikeLoading.value = false;
+    }
+};
+
 // Initialize
 onMounted(async () => {
     try {
-        await loadContent();
-        if (content.value) {
-            await loadUser();
-            if (user.value) {
-                await Promise.all([
-                    checkLikeStatus(),
-                    loadLikesCount(),
-                    loadComments(),
-                    loadCommentsCount()
-                ]);
-            }
-        }
+        await Promise.all([
+            loadUser(),
+            loadContent()
+        ]);
     } catch (err) {
         console.error('Error initializing video page:', err);
     }

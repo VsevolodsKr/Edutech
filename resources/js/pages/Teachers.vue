@@ -133,21 +133,44 @@ const sectionClasses = computed(() => [
 // Methods
 const processTeacher = async (teacher) => {
     try {
-        teacher.image = new URL(teacher.image, import.meta.url);
+        // Handle teacher image
+        if (teacher.image) {
+            const cleanPath = teacher.image
+                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                .replace(/^\//, '');
+            teacher.image = `/storage/${cleanPath}`;
+        } else {
+            teacher.image = '/storage/default-avatar.png';
+        }
         
-        const [playlistCount, contentCount] = await Promise.all([
-            axios.get(`/api/playlists/amount/${teacher.id}`),
-            axios.get(`/api/contents/amount/${teacher.id}`)
-        ]);
-        
-        return {
-            ...teacher,
-            playlist_count: playlistCount.data.data,
-            content_count: contentCount.data
-        };
+        // Get playlist and content counts
+        try {
+            const [playlistCount, contentCount] = await Promise.all([
+                axios.get(`/api/playlists/amount/${teacher.id}`),
+                axios.get(`/api/contents/amount/${teacher.id}`)
+            ]);
+            
+            return {
+                ...teacher,
+                playlist_count: playlistCount.data.data || 0,
+                content_count: contentCount.data || 0
+            };
+        } catch (err) {
+            console.error(`Error fetching counts for teacher ${teacher.id}:`, err);
+            return {
+                ...teacher,
+                playlist_count: 0,
+                content_count: 0
+            };
+        }
     } catch (err) {
         console.error(`Error processing teacher ${teacher.id}:`, err);
-        return teacher;
+        return {
+            ...teacher,
+            image: '/storage/default-avatar.png',
+            playlist_count: 0,
+            content_count: 0
+        };
     }
 };
 
@@ -157,6 +180,10 @@ const loadTeachers = async () => {
         error.value = null;
         
         const response = await axios.get('/api/teachers/all');
+        if (!Array.isArray(response.data)) {
+            throw new Error('Invalid response format');
+        }
+        
         const processedTeachers = await Promise.all(
             response.data.map(processTeacher)
         );
@@ -184,6 +211,10 @@ const handleSearch = async () => {
         formData.append('name', searchQuery.value.trim());
         
         const response = await axios.post('/api/teachers/search', formData);
+        if (!Array.isArray(response.data)) {
+            throw new Error('Invalid response format');
+        }
+        
         const processedTeachers = await Promise.all(
             response.data.map(processTeacher)
         );

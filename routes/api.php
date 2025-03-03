@@ -11,6 +11,25 @@ use App\Http\Controllers\Api\BookmarksController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\CommentsController;
 
+// Public Routes
+Route::get('playlists/latest', [PlaylistsController::class, 'latest']);
+Route::get('teachers/find/{id}', [TeacherController::class, 'find_teacher']);
+Route::get('contents/playlist/{id}/amount', [ContentsController::class, 'get_playlist_contents_amount']);
+Route::get('playlists/all', [PlaylistsController::class, 'all']);
+Route::get('playlists/{id}/teacher', [PlaylistsController::class, 'playlist_teacher']);
+Route::get('teachers/all', [TeacherController::class, 'get_all']);
+Route::post('playlists/search', [PlaylistsController::class, 'search']);
+Route::post('teachers/search', [TeacherController::class, 'search_teachers']);
+Route::get('playlists/amount/{id}', [PlaylistsController::class, 'get_amount']);
+Route::get('contents/amount/{id}', [ContentsController::class, 'get_amount']);
+Route::get('contents/find/{id}', [ContentsController::class, 'get_single']);
+Route::get('playlists/{id}/contents', [ContentsController::class, 'get_playlist_contents']);
+Route::get('likes/count_content/{id}', [LikesController::class, 'count_content_likes']);
+Route::get('comments/content_amount/{id}', [CommentsController::class, 'count_comments']);
+Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comments']);
+Route::get('playlists/find/{id}', [PlaylistsController::class, 'find']);
+Route::get('playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
+
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -22,34 +41,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/update-profile', [AuthorizationController::class, 'updateProfile']);
 
     // Playlist Routes
-    Route::get('playlists/all', [PlaylistsController::class, 'all']);
-    Route::get('playlists/latest', [PlaylistsController::class, 'latest']);
-    Route::get('playlists/amount/{id}', [PlaylistsController::class, 'get_amount']);
-    Route::post('playlists/search', [PlaylistsController::class, 'search']);
-    Route::get('playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
-    Route::get('playlists/find/{id}', [PlaylistsController::class, 'find']);
-    Route::get('playlists/{id}/teacher', [PlaylistsController::class, 'playlist_teacher']);
     Route::post('playlists/add', [PlaylistsController::class, 'add']);
     Route::post('playlists/update/{id}', [PlaylistsController::class, 'update']);
     Route::delete('playlists/delete/{id}', [PlaylistsController::class, 'delete']);
 
     // Content Routes
     Route::get('contents/{id}', [ContentsController::class, 'get_teacher_contents']);
-    Route::get('contents/find/{id}', [ContentsController::class, 'get_single']);
-    Route::get('contents/amount/{id}', [ContentsController::class, 'get_amount']);
-    Route::get('playlists/{id}/contents', [ContentsController::class, 'get_playlist_contents']);
-    Route::get('contents/playlist/{id}/amount', [ContentsController::class, 'get_playlist_contents_amount']);
     Route::post('add_content/send', [ContentsController::class, 'add_content']);
     Route::post('contents/update/{id}/send', [ContentsController::class, 'store']);
     Route::delete('contents/delete/{id}', [ContentsController::class, 'delete']);
 
-    // Teacher Routes
-    Route::get('teachers/all', [TeacherController::class, 'get_all']);
-    Route::post('teachers/search', [TeacherController::class, 'search_teachers']);
-    Route::get('teachers/find/{id}', [TeacherController::class, 'find_teacher']);
-
     // Like Routes
-    Route::get('likes/count_content/{id}', [LikesController::class, 'count_content_likes']);
     Route::get('likes/count_user/{id}', [LikesController::class, 'count_user_likes']);
     Route::get('likes/user/{id}', [LikesController::class, 'get_user_likes']);
     Route::post('likes/check', [LikesController::class, 'check_like']);
@@ -64,9 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('bookmarks/delete/{id}', [BookmarksController::class, 'delete_bookmark']);
 
     // Comment Routes
-    Route::get('comments/content_amount/{id}', [CommentsController::class, 'count_comments']);
     Route::get('comments/count_user/{id}', [CommentsController::class, 'count_user']);
-    Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comments']);
     Route::get('comments/user/{id}', [CommentsController::class, 'get_user_comments']);
     Route::get('comments/find/{id}', [CommentsController::class, 'find']);
     Route::post('comments/add', [CommentsController::class, 'add_comment']);

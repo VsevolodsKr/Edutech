@@ -106,7 +106,7 @@ const userRoutes = [
         name: 'Playlist',
         meta: { 
             title: 'Playlist',
-            requiresAuth: true
+            requiresAuth: false
         }
     },
     {
@@ -115,7 +115,7 @@ const userRoutes = [
         name: 'Watch_Video',
         meta: { 
             title: 'Video',
-            requiresAuth: true
+            requiresAuth: false
         }
     },
     {
@@ -124,7 +124,7 @@ const userRoutes = [
         name: 'Teacher_Profile',
         meta: { 
             title: 'Profile',
-            requiresAuth: true
+            requiresAuth: false
         }
     },
     {
@@ -334,41 +334,27 @@ const router = createRouter({
 });
 
 // Navigation guards
-router.beforeEach(async (to, from, next) => {
-    // Update document title
-    document.title = to.meta.title;
-
-    // Get authentication token
+router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
-    const isAuthenticated = !!token && token !== '';
-
-    // Handle guest-only routes
-    if (to.meta.guestOnly && isAuthenticated) {
-        return next({ name: 'Home' });
+    
+    // If the route requires authentication and user is not logged in
+    if (to.meta.requiresAuth && !token) {
+        next('/login');
+        return;
     }
-
-    // Handle protected routes
-    if (to.meta.requiresAuth && !isAuthenticated) {
-        return next({ name: 'Login' });
+    
+    // If user is logged in and tries to access guest-only pages
+    if (token && to.meta.guestOnly) {
+        next('/');
+        return;
     }
-
-    // Handle admin routes
-    if (to.meta.isAdmin) {
-        try {
-            const response = await fetch('/api/user/role', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const { role } = await response.json();
-            
-            if (role !== 'admin') {
-                return next({ name: 'Home' });
-            }
-        } catch (error) {
-            console.error('Error checking user role:', error);
-            return next({ name: 'Home' });
-        }
+    
+    // Allow access to public routes
+    if (!to.meta.requiresAuth) {
+        next();
+        return;
     }
-
+    
     next();
 });
 

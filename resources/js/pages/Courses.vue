@@ -151,12 +151,10 @@ const processPlaylist = async (playlist) => {
     try {
         if (!playlist) return null;
 
-        // Create a processed copy of the playlist
         const processed = { ...playlist };
 
         // Handle thumbnail
         if (processed.thumb) {
-            // Remove any storage/app/public prefixes and clean up the path
             const cleanPath = processed.thumb
                 .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 .replace(/^\//, '');
@@ -168,17 +166,10 @@ const processPlaylist = async (playlist) => {
         // Fetch teacher data if we have teacher_id
         if (processed.teacher_id) {
             try {
-                const token = localStorage.getItem('token');
-                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json'
-                    }
-                });
+                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
                 
-                if (teacherResponse.data.data) {
+                if (teacherResponse.data?.data) {
                     const teacherData = teacherResponse.data.data;
-                    // Clean up teacher image path
                     let teacherImage = teacherData.image;
                     if (teacherImage) {
                         const cleanTeacherPath = teacherImage
@@ -211,13 +202,7 @@ const processPlaylist = async (playlist) => {
 
         // Get content count
         try {
-            const token = localStorage.getItem('token');
-            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
+            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
             processed.content_count = contentResponse.data || 0;
         } catch (contentError) {
             console.error('Error fetching content count:', contentError);
@@ -244,20 +229,8 @@ const loadPlaylistData = async () => {
         isLoading.value = true;
         error.value = null;
 
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return;
-        }
-
-        const response = await axios.get('/api/playlists/all', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-
-        console.log('Raw API Response:', response.data);
+        // Get all playlists without authentication
+        const response = await axios.get('/api/playlists/all');
 
         if (!Array.isArray(response.data)) {
             throw new Error('Invalid response format');
@@ -265,21 +238,14 @@ const loadPlaylistData = async () => {
 
         const processedPlaylists = await Promise.all(
             response.data.map(async (playlist) => {
-                console.log('Processing playlist:', playlist);
                 return await processPlaylist(playlist);
             })
         );
 
-        console.log('Processed playlists:', processedPlaylists);
         playlists.value = processedPlaylists.filter(Boolean);
     } catch (err) {
         console.error('Error loading playlists:', err);
-        if (err.response?.status === 401) {
-            localStorage.removeItem('token');
-            router.push('/');
-        } else {
-            error.value = 'Failed to load courses. Please try again.';
-        }
+        error.value = 'Failed to load courses. Please try again.';
     } finally {
         isLoading.value = false;
     }
@@ -290,12 +256,6 @@ const handleSearch = async () => {
         isSearching.value = true;
         error.value = null;
 
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return;
-        }
-
         if (!searchQuery.value.trim()) {
             return loadPlaylistData();
         }
@@ -303,18 +263,10 @@ const handleSearch = async () => {
         const formData = new FormData();
         formData.append('name', searchQuery.value.trim());
 
-        const response = await axios.post('/api/playlists/search', formData, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-
-        console.log('Search API Response:', response.data);
+        const response = await axios.post('/api/playlists/search', formData);
 
         const processedPlaylists = await Promise.all(
             response.data.map(async (playlist) => {
-                console.log('Processing search result:', playlist);
                 return await processPlaylist(playlist);
             })
         );
@@ -322,12 +274,7 @@ const handleSearch = async () => {
         playlists.value = processedPlaylists.filter(Boolean);
     } catch (err) {
         console.error('Error searching courses:', err);
-        if (err.response?.status === 401) {
-            localStorage.removeItem('token');
-            router.push('/');
-        } else {
-            error.value = 'Failed to search courses. Please try again.';
-        }
+        error.value = 'Failed to search courses. Please try again.';
     } finally {
         isSearching.value = false;
     }
