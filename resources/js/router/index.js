@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import Swal from "sweetalert2";
 
 // Route modules
 const publicRoutes = [
@@ -165,6 +166,32 @@ const userRoutes = [
     }
 ];
 
+// Auth guard for admin routes
+const requireAdminAuth = (to, from, next) => {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    if (!token || !user) {
+        // Save the intended destination
+        localStorage.setItem('adminRedirectTo', to.fullPath);
+        next('/login');
+        return;
+    }
+    
+    // Check if user is a teacher
+    if (!user.profession) {
+        Swal.fire({
+            title: 'Access Denied',
+            text: 'You do not have permission to access the admin dashboard.',
+            icon: 'error'
+        });
+        next('/');
+        return;
+    }
+    
+    next();
+};
+
 const adminRoutes = [
     {
         path: '/dashboard',
@@ -174,7 +201,8 @@ const adminRoutes = [
             title: 'Dashboard',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_profile',
@@ -184,7 +212,8 @@ const adminRoutes = [
             title: 'Profile',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_update',
@@ -194,27 +223,8 @@ const adminRoutes = [
             title: 'Update Profile',
             requiresAuth: true,
             isAdmin: true
-        }
-    },
-    {
-        path: '/admin_login',
-        component: () => import('../admin/Admin_Login.vue'),
-        name: 'Admin_Login',
-        meta: { 
-            title: 'Authorization',
-            requiresAuth: false,
-            guestOnly: true
-        }
-    },
-    {
-        path: '/admin_register',
-        component: () => import('../admin/Admin_Register.vue'),
-        name: 'Admin_Register',
-        meta: { 
-            title: 'Authorization',
-            requiresAuth: false,
-            guestOnly: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_playlists',
@@ -224,7 +234,8 @@ const adminRoutes = [
             title: 'Playlists',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_add_playlist',
@@ -234,7 +245,8 @@ const adminRoutes = [
             title: 'Add Playlist',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_playlists/update/:id',
@@ -254,7 +266,8 @@ const adminRoutes = [
             title: 'Contents',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_add_content',
@@ -264,7 +277,8 @@ const adminRoutes = [
             title: 'Upload Content',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     },
     {
         path: '/admin_playlists/:id',
@@ -287,14 +301,15 @@ const adminRoutes = [
         }
     },
     {
-        path: '/admin_contents/:id',
+        path: '/admin_watch_content/:id',
         component: () => import('../admin/Admin_Watch_Content.vue'),
         name: 'Admin_Watch_Content',
         meta: { 
             title: 'Content',
             requiresAuth: true,
             isAdmin: true
-        }
+        },
+        beforeEnter: requireAdminAuth
     }
 ];
 
@@ -336,6 +351,7 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
     
     // If the route requires authentication and user is not logged in
     if (to.meta.requiresAuth && !token) {
@@ -347,6 +363,25 @@ router.beforeEach((to, from, next) => {
     if (token && to.meta.guestOnly) {
         next('/');
         return;
+    }
+    
+    // Check admin routes access
+    if (to.meta.isAdmin) {
+        if (!token || !user) {
+            localStorage.setItem('adminRedirectTo', to.fullPath);
+            next('/login');
+            return;
+        }
+        
+        if (!user.profession) {
+            Swal.fire({
+                title: 'Access Denied',
+                text: 'You do not have permission to access the admin dashboard.',
+                icon: 'error'
+            });
+            next('/');
+            return;
+        }
     }
     
     // Allow access to public routes

@@ -2,14 +2,14 @@
     <header 
         :class="[
             'sticky z-[120] top-0 right-0 left-0 border-b-2 bg-base',
-            { 'pl-[20rem]': showSidebar && width > 1180 }
+            { 'pl-[22rem]': showSidebar && width > 1180 }
         ]"
     >
         <section class="flex items-center justify-between relative py-[.5rem] px-[1.5rem]">
             <!-- Logo -->
             <router-link to="/dashboard">
                 <h1 class="text-[2rem] text-text_dark mr-[.7rem] [@media(max-width:970px)]:text-[1.5rem]">
-                    Admin
+                    EduTech Admin
                 </h1>
             </router-link>
 
@@ -44,7 +44,7 @@
             <Transition name="menu">
                 <div 
                     v-if="showUserMenu && adminData"
-                    class="absolute top-[120%] right-[1rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] shadow-lg"
+                    class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] shadow-lg"
                 >
                     <!-- Admin Profile -->
                     <div class="flex justify-center">
@@ -54,43 +54,31 @@
                             class="h-[8rem] w-[8rem] rounded-full object-cover mb-[1rem]"
                         >
                     </div>
-                    <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">
-                        {{ adminData.name }}
-                    </h3>
-                    <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">
-                        {{ adminData.profession || 'Administrator' }}
-                    </p>
+                    <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ adminData.name }}</h3>
+                    <p class="text-[1.3rem] text-text_light">Administrator</p>
 
                     <!-- Profile Link -->
                     <router-link 
-                        to="/profile"
-                        class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full mt-[1rem] transition-all duration-200 hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                        to="/admin_profile"
+                        class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full mt-[1rem] transition-all duration-200 hover:bg-transparent hover:text-button"
                     >
                         View Profile
                     </router-link>
 
-                    <!-- Auth Links -->
-                    <div class="flex gap-[1rem] mt-[1rem]">
-                        <router-link 
-                            to="/login"
-                            class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                        >
-                            Login
-                        </router-link>
-                        <router-link 
-                            to="/register"
-                            class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                        >
-                            Register
-                        </router-link>
-                    </div>
-
                     <!-- Logout Button -->
                     <button 
                         @click="handleLogout"
-                        class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button4 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                        :disabled="isLoggingOut"
+                        class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Logout
+                        <span v-if="isLoggingOut" class="inline-flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Logging out...
+                        </span>
+                        <span v-else>Logout</span>
                     </button>
                 </div>
             </Transition>
@@ -103,6 +91,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import store from '../store/store';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const { width } = useWindowSize();
@@ -111,6 +100,7 @@ const { width } = useWindowSize();
 const adminData = ref(null);
 const showUserMenu = ref(false);
 const currentTheme = ref(localStorage.getItem('theme-color') || 'theme-light');
+const isLoggingOut = ref(false);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
@@ -123,7 +113,9 @@ const themes = {
         text_dark: '#000',
         text_light: '#777',
         button: '#7499f8',
-        button3: '#abd032',
+        button2: '#abd032',
+        button3: '#ea7d10',
+        button4: '#e83731',
         selection: '#749af8b9'
     },
     dark: {
@@ -132,7 +124,9 @@ const themes = {
         text_dark: '#fff',
         text_light: '#ddd',
         button: '#eae883',
+        button2: '#abd032',
         button3: '#ea7d10',
+        button4: '#e83731',
         selection: '#eae883b9'
     }
 };
@@ -141,7 +135,10 @@ const themes = {
 const loadAdminData = async () => {
     try {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) {
+            router.push('/admin_login');
+            return;
+        }
 
         const response = await axios.get('/api/user', {
             headers: { Authorization: `Bearer ${token}` }
@@ -153,6 +150,11 @@ const loadAdminData = async () => {
         };
     } catch (err) {
         console.error('Error loading admin data:', err);
+        await Swal.fire({
+            title: 'Error',
+            text: 'Failed to load admin data. Please try again.',
+            icon: 'error'
+        });
     }
 };
 
@@ -177,17 +179,37 @@ const applyTheme = (theme) => {
     });
 };
 
-const handleLogout = () => {
-    localStorage.removeItem('token');
-    store.commit('setUser', null);
-    adminData.value = null;
-    showUserMenu.value = false;
-    router.push('/login');
+const handleLogout = async () => {
+    try {
+        isLoggingOut.value = true;
+        localStorage.removeItem('token');
+        store.commit('setUser', null);
+        adminData.value = null;
+        showUserMenu.value = false;
+        
+        await Swal.fire({
+            title: 'Success',
+            text: 'Logged out successfully',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        });
+        
+        router.push('/admin_login');
+    } catch (err) {
+        console.error('Error during logout:', err);
+        await Swal.fire({
+            title: 'Error',
+            text: 'Failed to logout. Please try again.',
+            icon: 'error'
+        });
+    } finally {
+        isLoggingOut.value = false;
+    }
 };
 
 const handleClickOutside = (event) => {
-    const userMenu = document.querySelector('.user-menu');
-    if (userMenu && !userMenu.contains(event.target) && !event.target.closest('button')) {
+    if (showUserMenu.value && !event.target.closest('.user-menu') && !event.target.closest('button')) {
         showUserMenu.value = false;
     }
 };

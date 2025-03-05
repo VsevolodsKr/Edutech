@@ -1,151 +1,164 @@
 <template>
     <div>
-        <Header />
-        <div class="main-content">
-            <section :class="sectionClasses">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">Admin Profile</h1>
-                <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-                
-                <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
-                </div>
-                
-                <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[2rem]">
-                    <!-- Admin Info -->
-                    <div class="bg-base rounded-lg p-[2rem]">
-                        <div class="text-center mb-6">
-                            <img 
-                                :src="adminData.image || defaultAvatar" 
-                                :alt="adminData.name"
-                                class="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                            >
-                            <h2 class="text-[2rem] text-text_dark mb-2">{{ adminData.name }}</h2>
-                            <p class="text-[1.3rem] text-text_light">Administrator</p>
+        <Admin_Header />
+        <section :class="sectionClasses">
+            <h1 class="text-[1.5rem] text-text_dark capitalize">Admin Profile</h1>
+            <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
+            
+            <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+                <svg class="animate-spin h-12 w-12 text-button" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            
+            <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Admin Info Card -->
+                <div class="bg-base rounded-lg p-[2rem]">
+                    <div class="text-center mb-6">
+                        <img 
+                            :src="adminData.image || defaultAvatar" 
+                            :alt="adminData.name"
+                            class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-button"
+                        >
+                        <h2 class="text-[2rem] text-text_dark mb-2">{{ adminData.name }}</h2>
+                        <p class="text-[1.3rem] text-text_light">Administrator</p>
+                    </div>
+
+                    <!-- Statistics Grid -->
+                    <div class="grid grid-cols-2 gap-4 mt-8">
+                        <div class="bg-background rounded-lg p-4 text-center">
+                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Teachers</h3>
+                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalTeachers }}</p>
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="text-center p-4 bg-background rounded-lg">
-                                <h3 class="text-[1.8rem] text-button">{{ statistics.totalTeachers }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Teachers</p>
-                            </div>
-                            <div class="text-center p-4 bg-background rounded-lg">
-                                <h3 class="text-[1.8rem] text-button">{{ statistics.totalStudents }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Students</p>
-                            </div>
-                            <div class="text-center p-4 bg-background rounded-lg">
-                                <h3 class="text-[1.8rem] text-button">{{ statistics.totalCourses }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Courses</p>
-                            </div>
-                            <div class="text-center p-4 bg-background rounded-lg">
-                                <h3 class="text-[1.8rem] text-button">{{ statistics.totalContents }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Contents</p>
-                            </div>
+                        <div class="bg-background rounded-lg p-4 text-center">
+                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Students</h3>
+                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalStudents }}</p>
+                        </div>
+                        <div class="bg-background rounded-lg p-4 text-center">
+                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Courses</h3>
+                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalCourses }}</p>
+                        </div>
+                        <div class="bg-background rounded-lg p-4 text-center">
+                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Contents</h3>
+                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalContents }}</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Update Profile Form -->
+                <div class="bg-base rounded-lg p-[2rem]">
+                    <h3 class="text-[1.5rem] text-text_dark mb-6">Update Profile</h3>
                     
-                    <!-- Update Profile Form -->
-                    <div class="bg-base rounded-lg p-[2rem]">
-                        <h3 class="text-[1.5rem] text-text_dark mb-4">Update Profile</h3>
-                        
-                        <form @submit.prevent="handleSubmit">
-                            <div v-if="errorList.length" class="bg-[#fcb6b6] text-[#912020] rounded-xl mb-[1rem] p-2">
-                                <p v-for="(error, index) in errorList" 
-                                   :key="index" 
-                                   class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]">
-                                    <i class="fa fa-warning"></i> {{ error }}
-                                </p>
-                            </div>
+                    <form @submit.prevent="handleSubmit" class="space-y-4">
+                        <div v-if="error" class="bg-[#fcb6b6] text-[#912020] rounded-xl p-4 mb-4">
+                            <p class="[@media(max-width:550px)]:text-[.7rem]">
+                                <i class="fa fa-warning"></i> {{ error }}
+                            </p>
+                        </div>
 
-                            <div class="mb-4">
-                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Profile Picture
-                                </label>
-                                <input 
-                                    type="file"
-                                    ref="fileInput"
-                                    accept="image/*"
-                                    @change="handleFileChange"
-                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                >
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Full Name <span class="text-button4">*</span>
-                                </label>
-                                <input 
-                                    v-model="formData.name"
-                                    type="text"
-                                    required
-                                    maxlength="50"
-                                    placeholder="Enter your full name..."
-                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                >
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Email Address <span class="text-button4">*</span>
-                                </label>
-                                <input 
-                                    v-model="formData.email"
-                                    type="email"
-                                    required
-                                    maxlength="50"
-                                    placeholder="Enter your email..."
-                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                >
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Old Password
-                                </label>
-                                <input 
-                                    v-model="formData.old_password"
-                                    type="password"
-                                    placeholder="Enter old password..."
-                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                >
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    New Password
-                                </label>
-                                <input 
-                                    v-model="formData.new_password"
-                                    type="password"
-                                    placeholder="Enter new password..."
-                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                >
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Confirm Password
-                                </label>
-                                <input 
-                                    v-model="formData.confirm_password"
-                                    type="password"
-                                    placeholder="Confirm new password..."
-                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                >
-                            </div>
-
-                            <button 
-                                type="submit"
+                        <div>
+                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                                Profile Picture
+                            </label>
+                            <input 
+                                type="file"
+                                ref="fileInput"
+                                accept="image/*"
+                                @change="handleFileChange"
+                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 :disabled="isSubmitting"
-                                class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                             >
-                                {{ isSubmitting ? 'Updating...' : 'Update Profile' }}
-                            </button>
-                        </form>
-                    </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                                Full Name <span class="text-button4">*</span>
+                            </label>
+                            <input 
+                                v-model="formData.name"
+                                type="text"
+                                required
+                                maxlength="50"
+                                placeholder="Enter your full name..."
+                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                :disabled="isSubmitting"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                                Email Address <span class="text-button4">*</span>
+                            </label>
+                            <input 
+                                v-model="formData.email"
+                                type="email"
+                                required
+                                maxlength="50"
+                                placeholder="Enter your email..."
+                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                :disabled="isSubmitting"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                                Old Password
+                            </label>
+                            <input 
+                                v-model="formData.old_password"
+                                type="password"
+                                placeholder="Enter old password..."
+                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                :disabled="isSubmitting"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                                New Password
+                            </label>
+                            <input 
+                                v-model="formData.new_password"
+                                type="password"
+                                placeholder="Enter new password..."
+                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                :disabled="isSubmitting"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                                Confirm Password
+                            </label>
+                            <input 
+                                v-model="formData.confirm_password"
+                                type="password"
+                                placeholder="Confirm new password..."
+                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                :disabled="isSubmitting"
+                            >
+                        </div>
+
+                        <button 
+                            type="submit"
+                            :disabled="isSubmitting"
+                            class="bg-button text-base text-center border-2 border-button rounded-lg py-[.8rem] block w-full transition hover:bg-transparent hover:text-button disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:py-[.5rem] [@media(max-width:550px)]:text-[.7rem]"
+                        >
+                            <span v-if="isSubmitting" class="inline-flex items-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Updating...
+                            </span>
+                            <span v-else>Update Profile</span>
+                        </button>
+                    </form>
                 </div>
-            </section>
-        </div>
-        <Sidebar />
+            </div>
+        </section>
+        <Admin_Sidebar />
     </div>
 </template>
 
@@ -153,8 +166,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import Swal from 'sweetalert2';
-import Header from '../components/Header.vue';
-import Sidebar from '../components/Sidebar.vue';
+import Admin_Header from '../components/Admin_Header.vue';
+import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 
 const { width } = useWindowSize();
@@ -182,7 +195,7 @@ const formData = ref({
     confirm_password: '',
     image: null
 });
-const errorList = ref([]);
+const error = ref(null);
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const fileInput = ref(null);
@@ -209,9 +222,15 @@ const loadAdminData = async () => {
         // Initialize form data
         formData.value.name = adminData.value.name;
         formData.value.email = adminData.value.email;
-    } catch (error) {
-        console.error('Error loading admin data:', error);
-        errorList.value = ['Failed to load admin data'];
+    } catch (err) {
+        console.error('Error loading admin data:', err);
+        error.value = 'Failed to load admin data. Please try again.';
+        
+        await Swal.fire({
+            title: 'Error',
+            text: error.value,
+            icon: 'error'
+        });
     } finally {
         isLoading.value = false;
     }
@@ -229,17 +248,34 @@ const handleFileChange = (event) => {
     }
 };
 
+const validateForm = () => {
+    if (!formData.value.name.trim()) {
+        error.value = 'Name is required';
+        return false;
+    }
+    if (!formData.value.email.trim()) {
+        error.value = 'Email is required';
+        return false;
+    }
+    if (formData.value.new_password && formData.value.new_password !== formData.value.confirm_password) {
+        error.value = 'New password and confirmation do not match';
+        return false;
+    }
+    if (formData.value.new_password && !formData.value.old_password) {
+        error.value = 'Old password is required when setting a new password';
+        return false;
+    }
+    return true;
+};
+
 const handleSubmit = async () => {
     try {
-        isSubmitting.value = true;
-        errorList.value = [];
-
-        // Validate passwords match if new password is being set
-        if (formData.value.new_password && formData.value.new_password !== formData.value.confirm_password) {
-            errorList.value = ['New password and confirmation do not match'];
+        error.value = null;
+        if (!validateForm()) {
             return;
         }
 
+        isSubmitting.value = true;
         const data = new FormData();
         Object.entries(formData.value).forEach(([key, value]) => {
             if (value !== null && value !== '') {
@@ -247,16 +283,18 @@ const handleSubmit = async () => {
             }
         });
 
-        await axios.post('/api/admin/update-profile', data, {
+        const response = await axios.post('/api/admin/update-profile', data, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
 
-        Swal.fire({
+        await Swal.fire({
             title: 'Success!',
             text: 'Your profile has been updated successfully',
-            icon: 'success'
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
         });
 
         // Reset password fields
@@ -266,8 +304,15 @@ const handleSubmit = async () => {
         
         // Reload admin data to reflect changes
         await loadAdminData();
-    } catch (error) {
-        errorList.value = error.response?.data?.message || ['An error occurred while updating your profile'];
+    } catch (err) {
+        console.error('Update error:', err);
+        error.value = err.response?.data?.message || 'Failed to update profile. Please try again.';
+        
+        await Swal.fire({
+            title: 'Error',
+            text: error.value,
+            icon: 'error'
+        });
     } finally {
         isSubmitting.value = false;
     }
@@ -278,3 +323,29 @@ onMounted(() => {
     loadAdminData();
 });
 </script>
+
+<style scoped>
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: var(--background);
+    color: var(--text-light);
+}
+
+.error-message {
+    color: #dc2626;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}
+</style>

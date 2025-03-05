@@ -1,111 +1,260 @@
 <template>
-<Preloader />
-<Admin_Header />
-<section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
-    <h1 class="text-[1.5rem] text-text_dark capitalize">Update Playlist</h1>
-    <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-    <div class="flex items-center justify-center">
-        <form method="post" enctype="multipart/form-data" class="bg-base rounded-lg p-[1rem] w-[50rem]">
-            <ul :class="[errorStatus == 500 ? 'bg-[#fcb6b6] text-[#912020]' : 'bg-[#b6f5b5] text-[#378c35]' , 'rounded-xl mb-[1rem]']" v-if="errorList.length > 0">
-                <li class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]" v-for="(error, index) in errorList" :key="index"><i :class="[errorStatus == 500 ? 'fa fa-warning' : 'fa fa-check']"></i> {{ error }}</li>
-            </ul>
-            <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist status <span class="text-button4">*</span></p>
-            <select v-model="status" class="text-[1rem] text-text_dark rounded-lg p-[.5rem] my-[1rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:w-full" required>
-                <option value="" selected>Select status...</option>
-                <option value="active">active</option>
-                <option value="deactive">deactive</option>
-            </select>
-            <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist title <span class="text-button4">*</span></p>
-            <input id="title" :value="this.playlist.playlist.title" type="name" placeholder="Enter playlist title..." required maxlength="50" class="text-[1rem] text-text_dark rounded-lg p-[.5rem] my-[1rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]">
-            <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist description <span class="text-button4">*</span></p>
-            <textarea id="description" :value="this.playlist.playlist.description" placeholder="Enter playlist description..." required maxlength="1000" cols="30" rows="10" class="h-[20rem] resize-none w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:mb-0"></textarea>
-            <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">Playlist thumbnail <span class="text-button4">*</span></p>
-            <div class="relative">
-                    <img :src="this.playlist.playlist.thumb" class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
-                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[1rem] px-[1.5rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1.2rem] [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:top-[.7rem]">5</span>
-                </div>
-            <input id="img" type="file" accept="image/*" required class="text-[1rem] text-text_dark rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none my-[1rem] h-[3rem] [@media(max-width:550px)]:text-[.7rem]">
-            <button type="submit" @click="handleSubmit" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Update Playlist</button>
-        </form>
-    </div>
-</section>
-<Admin_Sidebar />
-</template>
-<script>
-import Admin_Header from '../components/Admin_Header.vue';
-import Admin_Sidebar from '../components/Admin_Sidebar.vue';
-import store from '../store/store';
-import { useWindowSize } from '@vueuse/core';
-import Preloader from '../components/Preloader.vue';
+<div>
+    <Admin_Header />
+    <section :class="sectionClasses">
+        <div v-if="error" class="bg-[#fcb6b6] text-[#912020] p-4 rounded-lg mb-4">
+            {{ error }}
+        </div>
 
-const {width} = useWindowSize()
-export default {
-    data(){
-        return{
-            width,
-            playlist: null,
-            status: '',
-            errorList: '',
-            errorStatus: '',
+        <h1 class="text-[1.5rem] text-text_dark capitalize">Update Playlist</h1>
+        <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
+
+        <div v-if="isLoading" class="flex justify-center items-center min-h-[200px]">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-button"></div>
+        </div>
+
+        <div v-else class="flex items-center justify-center">
+            <form @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[1rem] w-[50rem]">
+                <!-- Error/Success Messages -->
+                <div v-if="messages.length > 0" :class="[
+                    'rounded-xl mb-[1rem]',
+                    errorStatus === 500 ? 'bg-[#fcb6b6] text-[#912020]' : 'bg-[#b6f5b5] text-[#378c35]'
+                ]">
+                    <div v-for="(message, index) in messages" 
+                         :key="index" 
+                         class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]"
+                    >
+                        <i :class="[errorStatus === 500 ? 'fa fa-warning' : 'fa fa-check']"></i>
+                        {{ message }}
+                    </div>
+                </div>
+
+                <!-- Status Field -->
+                <div class="form-group">
+                    <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                        Playlist status <span class="text-button4">*</span>
+                    </label>
+                    <select 
+                        v-model="formData.status"
+                        :disabled="isSubmitting"
+                        class="text-[1rem] text-text_dark rounded-lg p-[.5rem] my-[1rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]" 
+                        required
+                    >
+                        <option value="" disabled>Select status...</option>
+                        <option value="active">Active</option>
+                        <option value="deactive">Deactive</option>
+                    </select>
+                </div>
+
+                <!-- Title Field -->
+                <div class="form-group">
+                    <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                        Playlist title <span class="text-button4">*</span>
+                    </label>
+                    <input 
+                        v-model="formData.title"
+                        type="text"
+                        :disabled="isSubmitting"
+                        placeholder="Enter playlist title..."
+                        maxlength="50"
+                        class="text-[1rem] text-text_dark rounded-lg p-[.5rem] my-[1rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                        required
+                    >
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-group">
+                    <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                        Playlist description <span class="text-button4">*</span>
+                    </label>
+                    <textarea 
+                        v-model="formData.description"
+                        :disabled="isSubmitting"
+                        placeholder="Enter playlist description..."
+                        maxlength="1000"
+                        class="h-[20rem] resize-none w-full rounded-lg bg-background my-[1rem] p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Thumbnail Field -->
+                <div class="form-group">
+                    <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                        Playlist thumbnail <span class="text-button4">*</span>
+                    </label>
+                    
+                    <!-- Current Thumbnail -->
+                    <div class="relative mb-4">
+                        <img :src="thumbnailPreview || formData.currentThumb" 
+                             class="w-full h-[20rem] object-cover rounded-lg" 
+                             :alt="formData.title"
+                        >
+                    </div>
+
+                    <input 
+                        type="file"
+                        ref="fileInput"
+                        accept="image/*"
+                        :disabled="isSubmitting"
+                        @change="handleFileChange"
+                        class="text-[1rem] text-text_dark rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none my-[1rem] h-[3rem] [@media(max-width:550px)]:text-[.7rem]"
+                    >
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit"
+                    :disabled="isSubmitting || !isFormValid"
+                    class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <span v-if="isSubmitting" class="inline-flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-base" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Updating Playlist...
+                    </span>
+                    <span v-else>Update Playlist</span>
+                </button>
+            </form>
+        </div>
+    </section>
+    <Admin_Sidebar />
+</div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useWindowSize } from '@vueuse/core'
+import store from '../store/store'
+import Admin_Header from '../components/Admin_Header.vue'
+import Admin_Sidebar from '../components/Admin_Sidebar.vue'
+
+// Router
+const router = useRouter()
+const route = useRoute()
+
+// State
+const { width } = useWindowSize()
+const fileInput = ref(null)
+const isLoading = ref(true)
+const isSubmitting = ref(false)
+const error = ref(null)
+const errorStatus = ref(null)
+const messages = ref([])
+const thumbnailPreview = ref(null)
+
+const formData = ref({
+    status: '',
+    title: '',
+    description: '',
+    image: null,
+    currentThumb: ''
+})
+
+// Computed
+const showSidebar = computed(() => store.getters.getShowSidebar)
+const sectionClasses = computed(() => [
+    (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 'pl-[2rem]',
+    'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
+])
+
+const isFormValid = computed(() => {
+    return formData.value.status &&
+           formData.value.title &&
+           formData.value.description
+})
+
+// Methods
+const fetchPlaylist = async () => {
+    try {
+        isLoading.value = true
+        error.value = null
+        
+        const response = await axios.get(`/api/playlists/find/${route.params.id}`)
+        const playlist = response.data.playlist
+
+        formData.value = {
+            status: playlist.status,
+            title: playlist.title,
+            description: playlist.description,
+            image: null,
+            currentThumb: new URL(playlist.thumb, import.meta.url)
         }
-    },
-    components: {
-        Admin_Header,
-        Admin_Sidebar,
-        Preloader,
-    },
-    computed: {
-        showSidebar: function (){
-            return store.getters.getShowSidebar
-        }
-    },
-    mounted(){
-        axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
-            this.playlist = response.data;
-            this.playlist.playlist.thumb = new URL(this.playlist.playlist.thumb, import.meta.url)
-        }).catch((err) => {
-            console.error(err);
-        });
-    },
-    created(){
-        axios.get('/api/playlists/find/' + this.$route.params.id).then((response) => {
-            this.playlist = response.data;
-            this.playlist.playlist.thumb = new URL(this.playlist.playlist.thumb, import.meta.url)
-        }).catch((err) => {
-            console.error(err);
-        });
-    },
-    methods: {
-        async handleSubmit(e){
-            if(e && e.preventDefault){
-                e.preventDefault()
-            }
-            const config = {
-                headers: {
-                    'description-Type': 'multipart/form-data'
-                }
-            }
-            let data = new FormData()
-            data.append('status', this.status)
-            data.append('title', document.querySelector('#title').value)
-            data.append('description', document.querySelector('#description').value)
-            if(document.querySelector('#img').files[0]){
-                data.append('image', document.querySelector('#img').files[0])
-            }
-            try{
-                const response = await axios.post('api/playlists/update/' + this.$route.params.id + '/send', data, config)
-                console.log(response.data.message)
-                this.errorList = response.data.message
-                this.errorStatus = response.data.status
-                setTimeout(() => {
-                    this.$router.push('/admin_playlists')
-                }, 500)            
-            }catch(err){
-                console.log(err.response.data)
-                this.errorList = err.response.data.message
-                this.errorStatus = err.response.data.status
-            }
-        }
+    } catch (err) {
+        console.error('Error fetching playlist:', err)
+        error.value = 'Failed to load playlist. Please try again.'
+    } finally {
+        isLoading.value = false
     }
 }
+
+const handleFileChange = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+        formData.value.image = file
+        const reader = new FileReader()
+        reader.onload = e => {
+            thumbnailPreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const handleSubmit = async () => {
+    try {
+        isSubmitting.value = true
+        messages.value = []
+        errorStatus.value = null
+
+        const data = new FormData()
+        data.append('status', formData.value.status)
+        data.append('title', formData.value.title)
+        data.append('description', formData.value.description)
+        if (formData.value.image) {
+            data.append('image', formData.value.image)
+        }
+
+        const response = await axios.post(`api/playlists/update/${route.params.id}/send`, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+
+        messages.value = Array.isArray(response.data.message) 
+            ? response.data.message 
+            : [response.data.message]
+        errorStatus.value = response.data.status
+
+        if (response.data.status !== 500) {
+            setTimeout(() => {
+                router.push('/admin_playlists')
+            }, 500)
+        }
+    } catch (err) {
+        console.error('Error updating playlist:', err)
+        messages.value = Array.isArray(err.response?.data?.message)
+            ? err.response.data.message
+            : [err.response?.data?.message || 'An error occurred while updating the playlist']
+        errorStatus.value = err.response?.data?.status || 500
+    } finally {
+        isSubmitting.value = false
+    }
+}
+
+// Lifecycle
+onMounted(async () => {
+    await fetchPlaylist()
+})
 </script>
+
+<style scoped>
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 1rem;
+}
+</style>
