@@ -121,8 +121,7 @@ const navigationItems = [
     { path: '/dashboard', icon: 'fa fa-home', label: 'Dashboard' },
     { path: '/admin_playlists', icon: 'fa-solid fa-bars-staggered', label: 'Playlists' },
     { path: '/admin_contents', icon: 'fa fa-graduation-cap', label: 'Contents' },
-    { path: '/admin_comments', icon: 'fas fa-comment', label: 'Comments' },
-    { path: '/admin_profile', icon: 'fa fa-user', label: 'Profile' }
+    { path: '/admin_comments', icon: 'fas fa-comment', label: 'Comments' }
 ];
 
 // Computed
@@ -155,13 +154,21 @@ const loadAdminData = async () => {
             headers: { Authorization: `Bearer ${token}` }
         });
 
+        console.log('Raw response data:', response.data);
+        console.log('Image path from response:', response.data.image);
+
         // Set admin data
+        const imageUrl = response.data.image ? 
+            (response.data.image.startsWith('http') ? 
+                response.data.image : 
+                `${window.location.origin}/storage/uploads/${response.data.image.split('/').pop()}`) :
+            `${window.location.origin}/images/default-avatar.png`;
+
+        console.log('Final image URL:', imageUrl);
+
         adminData.value = {
             ...response.data,
-            // Handle image URL properly
-            image: response.data.image.startsWith('http') ? 
-                response.data.image : 
-                new URL(`/${response.data.image}`, window.location.origin).href
+            image: imageUrl
         };
 
         // Update stored user data

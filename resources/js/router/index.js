@@ -305,7 +305,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Watch_Content.vue'),
         name: 'Admin_Watch_Content',
         meta: { 
-            title: 'Content',
+            title: 'Watch Content',
             requiresAuth: true,
             isAdmin: true
         },

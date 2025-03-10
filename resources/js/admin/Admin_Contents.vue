@@ -81,7 +81,7 @@
                     </div>
 
                     <button 
-                        @click="router.push(`/admin_contents/${content.id}`)"
+                        @click="router.push(`/admin_watch_content/${content.id}`)"
                         class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
                         View Content
