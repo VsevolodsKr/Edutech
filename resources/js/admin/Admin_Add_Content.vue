@@ -1,335 +1,308 @@
 <template>
-    <Preloader />
-    <Admin_Header />
-    <section :class="[(showSidebar == true && width > 1180) ? 'pl-[22rem]' : (showSidebar == false || (showSidebar == true && width < 1180)) ? 'pl-[2rem]' : '', 'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]']">
+    <div>
+        <Admin_Header />
+        <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize">Upload Content</h1>
             <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-            <div class="flex items-center justify-center">
-                <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="bg-base rounded-lg p-[2rem] w-[50rem]">
+            
+            <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
+            </div>
+            
+            <div v-else class="flex items-center justify-center">
+                <form @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[1rem] w-[50rem]">
                     <!-- Error/Success Messages -->
-                    <div v-if="error" class="bg-[#fcb6b6] text-[#912020] p-4 rounded-lg mb-4">
-                        <p class="[@media(max-width:550px)]:text-[.7rem]">
-                            <i class="fa fa-warning"></i> {{ error }}
-                        </p>
-                    </div>
-                    <div v-if="successMessage" class="bg-[#b6f5b5] text-[#378c35] p-4 rounded-lg mb-4">
-                        <p class="[@media(max-width:550px)]:text-[.7rem]">
-                            <i class="fa fa-check"></i> {{ successMessage }}
+                    <div v-if="errorList.length" 
+                         :class="[status === 500 ? 'bg-[#fcb6b6] text-[#912020]' : 'bg-[#b6f5b5] text-[#378c35]', 'rounded-xl mb-4']">
+                        <p v-for="(error, index) in errorList" 
+                           :key="index" 
+                           class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]">
+                            <i :class="[status === 500 ? 'fa fa-warning' : 'fa fa-check']"></i> {{ error }}
                         </p>
                     </div>
 
                     <!-- Status -->
-                    <div class="form-group">
-                        <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                    <div class="mb-4">
+                        <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
                             Video status <span class="text-button4">*</span>
                         </label>
                         <select 
                             v-model="formData.status"
-                            :disabled="isSubmitting"
-                            class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                            class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                             required
                         >
-                            <option value="" disabled>Select status...</option>
+                            <option value="">Select status...</option>
                             <option value="active">Active</option>
                             <option value="deactive">Deactive</option>
                         </select>
                     </div>
 
                     <!-- Title -->
-                    <div class="form-group">
-                        <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                    <div class="mb-4">
+                        <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
                             Video title <span class="text-button4">*</span>
                         </label>
                         <input 
                             v-model="formData.title"
                             type="text"
-                            placeholder="Enter content title..."
-                            :disabled="isSubmitting"
-                            class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                            placeholder="Enter video title..."
                             required
                             maxlength="50"
+                            class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                         >
                     </div>
 
                     <!-- Description -->
-                    <div class="form-group">
-                        <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                    <div class="mb-4">
+                        <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
                             Video description <span class="text-button4">*</span>
                         </label>
                         <textarea 
                             v-model="formData.description"
-                            placeholder="Enter content description..."
-                            :disabled="isSubmitting"
-                            class="h-[20rem] resize-none w-full rounded-lg bg-background p-[.8rem] text-[1rem] text-text_light outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                            placeholder="Enter video description..."
                             required
                             maxlength="1000"
+                            rows="10"
+                            class="mt-2 h-[20rem] resize-none w-full rounded-lg bg-background p-[.5rem] text-[1rem] text-text_dark outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                         ></textarea>
                     </div>
 
                     <!-- Playlist -->
-                    <div class="form-group">
-                        <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                    <div class="mb-4">
+                        <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
                             Video playlist <span class="text-button4">*</span>
                         </label>
                         <select 
                             v-model="formData.playlist_id"
-                            :disabled="isSubmitting"
-                            class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                            class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                             required
                         >
-                            <option value="" disabled>Select playlist...</option>
-                            <option 
-                                v-for="playlist in playlists" 
-                                :key="playlist.id" 
-                                :value="playlist.id"
-                            >
+                            <option value="">Select playlist...</option>
+                            <option v-for="playlist in playlists" 
+                                    :key="playlist.id" 
+                                    :value="playlist.id">
                                 {{ playlist.title }}
                             </option>
                         </select>
                     </div>
 
                     <!-- Thumbnail -->
-                    <div class="form-group">
-                        <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                    <div class="mb-4">
+                        <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
                             Video thumbnail <span class="text-button4">*</span>
                         </label>
-                        <div v-if="thumbnailPreview" class="mb-4">
-                            <img 
-                                :src="thumbnailPreview" 
-                                alt="Thumbnail preview"
-                                class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[12rem]"
-                            >
-                        </div>
                         <input 
-                            ref="thumbnailInput"
+                            ref="thumbInput"
                             type="file"
                             accept="image/*"
-                            @change="handleThumbnailChange"
-                            :disabled="isSubmitting"
-                            class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                             required
+                            @change="handleThumbChange"
+                            class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                         >
                     </div>
 
                     <!-- Video -->
-                    <div class="form-group">
-                        <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
+                    <div class="mb-4">
+                        <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
                             Select video <span class="text-button4">*</span>
                         </label>
-                        <div v-if="videoPreview" class="mb-4">
-                            <video 
-                                :src="videoPreview"
-                                controls
-                                class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[12rem]"
-                            ></video>
-                        </div>
                         <input 
                             ref="videoInput"
                             type="file"
                             accept="video/*"
-                            @change="handleVideoChange"
-                            :disabled="isSubmitting"
-                            class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                             required
+                            @change="handleVideoChange"
+                            class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] h-[3rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                         >
                     </div>
 
                     <!-- Submit Button -->
                     <button 
                         type="submit"
-                        :disabled="isSubmitting || !isFormValid"
-                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.8rem] block w-full transition hover:bg-transparent hover:text-button disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:py-[.5rem] [@media(max-width:550px)]:text-[.8rem]"
+                        :disabled="isSubmitting"
+                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        <span v-if="isSubmitting" class="inline-flex items-center">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Uploading...
-                        </span>
-                        <span v-else>Upload Content</span>
+                        {{ isSubmitting ? 'Uploading...' : 'Upload Content' }}
                     </button>
                 </form>
             </div>
         </section>
-    <Admin_Sidebar />
+        <Admin_Sidebar />
+    </div>
 </template>
-<script>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useWindowSize } from '@vueuse/core';
+import Swal from 'sweetalert2';
 import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
-import { useWindowSize } from '@vueuse/core';
-import Preloader from '../components/Preloader.vue';
-    
-const {width} = useWindowSize()
-export default {
-    data(){
-        return{
-            width,
-            teacher: null,
-            status: '',
-            title: '',
-            description: '',
-            playlist: '',
-            errorList: '',
-            errorStatus: '',
-            playlists: [],
-            error: null,
-            successMessage: null,
-            isSubmitting: false,
-            thumbnailPreview: null,
-            videoPreview: null,
-            formData: {
-                status: '',
-                title: '',
-                description: '',
-                playlist_id: '',
-                thumb: null,
-                video: null
-            }
+
+const router = useRouter();
+const { width } = useWindowSize();
+
+// Refs
+const thumbInput = ref(null);
+const videoInput = ref(null);
+
+// State
+const userData = ref(null);
+const playlists = ref([]);
+const errorList = ref([]);
+const status = ref(null);
+const isLoading = ref(true);
+const isSubmitting = ref(false);
+
+const formData = ref({
+    status: '',
+    title: '',
+    description: '',
+    playlist_id: '',
+    thumb: null,
+    video: null
+});
+
+// Computed
+const showSidebar = computed(() => store.getters.getShowSidebar);
+const sectionClasses = computed(() => [
+    (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
+    (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
+    'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
+]);
+
+// Methods
+const loadUserData = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return null;
         }
-    },
-    components: {
-        Admin_Header,
-        Admin_Sidebar,
-        Preloader
-    },
-    computed: {
-        showSidebar: function (){
-            return store.getters.getShowSidebar
-        },
-        isFormValid() {
-            return this.formData.status &&
-                   this.formData.title &&
-                   this.formData.description &&
-                   this.formData.playlist_id &&
-                   this.formData.thumb &&
-                   this.formData.video
+
+        const response = await axios.get('/api/user', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        return {
+            ...response.data,
+            image: new URL(response.data.image, window.location.origin).href
+        };
+    } catch (error) {
+        console.error('Error loading user data:', error);
+        if (error.response?.status === 401) {
+            router.push('/');
         }
-    },
-    mounted(){
-        this.getUser()
-        this.getPlaylists()
-    },
-    created(){
-        axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-            this.teacher = response.data
-            this.teacher.image = new URL(this.teacher.image, import.meta.url)
-        })
-        if(localStorage.getItem('token') == ''){
-            this.$router.push('/').then(() =>{this.$router.go(0)})
-        }
-    },
-    methods: {
-        async handleSubmit(e){
-            if(e && e.preventDefault){
-                e.preventDefault()
-            }
-            const config = {
-                headers: {
-                    'description-Type': 'multipart/form-data'
-                }
-            }
-            let data = new FormData()
-            data.append('teacher_id', this.teacher.id)
-            data.append('playlist_id', this.formData.playlist_id)
-            data.append('title', this.formData.title)
-            data.append('description', this.formData.description)
-            data.append('status', this.formData.status)
-            data.append('thumb', this.formData.thumb)
-            data.append('video', this.formData.video)
-            try{
-                this.isSubmitting = true
-                const response = await axios.post('api/add_content/send', data, config)
-                console.log(response.data.message)
-                this.successMessage = response.data.message
-                setTimeout(() => {
-                    this.$router.push('/admin_contents')
-                }, 500)            
-            }catch(err){
-                console.log(err.response.data)
-                this.error = err.response.data.message
-                this.errorStatus = err.response.data.status
-            } finally {
-                this.isSubmitting = false
-            }
-        },
-        async getPlaylists() {
-            this.getUser().then(value => {
-                axios.get('/api/playlists/' + value.id).then((response) => {
-                    console.log(response)
-                    this.playlists = response.data;
-                    this.playlists.forEach((playlist) => {
-                        playlist.thumb = new URL(playlist.thumb, import.meta.url)
-                    })
-                    console.log(this.playlists)
-                }).catch((err) => {
-                    console.error(err);
-                });
-            })
-        },
-        async getUser(){
-            await axios.get('/api/user', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}}).then((response)=>{
-                this.teacher = response.data
-                this.teacher.image = new URL(this.teacher.image, import.meta.url)
-            })
-            if(localStorage.getItem('token') == ''){
-                this.$router.push('/').then(() =>{this.$router.go(0)})
-            }
-            return this.teacher
-        },
-        handleThumbnailChange(event) {
-            const file = event.target.files[0]
-            if (file) {
-                this.formData.thumb = file
-                const reader = new FileReader()
-                reader.onload = e => {
-                    this.thumbnailPreview = e.target.result
-                }
-                reader.readAsDataURL(file)
-            }
-        },
-        handleVideoChange(event) {
-            const file = event.target.files[0]
-            if (file) {
-                this.formData.video = file
-                const reader = new FileReader()
-                reader.onload = e => {
-                    this.videoPreview = e.target.result
-                }
-                reader.readAsDataURL(file)
-            }
-        }
+        return null;
     }
-}
+};
+
+const loadPlaylists = async () => {
+    try {
+        isLoading.value = true;
+        const user = await loadUserData();
+        if (!user) return;
+
+        const response = await axios.get(`/api/playlists/${user.id}`);
+        playlists.value = response.data.map(playlist => ({
+            ...playlist,
+            thumb: new URL(playlist.thumb, window.location.origin).href
+        }));
+    } catch (error) {
+        console.error('Error loading playlists:', error);
+        errorList.value = ['Failed to load playlists'];
+        status.value = 500;
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const validateFile = (file, type) => {
+    const maxSize = type === 'image' ? 2 * 1024 * 1024 : 100 * 1024 * 1024; // 2MB for images, 100MB for videos
+    const allowedTypes = type === 'image' 
+        ? ['image/jpeg', 'image/png', 'image/gif'] 
+        : ['video/mp4', 'video/webm', 'video/ogg'];
+
+    if (file.size > maxSize) {
+        errorList.value = [`${type === 'image' ? 'Image' : 'Video'} size should not exceed ${maxSize / (1024 * 1024)}MB`];
+        status.value = 500;
+        return false;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+        errorList.value = [`Please select a valid ${type} file (${allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ')})`];
+        status.value = 500;
+        return false;
+    }
+
+    return true;
+};
+
+const handleThumbChange = (event) => {
+    const file = event.target.files[0];
+    if (file && validateFile(file, 'image')) {
+        formData.value.thumb = file;
+    } else {
+        event.target.value = '';
+    }
+};
+
+const handleVideoChange = (event) => {
+    const file = event.target.files[0];
+    if (file && validateFile(file, 'video')) {
+        formData.value.video = file;
+    } else {
+        event.target.value = '';
+    }
+};
+
+const handleSubmit = async () => {
+    try {
+        isSubmitting.value = true;
+        errorList.value = [];
+        status.value = null;
+
+        const user = await loadUserData();
+        if (!user) return;
+
+        const data = new FormData();
+        data.append('teacher_id', user.id);
+        Object.entries(formData.value).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                data.append(key, value);
+            }
+        });
+
+        const response = await axios.post('/api/admin/add-content', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        errorList.value = [response.data.message];
+        status.value = response.data.status;
+
+        if (status.value !== 500) {
+            await Swal.fire({
+                title: 'Success!',
+                text: 'Content has been uploaded successfully',
+                icon: 'success'
+            });
+
+            router.push('/admin_contents');
+        }
+    } catch (error) {
+        console.error('Error uploading content:', error);
+        errorList.value = error.response?.data?.message || ['An error occurred while uploading content'];
+        status.value = 500;
+    } finally {
+        isSubmitting.value = false;
+    }
+};
+
+// Lifecycle
+onMounted(() => {
+    loadPlaylists();
+});
 </script>
-
-<style scoped>
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group:last-of-type {
-    margin-bottom: 2rem;
-}
-
-input[type="file"] {
-    padding: 0.5rem;
-}
-
-input[type="file"]::-webkit-file-upload-button {
-    background-color: var(--button);
-    color: var(--base);
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-input[type="file"]::-webkit-file-upload-button:hover {
-    background-color: transparent;
-    color: var(--button);
-    border: 2px solid var(--button);
-}
-</style>

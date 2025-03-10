@@ -1,175 +1,165 @@
 <template>
     <div>
-        <Admin_Header />
-        <section :class="sectionClasses">
-            <h1 class="text-[1.5rem] text-text_dark capitalize">Admin Profile</h1>
-            <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-            
-            <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
-                <svg class="animate-spin h-12 w-12 text-button" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </div>
-            
-            <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Admin Info Card -->
-                <div class="bg-base rounded-lg p-[2rem]">
-                    <div class="text-center mb-6">
-                        <img 
-                            :src="adminData.image || defaultAvatar" 
-                            :alt="adminData.name"
-                            class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-button"
-                        >
-                        <h2 class="text-[2rem] text-text_dark mb-2">{{ adminData.name }}</h2>
-                        <p class="text-[1.3rem] text-text_light">Administrator</p>
-                    </div>
-
-                    <!-- Statistics Grid -->
-                    <div class="grid grid-cols-2 gap-4 mt-8">
-                        <div class="bg-background rounded-lg p-4 text-center">
-                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Teachers</h3>
-                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalTeachers }}</p>
-                        </div>
-                        <div class="bg-background rounded-lg p-4 text-center">
-                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Students</h3>
-                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalStudents }}</p>
-                        </div>
-                        <div class="bg-background rounded-lg p-4 text-center">
-                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Courses</h3>
-                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalCourses }}</p>
-                        </div>
-                        <div class="bg-background rounded-lg p-4 text-center">
-                            <h3 class="text-[1.2rem] text-text_dark mb-2">Total Contents</h3>
-                            <p class="text-[2rem] text-button font-bold">{{ statistics.totalContents }}</p>
-                        </div>
-                    </div>
+        <Header />
+        <div class="main-content">
+            <section :class="sectionClasses">
+                <h1 class="text-[1.5rem] text-text_dark capitalize">Admin Profile</h1>
+                <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
+                
+                <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                 </div>
-
-                <!-- Update Profile Form -->
-                <div class="bg-base rounded-lg p-[2rem]">
-                    <h3 class="text-[1.5rem] text-text_dark mb-6">Update Profile</h3>
+                
+                <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[2rem]">
+                    <!-- Admin Info -->
+                    <div class="bg-base rounded-lg p-[2rem]">
+                        <div class="text-center mb-6">
+                            <img 
+                                :src="getImageUrl(adminData.image)" 
+                                :alt="adminData.name"
+                                @error="handleImageError"
+                                class="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+                            >
+                            <h2 class="text-[2rem] text-text_dark mb-2">{{ adminData.name }}</h2>
+                            <p class="text-[1.3rem] text-text_light">{{ adminData.profession }}</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.playlists }}</h3>
+                                <p class="text-[1.2rem] text-text_light">Playlists</p>
+                            </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.contents }}</h3>
+                                <p class="text-[1.2rem] text-text_light">Contents</p>
+                            </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.likes }}</h3>
+                                <p class="text-[1.2rem] text-text_light">Likes</p>
+                            </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.comments }}</h3>
+                                <p class="text-[1.2rem] text-text_light">Comments</p>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <form @submit.prevent="handleSubmit" class="space-y-4">
-                        <div v-if="error" class="bg-[#fcb6b6] text-[#912020] rounded-xl p-4 mb-4">
-                            <p class="[@media(max-width:550px)]:text-[.7rem]">
-                                <i class="fa fa-warning"></i> {{ error }}
-                            </p>
-                        </div>
+                    <!-- Update Profile Form -->
+                    <div class="bg-base rounded-lg p-[2rem]">
+                        <h3 class="text-[1.5rem] text-text_dark mb-4">Update Profile</h3>
+                        
+                        <form @submit.prevent="handleSubmit">
+                            <div v-if="errorList.length" class="bg-[#fcb6b6] text-[#912020] rounded-xl mb-[1rem] p-2">
+                                <p v-for="(error, index) in errorList" 
+                                   :key="index" 
+                                   class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]">
+                                    <i class="fa fa-warning"></i> {{ error }}
+                                </p>
+                            </div>
 
-                        <div>
-                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
-                                Profile Picture
-                            </label>
-                            <input 
-                                type="file"
-                                ref="fileInput"
-                                accept="image/*"
-                                @change="handleFileChange"
-                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                            <div class="mb-4">
+                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                                    Profile Picture
+                                </label>
+                                <input 
+                                    type="file"
+                                    ref="fileInput"
+                                    accept="image/*"
+                                    @change="handleFileChange"
+                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                >
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                                    Full Name <span class="text-button4">*</span>
+                                </label>
+                                <input 
+                                    v-model="formData.name"
+                                    type="text"
+                                    required
+                                    maxlength="50"
+                                    placeholder="Enter your full name..."
+                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                >
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                                    Email Address <span class="text-button4">*</span>
+                                </label>
+                                <input 
+                                    v-model="formData.email"
+                                    type="email"
+                                    required
+                                    maxlength="50"
+                                    placeholder="Enter your email..."
+                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                >
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                                    Old Password
+                                </label>
+                                <input 
+                                    v-model="formData.old_password"
+                                    type="password"
+                                    placeholder="Enter old password..."
+                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                >
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                                    New Password
+                                </label>
+                                <input 
+                                    v-model="formData.new_password"
+                                    type="password"
+                                    placeholder="Enter new password..."
+                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                >
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
+                                    Confirm Password
+                                </label>
+                                <input 
+                                    v-model="formData.confirm_password"
+                                    type="password"
+                                    placeholder="Confirm new password..."
+                                    class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
+                                >
+                            </div>
+
+                            <button 
+                                type="submit"
                                 :disabled="isSubmitting"
+                                class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                             >
-                        </div>
-
-                        <div>
-                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
-                                Full Name <span class="text-button4">*</span>
-                            </label>
-                            <input 
-                                v-model="formData.name"
-                                type="text"
-                                required
-                                maxlength="50"
-                                placeholder="Enter your full name..."
-                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                :disabled="isSubmitting"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
-                                Email Address <span class="text-button4">*</span>
-                            </label>
-                            <input 
-                                v-model="formData.email"
-                                type="email"
-                                required
-                                maxlength="50"
-                                placeholder="Enter your email..."
-                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                :disabled="isSubmitting"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
-                                Old Password
-                            </label>
-                            <input 
-                                v-model="formData.old_password"
-                                type="password"
-                                placeholder="Enter old password..."
-                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                :disabled="isSubmitting"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
-                                New Password
-                            </label>
-                            <input 
-                                v-model="formData.new_password"
-                                type="password"
-                                placeholder="Enter new password..."
-                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                :disabled="isSubmitting"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="text-[1.2rem] text-text_dark block mb-2 [@media(max-width:550px)]:text-[.9rem]">
-                                Confirm Password
-                            </label>
-                            <input 
-                                v-model="formData.confirm_password"
-                                type="password"
-                                placeholder="Confirm new password..."
-                                class="text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
-                                :disabled="isSubmitting"
-                            >
-                        </div>
-
-                        <button 
-                            type="submit"
-                            :disabled="isSubmitting"
-                            class="bg-button text-base text-center border-2 border-button rounded-lg py-[.8rem] block w-full transition hover:bg-transparent hover:text-button disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:py-[.5rem] [@media(max-width:550px)]:text-[.7rem]"
-                        >
-                            <span v-if="isSubmitting" class="inline-flex items-center">
-                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Updating...
-                            </span>
-                            <span v-else>Update Profile</span>
-                        </button>
-                    </form>
+                                {{ isSubmitting ? 'Updating...' : 'Update Profile' }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
         <Admin_Sidebar />
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Swal from 'sweetalert2';
-import Admin_Header from '../components/Admin_Header.vue';
+import Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 
+const router = useRouter();
 const { width } = useWindowSize();
 
 // Constants
@@ -179,13 +169,14 @@ const defaultAvatar = '/images/default-avatar.png';
 const adminData = ref({
     name: '',
     email: '',
+    profession: '',
     image: null
 });
 const statistics = ref({
-    totalTeachers: 0,
-    totalStudents: 0,
-    totalCourses: 0,
-    totalContents: 0
+    playlists: 0,
+    contents: 0,
+    likes: 0,
+    comments: 0
 });
 const formData = ref({
     name: '',
@@ -195,7 +186,7 @@ const formData = ref({
     confirm_password: '',
     image: null
 });
-const error = ref(null);
+const errorList = ref([]);
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const fileInput = ref(null);
@@ -211,34 +202,115 @@ const sectionClasses = computed(() => [
 // Methods
 const loadAdminData = async () => {
     try {
+        isLoading.value = true;
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        };
+
+        // Fetch user data and statistics in parallel
         const [profileResponse, statsResponse] = await Promise.all([
-            axios.get('/api/admin/profile'),
-            axios.get('/api/admin/statistics')
+            axios.get('/api/user', { headers }),
+            axios.get('/api/admin/statistics', { headers })
         ]);
 
-        adminData.value = profileResponse.data;
-        statistics.value = statsResponse.data;
-        
+        // Handle user data
+        if (!profileResponse.data.profession) {
+            throw new Error('Unauthorized access');
+        }
+
+        console.log('API Response Image:', profileResponse.data.image);
+
+        // Clean up the image path before storing
+        let imagePath = profileResponse.data.image;
+        if (imagePath && imagePath.includes('/storage/app/public/')) {
+            imagePath = imagePath.replace('/storage/app/public/', '');
+        }
+
+        adminData.value = {
+            ...profileResponse.data,
+            image: imagePath
+        };
+
+        console.log('Stored Image URL:', adminData.value.image);
+
+        // Handle statistics
+        statistics.value = {
+            playlists: await fetchPlaylistCount(profileResponse.data.id),
+            contents: await fetchContentCount(profileResponse.data.id),
+            likes: statsResponse.data.likes || 0,
+            comments: statsResponse.data.comments || 0
+        };
+
         // Initialize form data
         formData.value.name = adminData.value.name;
         formData.value.email = adminData.value.email;
-    } catch (err) {
-        console.error('Error loading admin data:', err);
-        error.value = 'Failed to load admin data. Please try again.';
-        
-        await Swal.fire({
-            title: 'Error',
-            text: error.value,
-            icon: 'error'
-        });
+    } catch (error) {
+        console.error('Error loading admin data:', error);
+        if (error.response?.status === 401 || error.message === 'Unauthorized access') {
+            localStorage.removeItem('token');
+            router.push('/');
+        } else {
+            errorList.value = ['Failed to load admin data'];
+        }
     } finally {
         isLoading.value = false;
+    }
+};
+
+const fetchPlaylistCount = async (userId) => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/playlists/amount/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+        return response.data.data || 0;
+    } catch (error) {
+        console.error('Error fetching playlist count:', error);
+        return 0;
+    }
+};
+
+const fetchContentCount = async (userId) => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/contents/amount/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+        return response.data || 0;
+    } catch (error) {
+        console.error('Error fetching content count:', error);
+        return 0;
     }
 };
 
 const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            errorList.value = ['Image size should not exceed 2MB'];
+            event.target.value = '';
+            return;
+        }
+
+        if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+            errorList.value = ['Please select a valid image file (JPEG, PNG, or GIF)'];
+            event.target.value = '';
+            return;
+        }
+
         formData.value.image = file;
         const reader = new FileReader();
         reader.onload = e => {
@@ -248,74 +320,139 @@ const handleFileChange = (event) => {
     }
 };
 
-const validateForm = () => {
-    if (!formData.value.name.trim()) {
-        error.value = 'Name is required';
-        return false;
-    }
-    if (!formData.value.email.trim()) {
-        error.value = 'Email is required';
-        return false;
-    }
-    if (formData.value.new_password && formData.value.new_password !== formData.value.confirm_password) {
-        error.value = 'New password and confirmation do not match';
-        return false;
-    }
-    if (formData.value.new_password && !formData.value.old_password) {
-        error.value = 'Old password is required when setting a new password';
-        return false;
-    }
-    return true;
-};
-
 const handleSubmit = async () => {
     try {
-        error.value = null;
-        if (!validateForm()) {
+        isSubmitting.value = true;
+        errorList.value = [];
+
+        // Password validation
+        const hasOldPassword = !!formData.value.old_password;
+        const hasNewPassword = !!formData.value.new_password;
+        const hasConfirmPassword = !!formData.value.confirm_password;
+
+        // Check if any password field is filled
+        if (hasOldPassword || hasNewPassword || hasConfirmPassword) {
+            // If any password field is filled, all password fields must be filled
+            if (!hasOldPassword || !hasNewPassword || !hasConfirmPassword) {
+                errorList.value = ['All password fields must be filled to change password'];
+                return;
+            }
+            // Check if new passwords match
+            if (formData.value.new_password !== formData.value.confirm_password) {
+                errorList.value = ['New password and confirmation do not match'];
+                return;
+            }
+        }
+
+        // Create FormData object
+        const data = new FormData();
+
+        // Add basic fields if they have changed
+        if (formData.value.name !== adminData.value.name) {
+            data.append('name', formData.value.name);
+        }
+        if (formData.value.email !== adminData.value.email) {
+            data.append('email', formData.value.email);
+        }
+
+        // Add password fields only if all password fields are filled
+        if (hasOldPassword && hasNewPassword && hasConfirmPassword) {
+            data.append('old_password', formData.value.old_password);
+            data.append('new_password', formData.value.new_password);
+            data.append('confirm_password', formData.value.confirm_password);
+        }
+
+        // Add image only if a new one is selected
+        if (formData.value.image instanceof File) {
+            data.append('image', formData.value.image);
+        }
+
+        // Only proceed with the update if there are changes
+        if ([...data.entries()].length === 0) {
+            errorList.value = ['No changes to update'];
             return;
         }
 
-        isSubmitting.value = true;
-        const data = new FormData();
-        Object.entries(formData.value).forEach(([key, value]) => {
-            if (value !== null && value !== '') {
-                data.append(key, value);
+        const token = localStorage.getItem('token');
+        const response = await axios.post('/api/admin/update-profile', data, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+                'Accept': 'application/json'
             }
         });
 
-        const response = await axios.post('/api/admin/update-profile', data, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        // Update the store with new user data
+        store.commit('setUser', response.data.user);
+
+        // Reset form fields
+        formData.value.old_password = '';
+        formData.value.new_password = '';
+        formData.value.confirm_password = '';
+        if (fileInput.value) {
+            fileInput.value.value = '';
+        }
+        formData.value.image = null;
+
+        // Update local admin data
+        await loadAdminData();
+
+        // Emit an event to update the sidebar
+        store.commit('setReloadSidebar', true);
 
         await Swal.fire({
             title: 'Success!',
             text: 'Your profile has been updated successfully',
-            icon: 'success',
-            timer: 1500,
-            showConfirmButton: false
+            icon: 'success'
         });
-
-        // Reset password fields
-        formData.value.old_password = '';
-        formData.value.new_password = '';
-        formData.value.confirm_password = '';
-        
-        // Reload admin data to reflect changes
-        await loadAdminData();
-    } catch (err) {
-        console.error('Update error:', err);
-        error.value = err.response?.data?.message || 'Failed to update profile. Please try again.';
-        
-        await Swal.fire({
-            title: 'Error',
-            text: error.value,
-            icon: 'error'
-        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        if (error.response?.data?.message) {
+            errorList.value = Array.isArray(error.response.data.message) 
+                ? error.response.data.message 
+                : [error.response.data.message];
+        } else {
+            errorList.value = ['An error occurred while updating your profile'];
+        }
     } finally {
         isSubmitting.value = false;
     }
+};
+
+const getImageUrl = (image) => {
+    console.log('Input Image:', image);
+    if (!image) {
+        console.log('No image, using default:', defaultAvatar);
+        return defaultAvatar;
+    }
+    
+    if (image.startsWith('data:')) {
+        console.log('Data URL detected');
+        return image;
+    }
+    
+    if (image.startsWith('http')) {
+        console.log('Absolute URL detected');
+        return image;
+    }
+
+    // Clean up the storage path
+    let cleanPath = image;
+    if (cleanPath.includes('/storage/app/public/')) {
+        cleanPath = cleanPath.replace('/storage/app/public/', '');
+    } else if (cleanPath.includes('storage/app/public/')) {
+        cleanPath = cleanPath.replace('storage/app/public/', '');
+    }
+
+    // Construct the proper storage URL
+    const url = `${window.location.origin}/storage/${cleanPath}`;
+    console.log('Final URL:', url);
+    return url;
+};
+
+const handleImageError = (event) => {
+    console.log('Image failed to load, using default avatar');
+    event.target.src = defaultAvatar;
 };
 
 // Lifecycle
@@ -323,29 +460,3 @@ onMounted(() => {
     loadAdminData();
 });
 </script>
-
-<style scoped>
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-light);
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    background-color: var(--background);
-    color: var(--text-light);
-}
-
-.error-message {
-    color: #dc2626;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-}
-</style>
