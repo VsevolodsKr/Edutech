@@ -120,33 +120,53 @@ class ContentsController extends Controller
     public function store(Request $request, string $id)
     {
         try {
+            \Log::info('Content update request received', [
+                'content_id' => $id,
+                'playlist_id' => $request->playlist_id,
+                'all_data' => $request->all()
+            ]);
+
             $validator = $this->validateContent($request);
             if ($validator->fails()) {
+                \Log::error('Content update validation failed', [
+                    'errors' => $validator->messages()->all()
+                ]);
                 return $this->errorResponse($validator->messages()->all());
             }
 
             $content = Contents::findOrFail($id);
+            \Log::info('Current content state', [
+                'content_id' => $id,
+                'old_playlist_id' => $content->playlist_id
+            ]);
             
             $updateData = [
                 'status' => $request->status,
                 'title' => $request->title,
-                'description' => $request->description
+                'description' => $request->description,
+                'playlist_id' => $request->playlist_id
             ];
 
-            if ($request->hasFile('thumb')) {
-                $updateData['thumb'] = $this->handleFileUpload($request->thumb, self::CONTENT_THUMBS_PATH);
-            }
-
-            if ($request->hasFile('video')) {
-                $updateData['video'] = $this->handleFileUpload($request->video, self::CONTENT_VIDEOS_PATH);
-            }
+            \Log::info('Updating content with data', [
+                'content_id' => $id,
+                'update_data' => $updateData
+            ]);
 
             $content->update($updateData);
             $this->clearContentCaches($content);
 
+            \Log::info('Content updated successfully', [
+                'content_id' => $id,
+                'new_playlist_id' => $content->fresh()->playlist_id
+            ]);
+
             return $this->successResponse('Content updated successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Failed to update content. Please try again later.']);
+            \Log::error('Failed to update content', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse(['Failed to update content: ' . $e->getMessage()]);
         }
     }
 

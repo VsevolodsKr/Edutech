@@ -23,8 +23,9 @@
                             </button>
                         </form>
                         <div class="relative">
-                            <img :src="playlist.thumb" 
+                            <img :src="getImageUrl(playlist.thumb)" 
                                  :alt="playlist.title"
+                                 @error="handleImageError"
                                  class="h-[20rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]">
                             <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1rem] bg-[rgba(0,0,0,.3)] text-[#fff] text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
                                 {{ contentCount }}
@@ -83,8 +84,9 @@
                                 </div>
                             </div>
                             <div class="relative">
-                                <img :src="content.thumb" 
+                                <img :src="getImageUrl(content.thumb)" 
                                      :alt="content.title"
+                                     @error="handleImageError"
                                      class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
                             </div>
                             <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
@@ -100,7 +102,7 @@
                                     Delete
                                 </button>
                             </div>
-                            <button @click="router.push(`/admin_contents/${content.id}`)" 
+                            <button @click="router.push(`/admin_watch_content/${content.id}`)" 
                                     class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">
                                 View Content
                             </button>
@@ -141,13 +143,51 @@ const sectionClasses = computed(() => [
 ]);
 
 // Methods
+const defaultThumb = '/storage/default-thumb.png';
+
+const getImageUrl = (image) => {
+    console.log('Original image path:', image);
+    
+    if (!image) {
+        console.log('No image path, using default');
+        return defaultThumb;
+    }
+    
+    if (image.startsWith('data:') || image.startsWith('http')) {
+        console.log('Using direct URL:', image);
+        return image;
+    }
+
+    // Clean up the storage path
+    let cleanPath = image;
+    
+    // Remove all variations of storage paths
+    cleanPath = cleanPath.replace(/^\/?(storage\/)?(app\/public\/)?/g, '');
+    
+    // Remove any remaining leading slashes
+    cleanPath = cleanPath.replace(/^\/+/, '');
+    
+    const finalUrl = `${window.location.origin}/storage/${cleanPath}`;
+    console.log('Final image URL:', finalUrl);
+    
+    return finalUrl;
+};
+
+const handleImageError = (event) => {
+    if (!event.target.src.includes('default-thumb.png')) {
+        event.target.src = defaultThumb;
+    }
+};
+
 const loadPlaylist = async () => {
     try {
         const response = await axios.get(`/api/playlists/find/${route.params.id}`);
+        console.log('Raw playlist response:', response.data);
+        
         if (response.data.playlist) {
             playlist.value = {
                 ...response.data.playlist,
-                thumb: new URL(response.data.playlist.thumb, window.location.origin).href
+                thumb: response.data.playlist.thumb // Keep the original thumb path
             };
 
             const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`);
@@ -168,10 +208,14 @@ const loadContents = async () => {
     
     try {
         const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
+        console.log('Raw contents response:', response.data);
+        
         contents.value = response.data.map(content => ({
             ...content,
-            thumb: new URL(content.thumb, window.location.origin).href
+            thumb: content.thumb // Keep the original thumb path
         }));
+        
+        console.log('Processed contents:', contents.value);
     } catch (error) {
         console.error('Error loading contents:', error);
         Swal.fire({

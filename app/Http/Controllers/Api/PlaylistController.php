@@ -32,14 +32,23 @@ class PlaylistController extends Controller
 
     public function get_teacher_playlists(string $id)
     {
-        return Cache::remember('teacher.playlists.'.$id, self::CACHE_TTL, function () use ($id) {
-            return Playlists::with('teacher')
-                ->where('teacher_id', $id)
-                ->orderBy('date', 'desc')
-                ->get()
-                ->map(function ($playlist) {
-                    return $this->formatPlaylist($playlist);
-                });
+        // Get fresh data directly without caching
+        $playlists = Playlists::with('teacher')
+            ->where('teacher_id', $id)
+            ->orderBy('date', 'desc')
+            ->get();
+
+        // Log the first playlist for debugging
+        if ($playlists->isNotEmpty()) {
+            \Log::info('First playlist data:', [
+                'id' => $playlists->first()->id,
+                'status' => $playlists->first()->status,
+                'raw_data' => $playlists->first()->toArray()
+            ]);
+        }
+
+        return $playlists->map(function ($playlist) {
+            return $this->formatPlaylist($playlist);
         });
     }
 
@@ -176,6 +185,12 @@ class PlaylistController extends Controller
                 'status' => 500
             ], 500);
         }
+    }
+
+    public function clearCache()
+    {
+        Cache::flush();
+        return response()->json(['message' => 'Cache cleared']);
     }
 
     private function validatePlaylist(Request $request)

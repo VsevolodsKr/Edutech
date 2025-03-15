@@ -97,14 +97,19 @@
                                             <option value="" disabled>{{ isLoadingPlaylists ? 'Loading playlists...' : 'Select playlist...' }}</option>
                                             <option v-for="playlist in playlists" 
                                                     :key="playlist.id" 
-                                                    :value="playlist.id">
-                                                {{ playlist.title || playlist.name }}
+                                                    :value="playlist.id"
+                                                    :class="{'text-green-600': playlist.status === 'active', 'text-red-600': playlist.status === 'deactive'}"
+                                            >
+                                                {{ playlist.title }} ({{ playlist.status }})
                                             </option>
                                         </select>
                                         <div v-if="isLoadingPlaylists" class="absolute right-3 top-1/2 transform -translate-y-1/2">
                                             <div class="animate-spin rounded-full h-5 w-5 border-2 border-button border-t-transparent"></div>
                                         </div>
                                     </div>
+                                    <p v-if="playlists.length === 0 && !isLoadingPlaylists" class="text-xs text-red-500 mt-1">
+                                        No playlists available. Please create a playlist first.
+                                    </p>
                                 </div>
                             </div>
 
@@ -334,8 +339,8 @@ const loadPlaylists = async () => {
 
         console.log('User response:', userResponse.data);
 
-        // Get playlists using the existing endpoint
-        const playlistsResponse = await axios.get(`/api/playlists/${userResponse.data.id}`, {
+        // Get playlists using the teacher_playlists endpoint
+        const playlistsResponse = await axios.get(`/api/playlists/teacher_playlists/${userResponse.data.id}`, {
             headers: { 
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/json'
@@ -344,24 +349,22 @@ const loadPlaylists = async () => {
 
         console.log('Raw playlists response:', playlistsResponse.data);
         
-        // Handle different possible response structures
-        if (Array.isArray(playlistsResponse.data)) {
-            playlists.value = playlistsResponse.data;
-        } else if (playlistsResponse.data.playlists && Array.isArray(playlistsResponse.data.playlists)) {
-            playlists.value = playlistsResponse.data.playlists;
-        } else if (playlistsResponse.data.data && Array.isArray(playlistsResponse.data.data)) {
-            playlists.value = playlistsResponse.data.data;
+        // Handle the response structure
+        if (playlistsResponse.data.data && Array.isArray(playlistsResponse.data.data)) {
+            playlists.value = playlistsResponse.data.data.map(playlist => ({
+                id: playlist.id,
+                title: playlist.title,
+                status: playlist.status
+            }));
+            console.log('Processed playlists:', playlists.value);
+        } else {
+            console.error('Unexpected playlists response format:', playlistsResponse.data);
+            throw new Error('Invalid playlists response format');
         }
-
-        console.log('Final playlists value:', playlists.value);
-
     } catch (error) {
         console.error('Error loading playlists:', error);
         messages.value = ['Failed to load playlists'];
         errorStatus.value = 500;
-        if (error.response?.status === 401) {
-            router.push('/login');
-        }
     } finally {
         isLoadingPlaylists.value = false;
     }

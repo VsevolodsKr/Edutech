@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Cache;
 
 class PlaylistsController extends Controller
 {
-    private const CACHE_TTL = 3600; // 1 hour
     private const PLAYLIST_THUMBS_PATH = 'playlist_thumbs';
 
     /**
@@ -21,9 +20,7 @@ class PlaylistsController extends Controller
      */
     public function all()
     {
-        return Cache::remember('playlists.all', self::CACHE_TTL, function () {
-            return Playlists::orderBy('date', 'desc')->get();
-        });
+        return Playlists::orderBy('date', 'desc')->get();
     }
 
     /**
@@ -32,28 +29,26 @@ class PlaylistsController extends Controller
     public function latest()
     {
         try {
-            $playlists = Cache::remember('playlists.latest', self::CACHE_TTL, function () {
-                return Playlists::with('teacher')
-                    ->where('status', 'active')
-                    ->orderBy('date', 'desc')
-                    ->take(7)
-                    ->get()
-                    ->map(function ($playlist) {
-                        return [
-                            'id' => $playlist->id,
-                            'title' => $playlist->title,
-                            'description' => $playlist->description,
-                            'thumb' => $playlist->thumb,
-                            'date' => $playlist->date,
-                            'teacher_id' => $playlist->teacher_id,
-                            'teacher' => $playlist->teacher ? [
-                                'id' => $playlist->teacher->id,
-                                'name' => $playlist->teacher->name,
-                                'image' => $playlist->teacher->image,
-                            ] : null
-                        ];
-                    });
-            });
+            $playlists = Playlists::with('teacher')
+                ->where('status', 'active')
+                ->orderBy('date', 'desc')
+                ->take(7)
+                ->get()
+                ->map(function ($playlist) {
+                    return [
+                        'id' => $playlist->id,
+                        'title' => $playlist->title,
+                        'description' => $playlist->description,
+                        'thumb' => $playlist->thumb,
+                        'date' => $playlist->date,
+                        'teacher_id' => $playlist->teacher_id,
+                        'teacher' => $playlist->teacher ? [
+                            'id' => $playlist->teacher->id,
+                            'name' => $playlist->teacher->name,
+                            'image' => $playlist->teacher->image,
+                        ] : null
+                    ];
+                });
 
             return response()->json($playlists);
         } catch (\Exception $e) {
@@ -69,15 +64,13 @@ class PlaylistsController extends Controller
      */
     public function find($id)
     {
-        return Cache::remember("playlist.{$id}", self::CACHE_TTL, function () use ($id) {
-            $playlist = Playlists::findOrFail($id);
-            $teacher = Teachers::findOrFail($playlist->teacher_id);
-            
-            return response()->json([
-                'playlist' => $playlist,
-                'teacher' => $teacher
-            ]);
-        });
+        $playlist = Playlists::findOrFail($id);
+        $teacher = Teachers::findOrFail($playlist->teacher_id);
+        
+        return response()->json([
+            'playlist' => $playlist,
+            'teacher' => $teacher
+        ]);
     }
 
     /**
@@ -110,20 +103,25 @@ class PlaylistsController extends Controller
             }
 
             $playlist = new Playlists();
-            $playlist->fill([
-                'teacher_id' => $request->teacher_id,
-                'title' => $request->title,
-                'description' => $request->description,
-                'date' => Carbon::now(),
-                'thumb' => $this->handleFileUpload($request->thumb)
-            ]);
+            $playlist->status = $request->status;
+            $playlist->teacher_id = $request->teacher_id;
+            $playlist->title = $request->title;
+            $playlist->description = $request->description;
+            $playlist->date = Carbon::now();
+
+            if ($request->hasFile('thumb')) {
+                $playlist->thumb = $this->handleFileUpload($request->file('thumb'));
+            }
 
             $playlist->save();
-            $this->clearPlaylistCaches();
 
             return $this->successResponse('Playlist created successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Failed to create playlist. Please try again later.']);
+            \Log::error('Failed to create playlist', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse(['Failed to create playlist: ' . $e->getMessage()]);
         }
     }
 
@@ -133,28 +131,59 @@ class PlaylistsController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            \Log::info('Updating playlist', [
+                'id' => $id,
+                'request_data' => $request->except(['thumb']),
+                'has_thumb' => $request->hasFile('thumb'),
+                'keep_thumb' => $request->has('keep_thumb')
+            ]);
+
             $validator = $this->validatePlaylist($request);
             if ($validator->fails()) {
+                \Log::error('Validation failed', ['errors' => $validator->messages()->all()]);
                 return $this->errorResponse($validator->messages()->all());
             }
 
             $playlist = Playlists::findOrFail($id);
             
             $updateData = [
+                'teacher_id' => $request->teacher_id,
                 'title' => $request->title,
-                'description' => $request->description
+                'description' => $request->description,
+                'status' => $request->status
             ];
 
+            // Handle thumbnail update
             if ($request->hasFile('thumb')) {
-                $updateData['thumb'] = $this->handleFileUpload($request->thumb);
+                try {
+                    $updateData['thumb'] = $this->handleFileUpload($request->file('thumb'));
+                    
+                    // Delete old thumbnail if exists
+                    if ($playlist->thumb && Storage::disk('public')->exists($playlist->thumb)) {
+                        Storage::disk('public')->delete($playlist->thumb);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Thumbnail upload failed', ['error' => $e->getMessage()]);
+                    return $this->errorResponse(['Failed to upload thumbnail: ' . $e->getMessage()]);
+                }
+            } elseif (!$request->has('keep_thumb')) {
+                // If no new thumb and not keeping old thumb, set to null
+                $updateData['thumb'] = null;
             }
+            // If keep_thumb is true, don't update the thumb field at all
 
+            \Log::info('Updating playlist with data', ['update_data' => $updateData]);
+            
             $playlist->update($updateData);
-            $this->clearPlaylistCaches();
 
             return $this->successResponse('Playlist updated successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Failed to update playlist. Please try again later.']);
+            \Log::error('Playlist update error', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse(['Failed to update playlist: ' . $e->getMessage()]);
         }
     }
 
@@ -166,7 +195,6 @@ class PlaylistsController extends Controller
         try {
             $playlist = Playlists::findOrFail($id);
             $playlist->delete();
-            $this->clearPlaylistCaches();
 
             return $this->successResponse('Playlist deleted successfully');
         } catch (\Exception $e) {
@@ -180,21 +208,20 @@ class PlaylistsController extends Controller
     public function teacher_playlists($id)
     {
         try {
-            $playlists = Cache::remember("teacher.playlists.{$id}", self::CACHE_TTL, function () use ($id) {
-                return Playlists::where('teacher_id', $id)
-                    ->orderBy('date', 'desc')
-                    ->get()
-                    ->map(function ($playlist) {
-                        return [
-                            'id' => $playlist->id,
-                            'title' => $playlist->title,
-                            'description' => $playlist->description,
-                            'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,
-                            'date' => $playlist->date,
-                            'content_count' => $playlist->contents()->count()
-                        ];
-                    });
-            });
+            $playlists = Playlists::where('teacher_id', $id)
+                ->orderBy('date', 'desc')
+                ->get()
+                ->map(function ($playlist) {
+                    return [
+                        'id' => $playlist->id,
+                        'title' => $playlist->title,
+                        'description' => $playlist->description,
+                        'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,
+                        'date' => $playlist->date,
+                        'status' => $playlist->status,
+                        'content_count' => $playlist->contents()->count()
+                    ];
+                });
 
             return response()->json([
                 'status' => 200,
@@ -215,10 +242,8 @@ class PlaylistsController extends Controller
      */
     public function playlist_teacher($id)
     {
-        return Cache::remember("playlist.teacher.{$id}", self::CACHE_TTL, function () use ($id) {
-            $playlist = Playlists::findOrFail($id);
-            return Teachers::findOrFail($playlist->teacher_id);
-        });
+        $playlist = Playlists::findOrFail($id);
+        return Teachers::findOrFail($playlist->teacher_id);
     }
 
     /**
@@ -244,9 +269,23 @@ class PlaylistsController extends Controller
             throw new \Exception('File not provided');
         }
 
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $filePath = $file->storeAs(self::PLAYLIST_THUMBS_PATH, $fileName, 'public');
-        return $filePath;
+        try {
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs(self::PLAYLIST_THUMBS_PATH, $fileName, 'public');
+            
+            if (!$filePath) {
+                throw new \Exception('Failed to store file');
+            }
+            
+            return $filePath;
+        } catch (\Exception $e) {
+            \Log::error('File upload error', [
+                'error' => $e->getMessage(),
+                'file_name' => $file->getClientOriginalName(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new \Exception('Failed to upload file: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -257,22 +296,21 @@ class PlaylistsController extends Controller
         return Validator::make($request->all(), [
             'title' => 'required|max:100',
             'description' => 'required',
-            'teacher_id' => 'required|exists:teachers,id'
+            'teacher_id' => 'required|exists:teachers,id',
+            'status' => 'required|in:active,deactive',
+            'thumb' => 'required|image|mimes:jpeg,png|max:2048'
         ], [
             'title.required' => 'Please enter playlist title',
             'description.required' => 'Please enter playlist description',
             'teacher_id.required' => 'Teacher ID is required',
-            'teacher_id.exists' => 'Invalid teacher ID'
+            'teacher_id.exists' => 'Invalid teacher ID',
+            'status.required' => 'Please select playlist status',
+            'status.in' => 'Invalid status value',
+            'thumb.required' => 'Please select a thumbnail image',
+            'thumb.image' => 'The file must be an image',
+            'thumb.mimes' => 'The thumbnail must be a JPEG or PNG file',
+            'thumb.max' => 'The thumbnail size must not exceed 2MB'
         ]);
-    }
-
-    /**
-     * Clear playlist related caches
-     */
-    private function clearPlaylistCaches()
-    {
-        Cache::forget('playlists.all');
-        Cache::forget('playlists.latest');
     }
 
     /**

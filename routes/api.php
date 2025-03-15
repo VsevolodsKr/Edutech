@@ -28,7 +28,7 @@ Route::get('likes/count_content/{id}', [LikesController::class, 'count_content_l
 Route::get('comments/content_amount/{id}', [CommentsController::class, 'count_comments']);
 Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comments']);
 Route::get('playlists/find/{id}', [PlaylistsController::class, 'find']);
-Route::get('playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
+Route::get('playlists/teacher_playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {

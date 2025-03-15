@@ -9,6 +9,8 @@ class Playlists extends Model
 {
     use HasFactory;
     
+    public $timestamps = false;
+    
     protected $fillable = [
         'teacher_id',
         'title',
@@ -19,6 +21,12 @@ class Playlists extends Model
     ];
 
     protected $appends = ['formatted_date'];
+
+    public function getStatusAttribute($value)
+    {
+        // Return the actual status value from the database
+        return $value;
+    }
 
     public function getThumbAttribute($value)
     {
