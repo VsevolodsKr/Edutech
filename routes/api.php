@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\LikesController;
 use App\Http\Controllers\Api\BookmarksController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\CommentsController;
+use App\Http\Controllers\Api\EngagementController;
 
 // Public Routes
 Route::get('playlists/latest', [PlaylistsController::class, 'latest']);
@@ -29,6 +30,10 @@ Route::get('comments/content_amount/{id}', [CommentsController::class, 'count_co
 Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comments']);
 Route::get('playlists/find/{id}', [PlaylistsController::class, 'find']);
 Route::get('playlists/teacher_playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
+
+// Engagement routes
+Route::get('engagement/teacher/{id}', [EngagementController::class, 'get_teacher_engagement']);
+Route::get('contents/popular/{id}', [EngagementController::class, 'get_popular_contents']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -54,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Like Routes
     Route::get('likes/count_user/{id}', [LikesController::class, 'count_user_likes']);
     Route::get('likes/user/{id}', [LikesController::class, 'get_user_likes']);
+    Route::get('likes/count_teacher/{id}', [LikesController::class, 'count_teacher']);
     Route::post('likes/check', [LikesController::class, 'check_like']);
     Route::post('likes/add', [LikesController::class, 'add_like']);
     Route::delete('likes/delete/{id}', [LikesController::class, 'delete_like']);
@@ -68,6 +74,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Comment Routes
     Route::get('comments/count_user/{id}', [CommentsController::class, 'count_user']);
     Route::get('comments/user/{id}', [CommentsController::class, 'get_user_comments']);
+    Route::get('comments/count_teacher/{id}', [CommentsController::class, 'count_teacher']);
+    Route::get('comments/teacher/{id}', [CommentsController::class, 'get_teacher_comments']);
     Route::get('comments/find/{id}', [CommentsController::class, 'find']);
     Route::post('comments/add', [CommentsController::class, 'add_comment']);
     Route::post('comments/{id}/edit', [CommentsController::class, 'edit_comment']);

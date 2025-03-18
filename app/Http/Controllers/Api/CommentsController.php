@@ -97,6 +97,12 @@ class CommentsController extends Controller
         ]);
     }
 
+    public function count_teacher(string $id) {
+        return response()->json([
+            'data' => Comments::where('teacher_id', $id)->count()
+        ]);
+    }
+
     public function get_user_comments(string $id) {
         $comments = Comments::where('user_id', $id)->get();
         $contents = array();
@@ -104,5 +110,24 @@ class CommentsController extends Controller
             array_push($contents, $comment->content);
         }
         return response()->json(['comments' => $comments, 'contents' => $contents]);
+    }
+
+    public function get_teacher_comments(string $id) {
+        $comments = Comments::where('teacher_id', $id)
+            ->orderBy('date', 'desc')
+            ->get();
+        
+        $users = array();
+        $contents = array();
+        foreach($comments as $comment) {
+            array_push($users, $comment->user);
+            array_push($contents, $comment->content);
+        }
+        
+        return response()->json([
+            'comments' => $comments,
+            'users' => $users,
+            'contents' => $contents
+        ]);
     }
 }

@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Playlists', function (Blueprint $table) {
+        Schema::create('Contents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('teacher_id')->reference('id')->on('Teachers');
-            $table->string('title', 100);
+            $table->string('teacher_id');
+            $table->string('playlist_id');
+            $table->string('title');
             $table->text('description');
-            $table->string('thumb', 100);
+            $table->string('video');
+            $table->string('thumb');
             $table->date('date');
-            $table->string('status', 20);
+            $table->enum('status', ['active', 'deactive']);
         });
     }
 
@@ -27,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Playlists');
+        Schema::dropIfExists('Contents');
     }
-};
+}; 

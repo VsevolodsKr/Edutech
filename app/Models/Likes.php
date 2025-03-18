@@ -14,7 +14,7 @@ class Likes extends Model
         'content_id',
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     public function user() {
         return $this->hasOne('App\Models\Users', 'id', 'user_id');

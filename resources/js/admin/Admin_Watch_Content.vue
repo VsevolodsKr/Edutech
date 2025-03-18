@@ -29,7 +29,7 @@
                     <h2 class="text-2xl text-text_dark">{{ content.title }}</h2>
                     <div class="flex gap-4">
                         <span class="text-text_light">
-                            <i class="fas fa-heart text-button4"></i>
+                            <i class="fas fa-heart text-button"></i>
                             {{ content.likes || 0 }} likes
                         </span>
                         <span class="text-text_light">
@@ -42,7 +42,7 @@
                 <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
                     <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
                         <i class="fas fa-calendar text-button"></i>
-                        <span class="text-text_light">{{ content.date }}</span>
+                        <span class="text-text_light">{{ formatDate(content.date) }}</span>
                     </p>
                 </div>
 
@@ -71,11 +71,11 @@
 
         <!-- Comments Section -->
         <section v-if="content" :class="sectionClasses">
-            <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
-                <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                    User Comments
-                </h1>    
+            <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem] mb-4">
+                {{ content.commentsCount || 0 }} Comments
+            </h1>
 
+            <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                 <div v-if="!content.comments?.length" class="text-center text-text_light py-4">
                     No comments yet
                 </div>
@@ -83,12 +83,12 @@
                 <template v-else>
                     <div v-for="comment in content.comments" 
                          :key="comment.id" 
-                         class="mb-[5rem] [@media(max-width:550px)]:mb-[3rem]">
+                         class="mb-8 last:mb-0">
                         <!-- Comment Header -->
                         <div class="flex items-center gap-[1rem] mb-[1rem]">
-                            <img :src="comment.user_image || defaultAvatar" 
+                            <img :src="comment.user_image" 
                                  :alt="comment.user_name"
-                                 class="h-[5rem] w-[5rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
+                                 class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
                             <div>
                                 <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
                                     {{ comment.user_name }}
@@ -100,15 +100,15 @@
                         </div>
 
                         <!-- Comment Content -->
-                        <div class="rounded-lg bg-background p-[1rem] whitespace-pre-line my-[.5rem] text-[1rem] text-text_light leading-1.5 relative z-0 before:content-none before:absolute before:top-[-1rem] before:left-[1.5rem] before:bg-base before:h-[1rem] before:w-[2rem] before:[clip-path:polygon(50%_0%,_0%_100%,_100%_100%)] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.5rem]">
-                            {{ comment.content }}
+                        <div class="rounded-lg bg-background p-[1rem] whitespace-pre-line my-[.5rem] text-[1rem] text-text_light leading-7 relative [@media(max-width:550px)]:text-[.7rem]">
+                            {{ comment.comment }}
                         </div>
 
                         <!-- Comment Actions -->
                         <div class="flex gap-[1rem] mt-[.5rem]">
                             <button 
                                 @click="handleDeleteComment(comment.id)"
-                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-[10rem] transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:w-[7rem]"
+                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button4 [@media(max-width:550px)]:text-[.8rem]"
                             >
                                 Delete Comment
                             </button>
@@ -204,9 +204,6 @@ const loadContent = async () => {
         });
 
         if (response.data.content) {
-            // Log the response for debugging
-            console.log('Content response:', response.data.content);
-
             // Process video and thumbnail URLs
             const processedContent = {
                 ...response.data.content,
@@ -214,24 +211,36 @@ const loadContent = async () => {
                 thumb: getThumbUrl(response.data.content.thumb)
             };
 
-            // Log the processed URLs for debugging
-            console.log('Processed video URL:', processedContent.video);
-            console.log('Processed thumbnail URL:', processedContent.thumb);
+            // Get likes count
+            try {
+                const likesResponse = await axios.get(`/api/likes/count_content/${route.params.id}`);
+                processedContent.likes = likesResponse.data;
+            } catch (error) {
+                console.error('Error loading likes count:', error);
+                processedContent.likes = 0;
+            }
 
-            // Get comments if they exist
-            if (response.data.comments) {
-                processedContent.comments = response.data.comments.map(comment => ({
-                    ...comment,
-                    user_image: comment.user_image ? getThumbUrl(comment.user_image) : defaultAvatar
-                }));
-                processedContent.commentsCount = response.data.comments.length;
-            } else {
+            // Get comments
+            try {
+                const commentsResponse = await axios.get(`/api/comments/video/${route.params.id}`);
+                if (commentsResponse.data.comments) {
+                    processedContent.comments = commentsResponse.data.comments.map((comment, index) => ({
+                        id: comment.id,
+                        comment: comment.comment,
+                        created_at: comment.date,
+                        user_name: commentsResponse.data.users[index].name,
+                        user_image: commentsResponse.data.users[index].image ? getThumbUrl(commentsResponse.data.users[index].image) : defaultAvatar
+                    }));
+                    processedContent.commentsCount = commentsResponse.data.comments.length;
+                } else {
+                    processedContent.comments = [];
+                    processedContent.commentsCount = 0;
+                }
+            } catch (error) {
+                console.error('Error loading comments:', error);
                 processedContent.comments = [];
                 processedContent.commentsCount = 0;
             }
-
-            // Get likes count if it exists
-            processedContent.likes = response.data.likes_count || 0;
 
             content.value = processedContent;
         }
@@ -317,12 +326,20 @@ const handleDeleteComment = async (commentId) => {
         });
 
         if (result.isConfirmed) {
-            await axios.delete(`/api/comments/delete/${commentId}`);
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/comments/delete/${commentId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
             
             await Swal.fire({
                 title: 'Deleted!',
                 text: 'Comment has been deleted.',
-                icon: 'success'
+                icon: 'success',
+                color: text_dark,
+                background: background
             });
 
             // Reload content to refresh comments
@@ -333,7 +350,9 @@ const handleDeleteComment = async (commentId) => {
         Swal.fire({
             title: 'Error!',
             text: 'Failed to delete comment',
-            icon: 'error'
+            icon: 'error',
+            color: text_dark,
+            background: background
         });
     }
 };

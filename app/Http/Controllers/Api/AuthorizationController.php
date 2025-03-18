@@ -67,15 +67,15 @@ class AuthorizationController extends Controller
                 return $this->errorResponse($validator->messages()->all());
             }
 
-            $user = Users::where('email', $request->email)->first();
-            $teacher = Teachers::where('email', $request->email)->first();
+        $user = Users::where('email', $request->email)->first();
+        $teacher = Teachers::where('email', $request->email)->first();
 
             if (!$user && !$teacher) {
                 return $this->errorResponse(['Email not found. Please register first.']);
-            }
+        }
 
             if (Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                $token = $user->createToken('MyApp')->plainTextToken;
+            $token = $user->createToken('MyApp')->plainTextToken;
                 return $this->successResponse('Login successful', [
                     'data' => $user,
                     'token' => $token,
@@ -84,7 +84,7 @@ class AuthorizationController extends Controller
             }
 
             if (Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                $token = $teacher->createToken('MyApp')->plainTextToken;
+            $token = $teacher->createToken('MyApp')->plainTextToken;
                 return $this->successResponse('Login successful', [
                     'data' => $teacher,
                     'token' => $token,

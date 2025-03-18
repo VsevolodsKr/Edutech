@@ -5,10 +5,7 @@ export default createStore({
     state(){
         return {
             showSidebar: true,
-            user: {
-                data: {},
-                token: localStorage.getItem('token')
-            },
+            user: null,
             searchPlaylist: '',
         }
     },
@@ -30,7 +27,7 @@ export default createStore({
             state.showSidebar = newValue
         },
         setUser: function (state, newUser){
-            state.user.data = newUser
+            state.user = newUser
         },
         setSearchPlaylist: function (state, newSearchPlaylist){
             state.searchPlaylist = newSearchPlaylist

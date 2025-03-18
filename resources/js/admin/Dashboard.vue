@@ -4,6 +4,8 @@
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize">Dashboard</h1>
             <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
+            
+            <!-- Statistics Cards -->
             <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                 <!-- Welcome Card -->
                 <div class="bg-base rounded-lg p-[2rem] w-full">
@@ -37,7 +39,41 @@
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">{{ statistics.comments }}</h2>
                     <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">Total Comments</div>
-                    <button class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">View Comments</button>
+                    <router-link 
+                        to="/admin_comments" 
+                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                    >
+                        View Comments
+                    </router-link>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-[repeat(auto-fit,_minmax(40rem,_1fr))] gap-[2rem] mt-[2rem] pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
+                <!-- Engagement Trends -->
+                <div class="bg-base rounded-lg p-[2rem] w-full">
+                    <h2 class="text-center text-text_dark text-[1.5rem] mb-[2rem]">Engagement Trends (Last 7 Days)</h2>
+                    <div class="relative h-[300px]">
+                        <canvas ref="engagementChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Popular Contents -->
+                <div class="bg-base rounded-lg p-[2rem] w-full">
+                    <h2 class="text-center text-text_dark text-[1.5rem] mb-[2rem]">Most Popular Contents</h2>
+                    <div class="space-y-4">
+                        <div v-for="(content, index) in popularContents" :key="content.id" 
+                            class="flex items-center gap-4 p-4 bg-background rounded-lg">
+                            <div class="text-[1.5rem] font-bold text-button">{{ index + 1 }}</div>
+                            <div class="flex-1">
+                                <h3 class="text-text_dark font-medium">{{ content.title }}</h3>
+                                <div class="flex gap-4 text-sm text-text_light">
+                                    <span>{{ content.likes }} likes</span>
+                                    <span>{{ content.comments }} comments</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -49,6 +85,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
+import Chart from 'chart.js/auto';
 import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
@@ -64,6 +101,9 @@ const statistics = ref({
     likes: 0,
     comments: 0
 });
+const engagementChart = ref(null);
+const popularContents = ref([]);
+const chartInstance = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
@@ -87,24 +127,103 @@ const loadTeacherData = async () => {
         });
         teacherData.value = response.data;
 
-        // Load statistics
-        const [playlists, contents] = await Promise.all([
+        // Load all statistics in parallel
+        const [playlists, contents, likes, comments, engagement, popular] = await Promise.all([
             axios.get(`/api/playlists/amount/${teacherData.value.id}`),
-            axios.get(`/api/contents/amount/${teacherData.value.id}`)
+            axios.get(`/api/contents/amount/${teacherData.value.id}`),
+            axios.get(`/api/likes/count_teacher/${teacherData.value.id}`),
+            axios.get(`/api/comments/count_teacher/${teacherData.value.id}`),
+            axios.get(`/api/engagement/teacher/${teacherData.value.id}`),
+            axios.get(`/api/contents/popular/${teacherData.value.id}`)
         ]);
 
         statistics.value = {
             playlists: playlists.data.data || 0,
             contents: contents.data || 0,
-            likes: 0, // TODO: Add API endpoint for likes count
-            comments: 0 // TODO: Add API endpoint for comments count
+            likes: likes.data.data || 0,
+            comments: comments.data.data || 0
         };
+
+        // Update popular contents
+        popularContents.value = popular.data;
+
+        // Update engagement chart
+        updateEngagementChart(engagement.data);
     } catch (error) {
         console.error('Error loading teacher data:', error);
         if (error.response?.status === 401) {
             router.push('/');
         }
     }
+};
+
+const updateEngagementChart = (data) => {
+    if (chartInstance.value) {
+        chartInstance.value.destroy();
+    }
+
+    const ctx = engagementChart.value.getContext('2d');
+    chartInstance.value = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Likes',
+                    data: data.likes,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Comments',
+                    data: data.comments,
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 10
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark')
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light')
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light')
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    });
 };
 
 // Lifecycle

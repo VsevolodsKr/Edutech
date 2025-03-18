@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Header />
+    <Header />
         <section :class="sectionClasses">
             <!-- Update Form -->
             <form @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[2rem] w-[50rem] max-w-[95%] transition-all duration-300">
@@ -173,7 +173,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+        </div>
 
                 <!-- Submit Button -->
                 <button 
@@ -188,8 +188,8 @@
                     <span v-else>Update</span>
                 </button>
             </form>
-        </section>
-        <Sidebar />
+    </section>
+<Sidebar />
     </div>
 </template>
 
@@ -387,7 +387,7 @@ const handleSubmit = async () => {
 
         // Update store and redirect
         store.commit('setUser', response.data.data);
-        setTimeout(() => {
+                setTimeout(() => {
             router.push('/');
         }, 500);
     } catch (err) {

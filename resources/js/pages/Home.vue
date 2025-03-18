@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Header />
+    <Header />
         <div class="main-content">
             <section :class="sectionClasses">
                 <!-- Dashboard Section (Only for authenticated users) -->
@@ -19,7 +19,7 @@
                             <i class="fas fa-exclamation-circle"></i>
                             {{ error }}
                         </p>
-                    </div>
+            </div>
 
                     <!-- Dashboard Content -->
                     <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
@@ -38,8 +38,8 @@
                                     <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                         {{ userData?.profession || 'Student' }}
                                     </span>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
                             <!-- Statistics -->
                             <div class="grid grid-cols-3 gap-[1.5rem] mb-[2rem]">
@@ -61,8 +61,8 @@
                                     >
                                         View All
                                     </router-link>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
                             <!-- Action Buttons -->
                             <div class="flex gap-[1rem]">
@@ -84,8 +84,8 @@
                                     <span v-else>Logout</span>
                                 </button>
                             </div>
-                        </div>
-                    </div>
+                </div>
+            </div>
                 </template>
 
                 <!-- Latest Courses Section (For all users) -->
@@ -107,12 +107,12 @@
                         >
                             Try Again
                         </button>
-                    </div>
+            </div>
 
                     <!-- Empty State -->
                     <div v-else-if="latestPlaylists.length === 0" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
                         No courses available yet
-                    </div>
+        </div>
 
                     <!-- Playlists Grid -->
                     <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
@@ -120,13 +120,13 @@
                              :key="playlist.id" 
                              class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                             <!-- Teacher Info -->
-                            <div class="flex items-center gap-[1.5rem] mb-[2rem]">
+                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                 <img 
                                     :src="playlist.teacher?.image" 
                                     :alt="playlist.teacher?.name"
                                     class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                                 >
-                                <div>
+                    <div>
                                     <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem]">
                                         {{ playlist.teacher?.name }}
                                     </h3>
@@ -177,7 +177,7 @@
             </section>
         </div>
         <Sidebar />
-    </div>
+        </div>
 </template>
 
 <script setup>

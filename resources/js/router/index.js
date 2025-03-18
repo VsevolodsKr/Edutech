@@ -178,17 +178,6 @@ const requireAdminAuth = (to, from, next) => {
         return;
     }
     
-    // Check if user is a teacher
-    if (!user.profession) {
-        Swal.fire({
-            title: 'Access Denied',
-            text: 'You do not have permission to access the admin dashboard.',
-            icon: 'error'
-        });
-        next('/');
-        return;
-    }
-    
     next();
 };
 
@@ -307,9 +296,18 @@ const adminRoutes = [
         meta: { 
             title: 'Watch Content',
             requiresAuth: true,
-            isAdmin: true
-        },
-        beforeEnter: requireAdminAuth
+            isTeacher: true
+        }
+    },
+    {
+        path: '/admin_comments',
+        component: () => import('../admin/Admin_Comments.vue'),
+        name: 'Admin_Comments',
+        meta: { 
+            title: 'Comments',
+            requiresAuth: true,
+            isTeacher: true
+        }
     }
 ];
 
@@ -370,16 +368,6 @@ router.beforeEach((to, from, next) => {
         if (!token || !user) {
             localStorage.setItem('adminRedirectTo', to.fullPath);
             next('/login');
-            return;
-        }
-        
-        if (!user.profession) {
-            Swal.fire({
-                title: 'Access Denied',
-                text: 'You do not have permission to access the admin dashboard.',
-                icon: 'error'
-            });
-            next('/');
             return;
         }
     }

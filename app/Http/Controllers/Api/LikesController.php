@@ -42,6 +42,12 @@ class LikesController extends Controller
         ]);
     }
 
+    public function count_teacher(string $id) {
+        return response()->json([
+            'data' => Likes::where('teacher_id', $id)->count()
+        ]);
+    }
+
     public function get_user_likes(string $id){
         $liked_contents = Likes::where('user_id', $id)->get();
         $teachers = array();

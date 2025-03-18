@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Admin_Header />
+    <Admin_Header />
         <section :class="sectionClasses">
             <!-- Loading State -->
             <div v-if="isLoading" class="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
@@ -21,7 +21,7 @@
                     </button>
                 </div>
                 
-                <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center">
                     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="bg-base rounded-lg p-8 w-full max-w-3xl shadow-lg">
                         <!-- Status Messages -->
                         <TransitionGroup 
@@ -61,7 +61,7 @@
                                         <option value="" disabled>Select status...</option>
                                         <option value="active">Active</option>
                                         <option value="deactive">Deactive</option>
-                                    </select>
+                    </select>
                                 </div>
 
                                 <!-- Title Field -->
@@ -100,7 +100,7 @@
                                                     :value="playlist.id">
                                                 {{ playlist.title }} (<span :class="playlist.status === 'active' ? 'text-green-600' : 'text-red-600'">{{ playlist.status }}</span>)
                                             </option>
-                                        </select>
+                    </select>
                                         <div v-if="isLoadingPlaylists" class="absolute right-3 top-1/2 transform -translate-y-1/2">
                                             <div class="animate-spin rounded-full h-5 w-5 border-2 border-button border-t-transparent"></div>
                                         </div>
@@ -206,11 +206,11 @@
                                 {{ isSubmitting ? 'Adding Content...' : 'Add Content' }}
                             </button>
                         </div>
-                    </form>
-                </div>
+                </form>
+            </div>
             </template>
         </section>
-        <Admin_Sidebar />
+    <Admin_Sidebar />
     </div>
 </template>
 
@@ -237,9 +237,9 @@ const errorStatus = ref(null);
 const thumbPreview = ref(null);
 const videoPreview = ref(null);
 const formData = ref({
-    status: '',
-    title: '',
-    description: '',
+            status: '',
+            title: '',
+            description: '',
     playlist_id: '',
 });
 
@@ -410,7 +410,7 @@ const handleSubmit = async () => {
         errorStatus.value = response.data.status;
 
         if (response.data.status !== 500) {
-            setTimeout(() => {
+                setTimeout(() => {
                 router.push('/admin_contents');
             }, 1000);
         }

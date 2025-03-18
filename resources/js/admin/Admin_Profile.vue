@@ -40,9 +40,9 @@
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.comments }}</h3>
                                 <p class="text-[1.2rem] text-text_light">Comments</p>
-                            </div>
-                        </div>
-                    </div>
+    </div>
+            </div>
+        </div>
                     
                     <!-- Update Profile Form -->
                     <div class="bg-base rounded-lg p-[2rem]">
@@ -120,7 +120,7 @@
                                     placeholder="Enter new password..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
-                            </div>
+            </div>
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
@@ -132,7 +132,7 @@
                                     placeholder="Confirm new password..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
-                            </div>
+        </div>
 
                             <button 
                                 type="submit"
@@ -142,8 +142,8 @@
                                 {{ isSubmitting ? 'Updating...' : 'Update Profile' }}
                             </button>
                         </form>
-                    </div>
-                </div>
+            </div>
+        </div>
             </section>
         </div>
         <Admin_Sidebar />

@@ -1,10 +1,10 @@
 <template>
     <div>
-        <Header />
+<Header />
         <section :class="sectionClasses">
             <!-- Video Player Section -->
-            <div class="bg-base rounded-lg p-[1rem]">
-                <div class="relative mb-[1rem]">
+    <div class="bg-base rounded-lg p-[1rem]">
+        <div class="relative mb-[1rem]">
                     <video 
                         v-if="content"
                         :src="content.video" 
@@ -15,7 +15,7 @@
                     <div v-else class="w-full h-[400px] bg-gray-800 rounded-lg flex items-center justify-center">
                         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                     </div>
-                </div>
+        </div>
 
                 <template v-if="content && teacher">
                     <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
@@ -23,7 +23,7 @@
                     </h3>
                     
                     <!-- Video Stats -->
-                    <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
+        <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
                         <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
                             <i class="fas fa-calendar text-button"></i> 
                             <span class="text-text_light">{{ formatDate(content.date) }}</span>
@@ -32,24 +32,24 @@
                             <i class="fas fa-heart text-button"></i> 
                             <span class="text-text_light">{{ likesCount }} likes</span>
                         </p>
-                    </div>
+        </div>
 
                     <!-- Teacher Info -->
-                    <div class="flex items-center gap-[1rem] mb-[1rem]">
+        <div class="flex items-center gap-[1rem] mb-[1rem]">
                         <img 
                             :src="teacher.image" 
                             :alt="teacher.name"
                             class="rounded-full h-[5rem] w-[5rem] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                         >
-                        <div>
+            <div>
                             <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
                                 {{ teacher.name }}
                             </h3>
                             <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                 {{ teacher.profession }}
                             </span>
-                        </div>
-                    </div>
+            </div>
+        </div>
 
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-between gap-[1rem]">
@@ -69,22 +69,22 @@
                             <i :class="[isLiked ? 'fa-solid' : 'far', 'fa-heart', isLiked ? 'text-button' : '']"></i>
                             <span class="ml-2">{{ isLiked ? 'Unlike' : 'Like' }}</span>
                         </button>
-                    </div>
+            </div>
 
                     <!-- Description -->
                     <p class="leading-7 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem]">
                         {{ content.description }}
                     </p>
                 </template>
-            </div>
-        </section>
+    </div>
+</section>
 
         <!-- Comments Section -->
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
                 {{ commentsCount }} Comments
             </h1>
-            <hr class="border-[#ccc] mb-[2rem]">
+    <hr class="border-[#ccc] mb-[2rem]">
 
             <!-- Add Comment Form -->
             <form 
@@ -127,10 +127,10 @@
                 >
                     {{ isCommentLoading ? 'Adding...' : 'Add Comment' }}
                 </button>
-            </form>
+    </form>
 
             <!-- Comments List -->
-            <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
+    <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                 <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
                     User Comments
                 </h1>
@@ -142,26 +142,26 @@
                         class="mb-8 last:mb-0"
                     >
                         <!-- Comment Author -->
-                        <div class="flex items-center gap-[1rem] mb-[1rem]">
+            <div class="flex items-center gap-[1rem] mb-[1rem]">
                             <img 
                                 :src="comment.user.image" 
                                 :alt="comment.user.name"
                                 class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                             >
-                            <div>
+                <div>
                                 <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
                                     {{ comment.user.name }}
                                 </h3>
                                 <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                     {{ formatDate(comment.date) }}
                                 </span>
-                            </div>
-                        </div>
+                </div>
+            </div>
 
                         <!-- Comment Content -->
                         <div class="rounded-lg bg-background p-[1rem] whitespace-pre-line my-[.5rem] text-[1rem] text-text_light leading-7 relative [@media(max-width:550px)]:text-[.7rem]">
                             {{ comment.comment }}
-                        </div>
+                </div>
 
                         <!-- Comment Actions -->
                         <div v-if="user?.id === comment.user.id" class="flex gap-[1rem] mt-[.5rem]">
@@ -178,12 +178,12 @@
                             >
                                 {{ isDeletingComment === comment.id ? 'Deleting...' : 'Delete Comment' }}
                             </button>
-                        </div>
-                    </div>
-                </TransitionGroup>
             </div>
-        </section>
-        <Sidebar />
+        </div>
+                </TransitionGroup>
+    </div>
+</section>
+<Sidebar />
     </div>
 </template>
 
@@ -281,19 +281,17 @@ const loadContent = async () => {
             };
         }
 
-        // Load likes count and comments if user is logged in
+        // Load likes count and comments count first
+        await Promise.all([
+            loadLikesCount(),
+            loadCommentsCount()
+        ]);
+
+        // Then load comments and like status if user is logged in
         if (user.value) {
             await Promise.all([
                 checkLikeStatus(),
-                loadLikesCount(),
-                loadComments(),
-                loadCommentsCount()
-            ]);
-        } else {
-            // For unauthorized users, just load the counts
-            await Promise.all([
-                loadLikesCount(),
-                loadCommentsCount()
+                loadComments()
             ]);
         }
 
@@ -495,7 +493,7 @@ const handleDeleteComment = async (commentId) => {
             router.push('/login');
             return;
         }
-        Swal.fire({
+                    Swal.fire({
             title: 'Error!',
             text: 'Failed to delete comment',
             icon: 'error',
@@ -552,15 +550,16 @@ const toggleLike = async () => {
     }
 };
 
-// Initialize
+// Lifecycle hooks
 onMounted(async () => {
     try {
-        await Promise.all([
-            loadUser(),
-            loadContent()
-        ]);
+        await loadUser();
+        await loadContent();
     } catch (err) {
-        console.error('Error initializing video page:', err);
+        console.error('Error in onMounted:', err);
+        error.value = 'Failed to load content. Please try again.';
+    } finally {
+        isLoading.value = false;
     }
 });
 </script>

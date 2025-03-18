@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Admin_Header />
+    <Admin_Header />
         <section :class="sectionClasses">
             <!-- Loading State -->
             <div v-if="isLoading" class="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
@@ -21,7 +21,7 @@
                     </button>
                 </div>
                 
-                <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center">
                     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="bg-base rounded-lg p-8 w-full max-w-3xl shadow-lg">
                         <!-- Status Messages -->
                         <TransitionGroup 
@@ -61,7 +61,7 @@
                                         <option value="" disabled>Select status...</option>
                                         <option value="active">Active</option>
                                         <option value="deactive">Deactive</option>
-                                    </select>
+                    </select>
                                 </div>
 
                                 <!-- Title Field -->
@@ -102,7 +102,7 @@
                                             >
                                                 {{ playlist.title }} ({{ playlist.status }})
                                             </option>
-                                        </select>
+                    </select>
                                         <div v-if="isLoadingPlaylists" class="absolute right-3 top-1/2 transform -translate-y-1/2">
                                             <div class="animate-spin rounded-full h-5 w-5 border-2 border-button border-t-transparent"></div>
                                         </div>
@@ -141,7 +141,7 @@
                                             Thumbnail
                                             <span v-if="!content?.thumb" class="text-button4">*</span>
                                         </label>
-                                        <div class="relative">
+                    <div class="relative">
                                             <div v-if="content?.thumb" 
                                                  class="relative mb-4 rounded-lg overflow-hidden group">
                                                 <img :src="getFileUrl(content.thumb, 'content_thumbs')"
@@ -163,7 +163,7 @@
                                                 Max size: 2MB. Supported formats: JPG, PNG
                                             </p>
                                         </div>
-                                    </div>
+                    </div>
 
                                     <!-- Video Upload -->
                                     <div>
@@ -171,7 +171,7 @@
                                             Video File
                                             <span v-if="!content?.video" class="text-button4">*</span>
                                         </label>
-                                        <div class="relative">
+                    <div class="relative">
                                             <div v-if="content?.video" 
                                                  class="relative mb-4 rounded-lg overflow-hidden">
                                                 <video 
@@ -181,8 +181,8 @@
                                                 >
                                                     <source :src="getFileUrl(content.video, 'content_videos')" type="video/mp4">
                                                     Your browser does not support the video tag.
-                                                </video>
-                                            </div>
+                        </video>
+                    </div>
                                             <input 
                                                 ref="videoInput"
                                                 type="file"
@@ -212,11 +212,11 @@
                                 {{ isSubmitting ? 'Updating Content...' : 'Update Content' }}
                             </button>
                         </div>
-                    </form>
-                </div>
+                </form>
+            </div>
             </template>
         </section>
-        <Admin_Sidebar />
+    <Admin_Sidebar />
     </div>
 </template>
 
@@ -243,7 +243,7 @@ const playlists = ref([]);
 const messages = ref([]);
 const errorStatus = ref(null);
 const formData = ref({
-    status: '',
+            status: '',
     title: '',
     description: '',
     playlist_id: '',
@@ -489,7 +489,7 @@ const handleSubmit = async () => {
         errorStatus.value = response.data.status;
 
         if (response.data.status !== 500) {
-            setTimeout(() => {
+                setTimeout(() => {
                 router.push('/admin_contents');
             }, 1000);
         }

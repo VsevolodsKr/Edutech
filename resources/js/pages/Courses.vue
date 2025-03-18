@@ -1,10 +1,10 @@
 <template>
     <div>
-        <Header />
+<Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
-                <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
+        <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
+        <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
                 
                 <!-- Search Bar -->
                 <div class="w-full rounded-lg bg-base py-[.5rem] mb-[1rem] px-[1.5rem] flex gap-[2rem] items-center">
@@ -23,12 +23,12 @@
                     >
                         <i :class="isSearching ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
                     </button>
-                </div>
+        </div>
 
                 <!-- Loading State -->
                 <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
-                </div>
+                    </div>
 
                 <!-- Error State -->
                 <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
@@ -103,11 +103,11 @@
                                 Start Learning
                             </router-link>
                         </div>
-                    </div>
-                </div>
-            </section>
+            </div>
         </div>
-        <Sidebar />
+    </section>
+        </div>
+<Sidebar />
     </div>
 </template>
 

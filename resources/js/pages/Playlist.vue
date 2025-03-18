@@ -1,11 +1,11 @@
 <template>
     <div>
-        <Header />
+<Header />
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
                 Playlist Details
             </h1>
-            <hr class="border-[#ccc] mb-[2rem]">
+    <hr class="border-[#ccc] mb-[2rem]">
 
             <!-- Loading State -->
             <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
@@ -25,10 +25,10 @@
 
             <!-- Playlist Content -->
             <template v-else-if="playlist && teacher">
-                <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
+    <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
                     <!-- Playlist Thumbnail Section -->
-                    <div class="flex-[1_1_20rem]">
-                        <div class="mb-[1rem]">
+        <div class="flex-[1_1_20rem]">
+            <div class="mb-[1rem]">
                             <button 
                                 v-if="user"
                                 @click="toggleBookmark"
@@ -40,8 +40,8 @@
                                     {{ isBookmarked ? 'Remove Playlist' : 'Save Playlist' }}
                                 </span>
                             </button>
-                        </div>
-                        <div class="relative">
+            </div>
+            <div class="relative">
                             <img 
                                 :src="playlist.thumb" 
                                 :alt="playlist.title"
@@ -50,27 +50,27 @@
                             <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-30 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
                                 {{ contentCount }} videos
                             </span>
-                        </div>
-                    </div>
+            </div>
+        </div>
 
                     <!-- Playlist Info Section -->
-                    <div class="flex-[1_1_40rem]">
-                        <div class="flex items-center gap-[1rem] mb-[1rem]">
+        <div class="flex-[1_1_40rem]">
+            <div class="flex items-center gap-[1rem] mb-[1rem]">
                             <img 
                                 :src="teacher.image" 
                                 :alt="teacher.name"
                                 class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                             >
-                            <div>
+                <div>
                                 <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
                                     {{ teacher.name }}
                                 </h3>
                                 <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                     {{ formatDate(playlist.date) }}
                                 </span>
-                            </div>
-                        </div>
-                        <div>
+                </div>
+            </div>
+            <div>
                             <h3 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
                                 {{ playlist.title }}
                             </h3>
@@ -83,16 +83,16 @@
                             >
                                 View Profile
                             </router-link>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </div>
 
                 <!-- Videos Section -->
                 <div class="pt-[2rem] bg-background [@media(max-width:550px)]:px-[.5rem]">
                     <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
                         Playlist Videos
                     </h1>
-                    <hr class="border-[#ccc] mb-[2rem]">
+    <hr class="border-[#ccc] mb-[2rem]">
 
                     <!-- Videos Grid -->
                     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] pb-[2rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
@@ -109,18 +109,18 @@
                                     class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]"
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-30 rounded-lg flex items-center justify-center text-[3rem] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <i class="fas fa-play"></i>
-                                </div>
+                <i class="fas fa-play"></i>
+            </div>
                             </div>
                             <h3 class="mt-[2rem] text-[1.5rem] text-text_dark group-hover:text-button1 [@media(max-width:550px)]:text-[1.2rem]">
                                 {{ content.title }}
                             </h3>
                         </router-link>
-                    </div>
-                </div>
+    </div>
+</div>
             </template>
-        </section>
-        <Sidebar />
+</section>
+<Sidebar />
     </div>
 </template>
 

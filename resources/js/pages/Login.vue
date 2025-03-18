@@ -162,7 +162,13 @@ const handleSubmit = async () => {
 
         // Handle successful login
         localStorage.setItem('token', response.data.token);
-        store.commit('setUser', response.data.data);
+        // Store the complete user data including is_teacher flag
+        const userData = {
+            ...response.data.data,
+            is_teacher: response.data.is_teacher
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        store.commit('setUser', userData);
 
         validationMessages.value = Array.isArray(response.data.message) 
             ? response.data.message 
@@ -171,7 +177,7 @@ const handleSubmit = async () => {
 
         // Redirect based on user role
         setTimeout(() => {
-            router.push(response.data.is_teacher ? '/dashboard' : '/', response.data);
+            router.push(response.data.is_teacher ? '/dashboard' : '/');
         }, 500);
     } catch (err) {
         console.error('Login error:', err);
