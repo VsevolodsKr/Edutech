@@ -230,7 +230,7 @@ const loadPlaylistData = async () => {
         error.value = null;
 
         // Get all playlists without authentication
-        const response = await axios.get('/api/playlists/all');
+        const response = await axios.get('/api/playlists/active');
 
         if (!Array.isArray(response.data)) {
             throw new Error('Invalid response format');

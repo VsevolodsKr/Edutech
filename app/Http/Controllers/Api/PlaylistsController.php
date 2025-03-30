@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Contents;
 
 class PlaylistsController extends Controller
 {
@@ -21,6 +22,11 @@ class PlaylistsController extends Controller
     public function all()
     {
         return Playlists::orderBy('date', 'desc')->get();
+    }
+
+    public function active()
+    {
+        return Playlists::orderBy('date', 'desc')->where('status', 'active')->get();
     }
 
     /**
@@ -134,8 +140,7 @@ class PlaylistsController extends Controller
             \Log::info('Updating playlist', [
                 'id' => $id,
                 'request_data' => $request->except(['thumb']),
-                'has_thumb' => $request->hasFile('thumb'),
-                'keep_thumb' => $request->has('keep_thumb')
+                'has_thumb' => $request->hasFile('thumb')
             ]);
 
             $validator = $this->validatePlaylist($request);
@@ -153,7 +158,7 @@ class PlaylistsController extends Controller
                 'status' => $request->status
             ];
 
-            // Handle thumbnail update
+            // Handle thumbnail update only if a new file is provided
             if ($request->hasFile('thumb')) {
                 try {
                     $updateData['thumb'] = $this->handleFileUpload($request->file('thumb'));
@@ -166,11 +171,8 @@ class PlaylistsController extends Controller
                     \Log::error('Thumbnail upload failed', ['error' => $e->getMessage()]);
                     return $this->errorResponse(['Failed to upload thumbnail: ' . $e->getMessage()]);
                 }
-            } elseif (!$request->has('keep_thumb')) {
-                // If no new thumb and not keeping old thumb, set to null
-                $updateData['thumb'] = null;
             }
-            // If keep_thumb is true, don't update the thumb field at all
+            // If no new thumb is provided, keep the existing one
 
             \Log::info('Updating playlist with data', ['update_data' => $updateData]);
             
@@ -194,11 +196,21 @@ class PlaylistsController extends Controller
     {
         try {
             $playlist = Playlists::findOrFail($id);
+            
+            // Delete associated contents
+            Contents::where('playlist_id', $id)->delete();
+            
+            // Delete the playlist
             $playlist->delete();
-
+            
             return $this->successResponse('Playlist deleted successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Failed to delete playlist']);
+            \Log::error('Failed to delete playlist', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse(['Failed to delete playlist: ' . $e->getMessage()]);
         }
     }
 
@@ -209,6 +221,39 @@ class PlaylistsController extends Controller
     {
         try {
             $playlists = Playlists::where('teacher_id', $id)
+                ->orderBy('date', 'desc')
+                ->get()
+                ->map(function ($playlist) {
+                    return [
+                        'id' => $playlist->id,
+                        'title' => $playlist->title,
+                        'description' => $playlist->description,
+                        'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,
+                        'date' => $playlist->date,
+                        'status' => $playlist->status,
+                        'content_count' => $playlist->contents()->count()
+                    ];
+                });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Playlists retrieved successfully',
+                'data' => $playlists
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Failed to retrieve playlists',
+                'data' => []
+            ], 500);
+        }
+    }
+
+    public function active_teacher_playlists($id)
+    {
+        try {
+            $playlists = Playlists::where('teacher_id', $id)
+                ->where('status', 'active')
                 ->orderBy('date', 'desc')
                 ->get()
                 ->map(function ($playlist) {
@@ -293,13 +338,27 @@ class PlaylistsController extends Controller
      */
     private function validatePlaylist(Request $request)
     {
-        return Validator::make($request->all(), [
+        $rules = [
             'title' => 'required|max:100',
             'description' => 'required',
             'teacher_id' => 'required|exists:teachers,id',
-            'status' => 'required|in:active,deactive',
-            'thumb' => 'required|image|mimes:jpeg,png|max:2048'
-        ], [
+            'status' => 'required|in:active,deactive'
+        ];
+
+        // Check if this is a new playlist or an update
+        $isNewPlaylist = !$request->route('id');
+
+        // Only require thumb for new playlists
+        if ($isNewPlaylist) {
+            $rules['thumb'] = 'required|image|mimes:jpeg,png|max:2048';
+        } else {
+            // For updates, thumb is completely optional
+            if ($request->hasFile('thumb')) {
+                $rules['thumb'] = 'image|mimes:jpeg,png|max:2048';
+            }
+        }
+
+        return Validator::make($request->all(), $rules, [
             'title.required' => 'Please enter playlist title',
             'description.required' => 'Please enter playlist description',
             'teacher_id.required' => 'Teacher ID is required',

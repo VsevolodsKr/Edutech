@@ -109,13 +109,43 @@ const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const userData = computed(() => {
     try {
-        const user = store.getters.getUser?.data || {};
-        return {
+        const user = store.getters.getUser;
+        console.log('Raw user data from store:', user);
+        
+        if (!user) {
+            console.log('No user data found in store');
+            return {
+                name: 'Not set',
+                email: 'Not set',
+                image: '/images/avatar.png',
+                created_at: 'Not available'
+            };
+        }
+
+        // Handle the image URL properly
+        let imageUrl = '/images/avatar.png'; // Default avatar
+        console.log('Original image path:', user.image);
+        
+        if (user.image) {
+            try {
+                imageUrl = new URL(user.image, import.meta.url);
+                console.log('Processed image URL:', imageUrl);
+            } catch (err) {
+                console.error('Error processing image URL:', err);
+                imageUrl = '/images/avatar.png';
+            }
+        } else {
+            console.log('No image path provided, using default avatar');
+        }
+
+        const result = {
             name: user.name || 'Not set',
             email: user.email || 'Not set',
-            image: user.image ? new URL(user.image, import.meta.url) : '/images/avatar.png',
+            image: imageUrl,
             created_at: user.created_at ? formatDate(user.created_at) : 'Not available'
         };
+        console.log('Final userData object:', result);
+        return result;
     } catch (err) {
         console.error('Error accessing user data:', err);
         return {
@@ -170,7 +200,9 @@ const loadUserData = async () => {
         });
 
         if (response.data) {
+            // Store the user data in Vuex
             store.commit('setUser', response.data);
+            console.log('User data loaded:', response.data);
         } else {
             console.error('No data in response');
             error.value = 'No user data received';
@@ -178,7 +210,11 @@ const loadUserData = async () => {
     } catch (err) {
         console.error('Error loading user data:', err);
         if (err.response?.status === 401) {
+            // Token is invalid or expired
+            localStorage.removeItem('token');
             router.push('/login');
+        } else if (err.response?.data?.message) {
+            error.value = err.response.data.message;
         } else {
             error.value = 'Failed to load profile data. Please try again.';
         }

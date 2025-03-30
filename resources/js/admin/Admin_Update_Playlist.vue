@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Admin_Header />
+<Admin_Header />
         <section :class="sectionClasses">
             <!-- Loading State -->
             <div v-if="isLoading" class="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
@@ -21,7 +21,7 @@
                     </button>
                 </div>
                 
-                <div class="flex items-center justify-center">
+    <div class="flex items-center justify-center">
                     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="bg-base rounded-lg p-8 w-full max-w-3xl shadow-lg">
                         <!-- Status Messages -->
                         <TransitionGroup 
@@ -61,7 +61,7 @@
                                         <option value="" disabled>Select status...</option>
                                         <option value="active">Active</option>
                                         <option value="deactive">Deactive</option>
-                                    </select>
+            </select>
                                 </div>
 
                                 <!-- Title Field -->
@@ -106,10 +106,9 @@
                                 <!-- Thumbnail Upload -->
                                 <div>
                                     <label class="block text-sm font-medium text-text_dark mb-2">
-                                        Thumbnail
-                                        <span v-if="!playlist?.thumb" class="text-button4">*</span>
+                                        Thumbnail (Optional)
                                     </label>
-                                    <div class="relative">
+            <div class="relative">
                                         <div v-if="playlist?.thumb" 
                                              class="relative mb-4 rounded-lg overflow-hidden group">
                                             <img :src="getFileUrl(playlist.thumb, 'playlist_thumbs')"
@@ -174,7 +173,7 @@ const playlist = ref(null);
 const messages = ref([]);
 const errorStatus = ref(null);
 const formData = ref({
-    status: '',
+            status: '',
     title: '',
     description: '',
 });
@@ -256,25 +255,15 @@ const handleSubmit = async () => {
             }
         });
 
-        console.log('Form data being sent:', {
-            teacher_id: userResponse.data.id,
-            title: formData.value.title,
-            description: formData.value.description,
-            status: formData.value.status,
-            has_new_thumb: !!thumbInput.value?.files[0]
-        });
-
         const formDataToSend = new FormData();
         formDataToSend.append('teacher_id', userResponse.data.id);
         formDataToSend.append('title', formData.value.title);
         formDataToSend.append('description', formData.value.description);
         formDataToSend.append('status', formData.value.status);
 
-        // Handle thumbnail
+        // Only append thumb if a new file is selected
         if (thumbInput.value?.files[0]) {
             formDataToSend.append('thumb', thumbInput.value.files[0]);
-        } else if (playlist.value?.thumb) {
-            formDataToSend.append('keep_thumb', 'true');
         }
 
         const response = await axios.post(
@@ -288,8 +277,6 @@ const handleSubmit = async () => {
                 }
             }
         );
-
-        console.log('Update response:', response.data);
 
         if (response.data.status === 500) {
             errorStatus.value = 500;

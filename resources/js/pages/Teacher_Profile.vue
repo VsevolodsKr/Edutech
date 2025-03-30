@@ -114,6 +114,7 @@ import { useWindowSize } from '@vueuse/core';
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
+import axios from 'axios';
 
 const route = useRoute();
 const { width } = useWindowSize();
@@ -180,8 +181,10 @@ const loadTeacherData = async () => {
         isLoading.value = true;
         const teacherId = route.params.id;
         
-        // Fetch teacher data without authentication
+        // Fetch teacher data
         const teacherResponse = await axios.get(`/api/teachers/find/${teacherId}`);
+        console.log('Teacher response:', teacherResponse.data);
+        
         if (!teacherResponse.data.data) {
             throw new Error('Teacher not found');
         }
@@ -197,8 +200,10 @@ const loadTeacherData = async () => {
             image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
         };
 
-        // Fetch playlists data without authentication
-        const playlistsResponse = await axios.get(`/api/playlists/${teacherId}`);
+        // Fetch playlists data using the correct endpoint
+        const playlistsResponse = await axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`);
+        console.log('Playlists response:', playlistsResponse.data);
+        
         if (playlistsResponse.data.status === 200) {
             const processedPlaylists = await Promise.all(
                 playlistsResponse.data.data.map(processPlaylist)
@@ -217,10 +222,14 @@ const loadTeacherData = async () => {
 
     } catch (error) {
         console.error('Error loading teacher data:', error);
-        teacher.value = null;
-        playlists.value = [];
-        totalPlaylists.value = 0;
-        totalContents.value = 0;
+        if (error.response?.status === 404) {
+            teacher.value = null;
+        } else {
+            teacher.value = null;
+            playlists.value = [];
+            totalPlaylists.value = 0;
+            totalContents.value = 0;
+        }
     } finally {
         isLoading.value = false;
     }

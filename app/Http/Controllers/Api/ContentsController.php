@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Comments;
+use App\Models\Likes;
 
 class ContentsController extends Controller
 {
@@ -173,16 +175,28 @@ class ContentsController extends Controller
     /**
      * Delete content
      */
-    public function delete(string $id)
+    public function delete($id)
     {
         try {
             $content = Contents::findOrFail($id);
+            
+            // Delete associated comments
+            Comments::where('content_id', $id)->delete();
+            
+            // Delete associated likes
+            Likes::where('content_id', $id)->delete();
+            
+            // Delete the content
             $content->delete();
-            $this->clearContentCaches($content);
-
+            
             return $this->successResponse('Content deleted successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Failed to delete content']);
+            \Log::error('Failed to delete content', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse(['Failed to delete content: ' . $e->getMessage()]);
         }
     }
 

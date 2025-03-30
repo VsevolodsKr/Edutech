@@ -171,18 +171,16 @@ const updateEngagementChart = (data) => {
                 {
                     label: 'Likes',
                     data: data.likes,
-                    borderColor: '#4CAF50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--button2'),
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button2'),
                     tension: 0.4,
-                    fill: true
                 },
                 {
                     label: 'Comments',
                     data: data.comments,
-                    borderColor: '#2196F3',
-                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--button3'),
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button3'),
                     tension: 0.4,
-                    fill: true
                 }
             ]
         },

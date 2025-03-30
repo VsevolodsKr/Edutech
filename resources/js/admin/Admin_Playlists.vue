@@ -258,10 +258,14 @@ const handleDelete = async (id) => {
         if (response.data.status === 200) {
             // Remove the deleted playlist from the list
             playlists.value = playlists.value.filter(playlist => playlist.id !== id);
+            // Show success message
+            error.value = null;
+        } else {
+            error.value = response.data.message || 'Failed to delete playlist';
         }
     } catch (err) {
         console.error('Error deleting playlist:', err);
-        error.value = 'Failed to delete playlist';
+        error.value = err.response?.data?.message || 'Failed to delete playlist';
     }
 };
 

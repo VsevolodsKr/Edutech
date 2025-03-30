@@ -17,6 +17,7 @@ Route::get('playlists/latest', [PlaylistsController::class, 'latest']);
 Route::get('teachers/find/{id}', [TeacherController::class, 'find_teacher']);
 Route::get('contents/playlist/{id}/amount', [ContentsController::class, 'get_playlist_contents_amount']);
 Route::get('playlists/all', [PlaylistsController::class, 'all']);
+Route::get('playlists/active', [PlaylistsController::class, 'active']);
 Route::get('playlists/{id}/teacher', [PlaylistsController::class, 'playlist_teacher']);
 Route::get('teachers/all', [TeacherController::class, 'get_all']);
 Route::post('playlists/search', [PlaylistsController::class, 'search']);
@@ -30,6 +31,7 @@ Route::get('comments/content_amount/{id}', [CommentsController::class, 'count_co
 Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comments']);
 Route::get('playlists/find/{id}', [PlaylistsController::class, 'find']);
 Route::get('playlists/teacher_playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
+Route::get('playlists/teacher_active_playlists/{id}', [PlaylistsController::class, 'active_teacher_playlists']);
 
 // Engagement routes
 Route::get('engagement/teacher/{id}', [EngagementController::class, 'get_teacher_engagement']);
