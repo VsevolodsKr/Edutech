@@ -61,7 +61,7 @@
                                         <option value="" disabled>Select status...</option>
                                         <option value="active">Active</option>
                                         <option value="deactive">Deactive</option>
-                    </select>
+                                    </select>
                                 </div>
 
                                 <!-- Title Field -->
@@ -98,11 +98,10 @@
                                             <option v-for="playlist in playlists" 
                                                     :key="playlist.id" 
                                                     :value="playlist.id"
-                                                    :class="{'text-green-600': playlist.status === 'active', 'text-red-600': playlist.status === 'deactive'}"
-                                            >
-                                                {{ playlist.title }} ({{ playlist.status }})
+                                                    :selected="playlist.id === content?.playlist_id">
+                                                {{ playlist.title }} (<span :class="playlist.status === 'active' ? 'text-green-600' : 'text-red-600'">{{ playlist.status }}</span>)
                                             </option>
-                    </select>
+                                        </select>
                                         <div v-if="isLoadingPlaylists" class="absolute right-3 top-1/2 transform -translate-y-1/2">
                                             <div class="animate-spin rounded-full h-5 w-5 border-2 border-button border-t-transparent"></div>
                                         </div>
@@ -136,12 +135,11 @@
                                 <!-- File Upload Preview Grid -->
                                 <div class="grid grid-cols-1 gap-6">
                                     <!-- Thumbnail Upload -->
-                                    <div>
+                                    <div v-if="formData.video_source_type === 'file'">
                                         <label class="block text-sm font-medium text-text_dark mb-2">
-                                            Thumbnail
-                                            <span v-if="!content?.thumb" class="text-button4">*</span>
+                                            Thumbnail <span class="text-button4">*</span>
                                         </label>
-                    <div class="relative">
+                                        <div class="relative">
                                             <div v-if="content?.thumb" 
                                                  class="relative mb-4 rounded-lg overflow-hidden group">
                                                 <img :src="getFileUrl(content.thumb, 'content_thumbs')"
@@ -163,38 +161,74 @@
                                                 Max size: 2MB. Supported formats: JPG, PNG
                                             </p>
                                         </div>
-                    </div>
+                                    </div>
 
-                                    <!-- Video Upload -->
+                                    <!-- Video Upload or YouTube Link -->
                                     <div>
                                         <label class="block text-sm font-medium text-text_dark mb-2">
-                                            Video File
-                                            <span v-if="!content?.video" class="text-button4">*</span>
+                                            Video Source <span class="text-button4">*</span>
                                         </label>
-                    <div class="relative">
-                                            <div v-if="content?.video" 
-                                                 class="relative mb-4 rounded-lg overflow-hidden">
-                                                <video 
-                                                    class="w-full h-40 object-cover"
-                                                    controls
+                                        <div class="space-y-4">
+                                            <!-- Video Type Selection -->
+                                            <div class="flex gap-4">
+                                                <label class="flex items-center">
+                                                    <input 
+                                                        type="radio" 
+                                                        v-model="formData.video_source_type" 
+                                                        value="file"
+                                                        class="mr-2"
+                                                    >
+                                                    Upload Video File
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input 
+                                                        type="radio" 
+                                                        v-model="formData.video_source_type" 
+                                                        value="youtube"
+                                                        class="mr-2"
+                                                    >
+                                                    YouTube Link
+                                                </label>
+                                            </div>
+
+                                            <!-- File Upload -->
+                                            <div v-if="formData.video_source_type === 'file'" class="relative">
+                                                <div v-if="content?.video" 
+                                                     class="relative mb-4 rounded-lg overflow-hidden">
+                                                    <video 
+                                                        class="w-full h-40 object-cover"
+                                                        controls
+                                                        @error="handleVideoError"
+                                                    >
+                                                        <source :src="getFileUrl(content.video, 'content_videos')" type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                </div>
+                                                <input 
+                                                    ref="videoInput"
+                                                    type="file"
+                                                    accept="video/*"
+                                                    @change="handleVideoChange"
                                                     @error="handleVideoError"
+                                                    class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
                                                 >
-                                                    <source :src="getFileUrl(content.video, 'content_videos')" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                        </video>
-                    </div>
-                                            <input 
-                                                ref="videoInput"
-                                                type="file"
-                                                accept="video/*"
-                                                :required="!content?.video"
-                                                @change="handleVideoChange"
-                                                @error="handleVideoError"
-                                                class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
-                                            >
-                                            <p class="text-xs text-text_light mt-1">
-                                                Max size: 100MB. Supported formats: MP4, WebM
-                                            </p>
+                                                <p class="text-xs text-text_light mt-1">
+                                                    Max size: 10MB. Supported formats: MP4, WebM
+                                                </p>
+                                            </div>
+
+                                            <!-- YouTube Link -->
+                                            <div v-else class="relative">
+                                                <input 
+                                                    v-model="formData.youtube_link"
+                                                    type="text"
+                                                    placeholder="Enter YouTube video URL (e.g., https://www.youtube.com/watch?v=...)"
+                                                    class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
+                                                >
+                                                <p class="text-xs text-text_light mt-1">
+                                                    Enter a valid YouTube video URL
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -227,6 +261,7 @@ import { useWindowSize } from '@vueuse/core';
 import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const route = useRoute();
@@ -243,10 +278,13 @@ const playlists = ref([]);
 const messages = ref([]);
 const errorStatus = ref(null);
 const formData = ref({
-            status: '',
     title: '',
     description: '',
-    playlist_id: '',
+    status: 'active',
+    video_source_type: 'file',
+    youtube_link: '',
+    video: null,
+    thumb: null
 });
 
 // Computed
@@ -260,63 +298,42 @@ const sectionClasses = computed(() => [
 // Methods
 const loadContent = async () => {
     try {
+        isLoading.value = true;
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/login');
+            router.push('/');
             return;
         }
 
         const response = await axios.get(`/api/contents/find/${route.params.id}`, {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
             }
         });
 
-        console.log('Raw content response:', response.data);
-
-        if (response.data && response.data.content) {
-            const contentData = response.data.content;
-            console.log('Raw thumb path:', contentData.thumb);
-            console.log('Raw video path:', contentData.video);
-            
-            // Process the content data with correct paths
-            const thumbUrl = contentData.thumb ? 
-                (contentData.thumb.startsWith('http') ? 
-                    contentData.thumb : 
-                    `${window.location.origin}/storage/content_thumbs/${contentData.thumb.split('/').pop()}`) : null;
-            
-            const videoUrl = contentData.video ? 
-                (contentData.video.startsWith('http') ? 
-                    contentData.video : 
-                    `${window.location.origin}/storage/content_videos/${contentData.video.split('/').pop()}`) : null;
-
-            console.log('Processed thumb URL:', thumbUrl);
-            console.log('Processed video URL:', videoUrl);
-            
-            content.value = {
-                ...contentData,
-                thumb: thumbUrl,
-                video: videoUrl
-            };
-            
-            // Initialize form data
+        if (response.data.content) {
+            content.value = response.data.content;
             formData.value = {
-                status: contentData.status || '',
-                title: contentData.title || '',
-                description: contentData.description || '',
-                playlist_id: contentData.playlist_id || '',
+                title: response.data.content.title,
+                description: response.data.content.description,
+                status: response.data.content.status,
+                playlist_id: response.data.content.playlist_id,
+                video_source_type: response.data.content.video_source_type,
+                youtube_link: response.data.content.video_source_type === 'youtube' ? response.data.content.video : '',
+                video: null,
+                thumb: null
             };
-
-            console.log('Final content value:', content.value);
         }
     } catch (error) {
         console.error('Error loading content:', error);
-        messages.value = ['Failed to load content'];
-        errorStatus.value = 500;
-        if (error.response?.status === 401) {
-            router.push('/login');
-        }
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to load content',
+            icon: 'error'
+        });
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -379,26 +396,9 @@ const getFileUrl = (path, type = 'content_thumbs') => {
     return `${window.location.origin}/storage/${type}/${filename}`;
 };
 
-const handleThumbChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png'];
-        if (!allowedTypes.includes(file.type)) {
-            messages.value = ['Please select a JPG or PNG image file'];
-            errorStatus.value = 500;
-            thumbInput.value.value = '';
-            return;
-        }
-        
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            messages.value = ['Image size should be less than 2MB'];
-            errorStatus.value = 500;
-            thumbInput.value.value = '';
-            return;
-        }
-    }
+const handleSourceTypeChange = () => {
+    formData.value.video = null;
+    formData.value.youtube_link = '';
 };
 
 const handleVideoChange = (event) => {
@@ -409,17 +409,26 @@ const handleVideoChange = (event) => {
             messages.value = ['Please select a video file'];
             errorStatus.value = 500;
             videoInput.value.value = '';
+            formData.value.video = null;
             return;
         }
         
-        // Validate file size (max 100MB)
-        if (file.size > 100 * 1024 * 1024) {
-            messages.value = ['Video size should be less than 100MB'];
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (file.size > maxSize) {
+            messages.value = ['Video size should be less than 10MB'];
             errorStatus.value = 500;
             videoInput.value.value = '';
+            formData.value.video = null;
             return;
         }
+
+        formData.value.video = file;
     }
+};
+
+const handleThumbChange = (event) => {
+    formData.value.thumb = event.target.files[0];
 };
 
 const handleVideoError = (event) => {
@@ -428,74 +437,97 @@ const handleVideoError = (event) => {
     errorStatus.value = 500;
 };
 
+const getYouTubeThumbnail = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+        return `https://img.youtube.com/vi/${match[2]}/maxresdefault.jpg`;
+    }
+    return null;
+};
+
 const handleSubmit = async () => {
     try {
         isSubmitting.value = true;
-        messages.value = [];
-        errorStatus.value = null;
-
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/login');
+            router.push('/');
             return;
         }
 
-        const userResponse = await axios.get('/api/user', {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
+        // Validate required fields
+        if (!formData.value.title || !formData.value.description || !formData.value.playlist_id) {
+            messages.value = ['Please fill in all required fields'];
+            errorStatus.value = 500;
+            return;
+        }
+
+        // Validate video source
+        if (formData.value.video_source_type === 'file' && !formData.value.video && !content.value?.video) {
+            messages.value = ['Please upload a video file'];
+            errorStatus.value = 500;
+            return;
+        }
+
+        if (formData.value.video_source_type === 'youtube' && !formData.value.youtube_link) {
+            messages.value = ['Please provide a YouTube video URL'];
+            errorStatus.value = 500;
+            return;
+        }
+
+        // Create FormData
+        const data = new FormData();
+        data.append('title', formData.value.title);
+        data.append('description', formData.value.description);
+        data.append('status', formData.value.status);
+        data.append('playlist_id', formData.value.playlist_id);
+        data.append('video_source_type', formData.value.video_source_type);
+
+        if (formData.value.video_source_type === 'file' && formData.value.video) {
+            data.append('video', formData.value.video);
+            if (formData.value.thumb) {
+                data.append('thumb', formData.value.thumb);
+            }
+        } else if (formData.value.video_source_type === 'youtube') {
+            data.append('youtube_link', formData.value.youtube_link);
+            
+            // Get YouTube thumbnail URL
+            const thumbnailUrl = getYouTubeThumbnail(formData.value.youtube_link);
+            if (thumbnailUrl) {
+                data.append('youtube_thumb', thumbnailUrl);
+            }
+        }
+
+        // Send update request
+        const response = await axios.post(`/api/contents/update/${route.params.id}/send`, data, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'multipart/form-data'
             }
         });
 
-        const formDataToSend = new FormData();
-        formDataToSend.append('teacher_id', userResponse.data.id);
-        formDataToSend.append('playlist_id', formData.value.playlist_id);
-        formDataToSend.append('title', formData.value.title);
-        formDataToSend.append('description', formData.value.description);
-        formDataToSend.append('status', formData.value.status);
-
-        // Only append files if they were selected
-        if (thumbInput.value?.files[0]) {
-            formDataToSend.append('thumb', thumbInput.value.files[0]);
-        }
-
-        if (videoInput.value?.files[0]) {
-            formDataToSend.append('video', videoInput.value.files[0]);
-        }
-
-        // Add a flag to indicate if files were not changed
-        if (!thumbInput.value?.files[0]) {
-            formDataToSend.append('keep_thumb', 'true');
-        }
-        if (!videoInput.value?.files[0]) {
-            formDataToSend.append('keep_video', 'true');
-        }
-
-        const response = await axios.post(
-            `/api/contents/update/${route.params.id}/send`,
-            formDataToSend,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            }
-        );
-
-        messages.value = Array.isArray(response.data.message) 
-            ? response.data.message 
-            : [response.data.message];
-        errorStatus.value = response.data.status;
-
-        if (response.data.status !== 500) {
-                setTimeout(() => {
-                router.push('/admin_contents');
-            }, 1000);
+        if (response.data.status === 'success') {
+            messages.value = ['Content updated successfully'];
+            errorStatus.value = 200;
+            
+            await Swal.fire({
+                title: 'Success!',
+                text: 'Content updated successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+            
+            router.push('/admin_contents');
+        } else {
+            messages.value = Array.isArray(response.data.message) 
+                ? response.data.message 
+                : [response.data.message];
+            errorStatus.value = response.data.status;
         }
     } catch (error) {
         console.error('Error updating content:', error);
-        messages.value = error.response?.data?.message || ['An error occurred while updating the content'];
+        messages.value = error.response?.data?.message || ['Failed to update content'];
         errorStatus.value = error.response?.data?.status || 500;
     } finally {
         isSubmitting.value = false;

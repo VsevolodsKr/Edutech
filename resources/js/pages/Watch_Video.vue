@@ -5,13 +5,24 @@
             <!-- Video Player Section -->
     <div class="bg-base rounded-lg p-[1rem]">
         <div class="relative mb-[1rem]">
-                    <video 
-                        v-if="content"
-                        :src="content.video" 
-                        :poster="content.thumb" 
-                        controls
-                        class="rounded-lg w-full object-contain bg-black"
-                    ></video>
+                    <div v-if="content">
+                        <div v-if="content.video_source_type === 'youtube'" class="relative pb-[56.25%] h-0">
+                            <iframe 
+                                :src="getYoutubeEmbedUrl(content.video)"
+                                class="absolute top-0 left-0 w-full h-full rounded-lg"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+                        <video 
+                            v-else
+                            :src="content.video" 
+                            :poster="content.thumb" 
+                            controls
+                            class="rounded-lg w-full object-contain bg-black"
+                        ></video>
+                    </div>
                     <div v-else class="w-full h-[400px] bg-gray-800 rounded-lg flex items-center justify-center">
                         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                     </div>
@@ -232,6 +243,25 @@ const formatDate = (dateString) => {
         month: 'long',
         day: 'numeric'
     });
+};
+
+const getYoutubeEmbedUrl = (url) => {
+    try {
+        // Extract video ID from various YouTube URL formats
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        const videoId = (match && match[2].length === 11) ? match[2] : null;
+        
+        if (!videoId) {
+            console.error('Invalid YouTube URL');
+            return '';
+        }
+        
+        return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
+    } catch (error) {
+        console.error('Error processing YouTube URL:', error);
+        return '';
+    }
 };
 
 const loadContent = async () => {

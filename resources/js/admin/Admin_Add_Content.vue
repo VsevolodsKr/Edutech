@@ -131,7 +131,7 @@
                                 <!-- File Upload Preview Grid -->
                                 <div class="grid grid-cols-1 gap-6">
                                     <!-- Thumbnail Upload -->
-                                    <div>
+                                    <div v-if="videoSourceType === 'file'">
                                         <label class="block text-sm font-medium text-text_dark mb-2">
                                             Thumbnail <span class="text-button4">*</span>
                                         </label>
@@ -160,35 +160,74 @@
                                         </div>
                                     </div>
 
-                                    <!-- Video Upload -->
+                                    <!-- Video Upload or YouTube Link -->
                                     <div>
                                         <label class="block text-sm font-medium text-text_dark mb-2">
-                                            Video File <span class="text-button4">*</span>
+                                            Video Source <span class="text-button4">*</span>
                                         </label>
-                                        <div class="relative">
-                                            <div v-if="videoPreview" 
-                                                 class="relative mb-4 rounded-lg overflow-hidden">
-                                                <video 
-                                                    class="w-full h-40 object-cover"
-                                                    controls
-                                                    @error="handleVideoError"
-                                                >
-                                                    <source :src="videoPreview" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
+                                        <div class="space-y-4">
+                                            <!-- Video Type Selection -->
+                                            <div class="flex gap-4">
+                                                <label class="flex items-center">
+                                                    <input 
+                                                        type="radio" 
+                                                        v-model="videoSourceType" 
+                                                        value="file"
+                                                        class="mr-2"
+                                                    >
+                                                    Upload Video File
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input 
+                                                        type="radio" 
+                                                        v-model="videoSourceType" 
+                                                        value="youtube"
+                                                        class="mr-2"
+                                                    >
+                                                    YouTube Link
+                                                </label>
                                             </div>
-                                            <input 
-                                                ref="videoInput"
-                                                type="file"
-                                                accept="video/*"
-                                                @change="handleVideoChange"
-                                                @error="handleVideoError"
-                                                class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
-                                                required
-                                            >
-                                            <p class="text-xs text-text_light mt-1">
-                                                Max size: 100MB. Supported formats: MP4, WebM
-                                            </p>
+
+                                            <!-- File Upload -->
+                                            <div v-if="videoSourceType === 'file'" class="relative">
+                                                <div v-if="videoPreview" 
+                                                     class="relative mb-4 rounded-lg overflow-hidden">
+                                                    <video 
+                                                        class="w-full h-40 object-cover"
+                                                        controls
+                                                        @error="handleVideoError"
+                                                    >
+                                                        <source :src="videoPreview" type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                </div>
+                                                <input 
+                                                    ref="videoInput"
+                                                    type="file"
+                                                    accept="video/*"
+                                                    @change="handleVideoChange"
+                                                    @error="handleVideoError"
+                                                    class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
+                                                    :required="videoSourceType === 'file'"
+                                                >
+                                                <p class="text-xs text-text_light mt-1">
+                                                    Max size: 10MB. Supported formats: MP4, WebM
+                                                </p>
+                                            </div>
+
+                                            <!-- YouTube Link -->
+                                            <div v-else class="relative">
+                                                <input 
+                                                    v-model="youtubeLink"
+                                                    type="text"
+                                                    placeholder="Enter YouTube video URL (e.g., https://www.youtube.com/watch?v=...)"
+                                                    class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
+                                                    :required="videoSourceType === 'youtube'"
+                                                >
+                                                <p class="text-xs text-text_light mt-1">
+                                                    Enter a valid YouTube video URL
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -221,6 +260,7 @@ import { useWindowSize } from '@vueuse/core';
 import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const { width } = useWindowSize();
@@ -236,11 +276,16 @@ const messages = ref([]);
 const errorStatus = ref(null);
 const thumbPreview = ref(null);
 const videoPreview = ref(null);
+const videoSourceType = ref('file');
+const youtubeLink = ref('');
 const formData = ref({
-            status: '',
-            title: '',
-            description: '',
+    status: '',
+    title: '',
+    description: '',
     playlist_id: '',
+    youtube_link: '',
+    video_source_type: 'file',
+    thumb: null
 });
 
 // Computed
@@ -337,9 +382,10 @@ const handleVideoChange = (event) => {
             return;
         }
         
-        // Validate file size (max 100MB)
-        if (file.size > 100 * 1024 * 1024) {
-            messages.value = ['Video size should be less than 100MB'];
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (file.size > maxSize) {
+            messages.value = ['Video size should be less than 10MB'];
             errorStatus.value = 500;
             videoInput.value.value = '';
             videoPreview.value = null;
@@ -357,6 +403,17 @@ const handleVideoError = (event) => {
     errorStatus.value = 500;
 };
 
+// Add new method to get YouTube thumbnail
+const getYouTubeThumbnail = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+        return `https://img.youtube.com/vi/${match[2]}/maxresdefault.jpg`;
+    }
+    return null;
+};
+
+// Update handleSubmit method
 const handleSubmit = async () => {
     try {
         isSubmitting.value = true;
@@ -382,14 +439,43 @@ const handleSubmit = async () => {
         formDataToSend.append('title', formData.value.title);
         formDataToSend.append('description', formData.value.description);
         formDataToSend.append('status', formData.value.status);
+        formDataToSend.append('video_source_type', videoSourceType.value);
 
-        // Append files
-        if (thumbInput.value?.files[0]) {
-            formDataToSend.append('thumb', thumbInput.value.files[0]);
+        // Validate required fields
+        if (!formData.value.playlist_id || !formData.value.title || !formData.value.description || !formData.value.status) {
+            messages.value = ['Please fill in all required fields'];
+            errorStatus.value = 500;
+            return;
         }
 
-        if (videoInput.value?.files[0]) {
+        // Handle file uploads
+        if (videoSourceType.value === 'file') {
+            if (!thumbInput.value?.files[0]) {
+                messages.value = ['Please select a thumbnail image'];
+                errorStatus.value = 500;
+                return;
+            }
+            if (!videoInput.value?.files[0]) {
+                messages.value = ['Please select a video file'];
+                errorStatus.value = 500;
+                return;
+            }
+            formDataToSend.append('thumb', thumbInput.value.files[0]);
             formDataToSend.append('video', videoInput.value.files[0]);
+        } else {
+            // Handle YouTube link
+            if (!youtubeLink.value) {
+                messages.value = ['Please enter a YouTube video URL'];
+                errorStatus.value = 500;
+                return;
+            }
+            formDataToSend.append('youtube_link', youtubeLink.value);
+            
+            // Get YouTube thumbnail URL
+            const thumbnailUrl = getYouTubeThumbnail(youtubeLink.value);
+            if (thumbnailUrl) {
+                formDataToSend.append('youtube_thumb', thumbnailUrl);
+            }
         }
 
         const response = await axios.post(
@@ -404,15 +490,23 @@ const handleSubmit = async () => {
             }
         );
 
-        messages.value = Array.isArray(response.data.message) 
-            ? response.data.message 
-            : [response.data.message];
-        errorStatus.value = response.data.status;
-
-        if (response.data.status !== 500) {
-                setTimeout(() => {
-                router.push('/admin_contents');
-            }, 1000);
+        if (response.data.status === 'success') {
+            messages.value = ['Content added successfully'];
+            errorStatus.value = 200;
+            
+            await Swal.fire({
+                title: 'Success!',
+                text: 'Content added successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+            
+            router.push('/admin_contents');
+        } else {
+            messages.value = Array.isArray(response.data.message) 
+                ? response.data.message 
+                : [response.data.message];
+            errorStatus.value = response.data.status;
         }
     } catch (error) {
         console.error('Error adding content:', error);

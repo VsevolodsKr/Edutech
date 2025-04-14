@@ -136,7 +136,7 @@ const loadAdminData = async () => {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/admin_login');
+            router.push('/login');
             return;
         }
 
@@ -195,7 +195,7 @@ const handleLogout = async () => {
             showConfirmButton: false
         });
         
-        router.push('/admin_login');
+        router.push('/login');
     } catch (err) {
         console.error('Error during logout:', err);
         await Swal.fire({

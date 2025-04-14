@@ -20,6 +20,7 @@ class Contents extends Model
         'thumb',
         'date',
         'status',
+        'video_source_type'
     ];
     public $timestamps = false;
 

@@ -13,15 +13,26 @@
             <div v-else class="bg-base rounded-lg p-[1rem]">
                 <!-- Video Player -->
                 <div class="relative w-full pt-[56.25%] mb-4">
-                    <video
-                        :src="content.video"
-                        :poster="content.thumb"
-                        class="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
-                        controls
-                        controlsList="nodownload"
-                    >
-                        Your browser does not support the video tag.
-                    </video>
+                    <template v-if="content.video_source_type === 'youtube'">
+                        <iframe
+                            :src="getYouTubeEmbedUrl(content.video)"
+                            class="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                        ></iframe>
+                    </template>
+                    <template v-else>
+                        <video
+                            :src="content.video"
+                            :poster="content.thumb"
+                            class="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
+                            controls
+                            controlsList="nodownload"
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    </template>
                 </div>
 
                 <!-- Content Info -->
@@ -184,6 +195,20 @@ const getThumbUrl = (thumb) => {
     }
 
     return `${window.location.origin}/storage/${cleanPath}`;
+};
+
+const getYouTubeEmbedUrl = (url) => {
+    if (!url) return '';
+    
+    // Handle different YouTube URL formats
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    
+    if (match && match[2].length === 11) {
+        return `https://www.youtube.com/embed/${match[2]}?autoplay=0&rel=0`;
+    }
+    
+    return url;
 };
 
 const loadContent = async () => {

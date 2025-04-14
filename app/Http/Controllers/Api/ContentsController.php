@@ -96,22 +96,47 @@ class ContentsController extends Controller
             }
 
             $content = new Contents();
-            $content->fill([
+            $contentData = [
                 'teacher_id' => $request->teacher_id,
                 'playlist_id' => $request->playlist_id,
                 'title' => $request->title,
                 'description' => $request->description,
                 'status' => $request->status,
                 'date' => Carbon::now(),
-                'thumb' => $this->handleFileUpload($request->thumb, self::CONTENT_THUMBS_PATH),
-                'video' => $this->handleFileUpload($request->video, self::CONTENT_VIDEOS_PATH)
-            ]);
+                'video_source_type' => $request->video_source_type
+            ];
 
+            // Handle thumbnail upload
+            if ($request->hasFile('thumb')) {
+                $contentData['thumb'] = $this->handleFileUpload($request->thumb, self::CONTENT_THUMBS_PATH);
+            }
+
+            // Handle video source based on type
+            if ($request->video_source_type === 'file') {
+                if (!$request->hasFile('video')) {
+                    return $this->errorResponse(['Please upload a video file']);
+                }
+                $contentData['video'] = $this->handleFileUpload($request->video, self::CONTENT_VIDEOS_PATH);
+            } else if ($request->video_source_type === 'youtube') {
+                if (empty($request->youtube_link)) {
+                    return $this->errorResponse(['Please provide a YouTube video URL']);
+                }
+                $contentData['video'] = $request->youtube_link;
+                
+                // Handle YouTube thumbnail
+                if ($request->has('youtube_thumb')) {
+                    $contentData['thumb'] = $request->youtube_thumb;
+                }
+            }
+
+            $content->fill($contentData);
             $content->save();
             $this->clearContentCaches($content);
 
             return $this->successResponse('Content uploaded successfully');
         } catch (\Exception $e) {
+            \Log::error('Error adding content: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
             return $this->errorResponse(['Failed to upload content. Please try again later.']);
         }
     }
