@@ -55,7 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Content Routes
     Route::get('contents/{id}', [ContentsController::class, 'get_teacher_contents']);
     Route::post('add_content/send', [ContentsController::class, 'add_content']);
-    Route::post('contents/update/{id}/send', [ContentsController::class, 'update']);
+    Route::post('contents/update/{id}/send', [ContentsController::class, 'store']);
     Route::delete('contents/delete/{id}', [ContentsController::class, 'delete']);
 
     // Like Routes

@@ -17,7 +17,6 @@ use App\Models\Likes;
 
 class ContentsController extends Controller
 {
-    private const CACHE_TTL = 3600; // 1 hour
     private const CONTENT_THUMBS_PATH = 'content_thumbs';
     private const CONTENT_VIDEOS_PATH = 'content_videos';
 
@@ -26,11 +25,9 @@ class ContentsController extends Controller
      */
     public function get_teacher_contents(string $id)
     {
-        return Cache::remember("teacher.contents.{$id}", self::CACHE_TTL, function () use ($id) {
-            return Contents::where('teacher_id', $id)
-                ->orderBy('date', 'desc')
-                ->get();
-        });
+        return Contents::where('teacher_id', $id)
+            ->orderBy('date', 'desc')
+            ->get();
     }
 
     /**
@@ -38,11 +35,9 @@ class ContentsController extends Controller
      */
     public function get_playlist_contents(string $id)
     {
-        return Cache::remember("playlist.contents.{$id}", self::CACHE_TTL, function () use ($id) {
-            return Contents::where('playlist_id', $id)
-                ->orderBy('date', 'asc')
-                ->get();
-        });
+        return Contents::where('playlist_id', $id)
+            ->orderBy('date', 'asc')
+            ->get();
     }
 
     /**
@@ -50,14 +45,12 @@ class ContentsController extends Controller
      */
     public function get_single(string $id)
     {
-        return Cache::remember("content.{$id}", self::CACHE_TTL, function () use ($id) {
-            $content = Contents::with(['teacher', 'playlist'])->find($id);
-            return response()->json([
-                'content' => $content,
-                'teacher' => $content->teacher,
-                'playlist' => $content->playlist
-            ]);
-        });
+        $content = Contents::with(['teacher', 'playlist'])->find($id);
+        return response()->json([
+            'content' => $content,
+            'teacher' => $content->teacher,
+            'playlist' => $content->playlist
+        ]);
     }
 
     /**
@@ -65,9 +58,7 @@ class ContentsController extends Controller
      */
     public function get_amount(string $id)
     {
-        return Cache::remember("teacher.contents.count.{$id}", self::CACHE_TTL, function () use ($id) {
-            return Contents::where('teacher_id', $id)->count();
-        });
+        return Contents::where('teacher_id', $id)->count();
     }
 
     /**
@@ -75,9 +66,7 @@ class ContentsController extends Controller
      */
     public function get_playlist_contents_amount(string $id)
     {
-        return Cache::remember("playlist.contents.count.{$id}", self::CACHE_TTL, function () use ($id) {
-            return Contents::where('playlist_id', $id)->count();
-        });
+        return Contents::where('playlist_id', $id)->count();
     }
 
     /**
@@ -131,7 +120,6 @@ class ContentsController extends Controller
 
             $content->fill($contentData);
             $content->save();
-            $this->clearContentCaches($content);
 
             return $this->successResponse('Content uploaded successfully');
         } catch (\Exception $e) {
@@ -180,7 +168,6 @@ class ContentsController extends Controller
             ]);
 
             $content->update($updateData);
-            $this->clearContentCaches($content);
 
             \Log::info('Content updated successfully', [
                 'content_id' => $id,
@@ -255,18 +242,6 @@ class ContentsController extends Controller
             'description.required' => 'Please enter content description',
             'status.required' => 'Please select content status'
         ]);
-    }
-
-    /**
-     * Clear content related caches
-     */
-    private function clearContentCaches($content)
-    {
-        Cache::forget("teacher.contents.{$content->teacher_id}");
-        Cache::forget("playlist.contents.{$content->playlist_id}");
-        Cache::forget("content.{$content->id}");
-        Cache::forget("teacher.contents.count.{$content->teacher_id}");
-        Cache::forget("playlist.contents.count.{$content->playlist_id}");
     }
 
     /**
