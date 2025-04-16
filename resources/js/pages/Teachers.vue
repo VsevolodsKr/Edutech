@@ -103,10 +103,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { useRouter } from 'vue-router';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash';
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
@@ -115,115 +115,54 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const teachers = ref([]);
 const searchQuery = ref('');
-const isLoading = ref(true);
 const isSearching = ref(false);
-const error = ref(null);
 const showBecomingTeacher = ref(true);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const teachers = computed(() => store.getters.getTeachers);
+const isLoading = computed(() => store.getters.getTeachersLoading);
+const error = computed(() => store.getters.getTeachersError);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
-    'pt-[2rem] pr-[1.5rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
+    'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
 // Methods
-const processTeacher = async (teacher) => {
-    try {
-        // Handle teacher image
-        if (teacher.image) {
-            const cleanPath = teacher.image
-                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                .replace(/^\//, '');
-            teacher.image = `/storage/${cleanPath}`;
-        } else {
-            teacher.image = '/storage/default-avatar.png';
-        }
-        
-        // Get playlist and content counts
-        try {
-            const [playlistCount, contentCount] = await Promise.all([
-                axios.get(`/api/playlists/amount/${teacher.id}`),
-                axios.get(`/api/contents/amount/${teacher.id}`)
-            ]);
-            
-            return {
-                ...teacher,
-                playlist_count: playlistCount.data.data || 0,
-                content_count: contentCount.data || 0
-            };
-        } catch (err) {
-            console.error(`Error fetching counts for teacher ${teacher.id}:`, err);
-            return {
-                ...teacher,
-                playlist_count: 0,
-                content_count: 0
-            };
-        }
-    } catch (err) {
-        console.error(`Error processing teacher ${teacher.id}:`, err);
-        return {
-            ...teacher,
-            image: '/storage/default-avatar.png',
-            playlist_count: 0,
-            content_count: 0
-        };
-    }
-};
-
-const loadTeachers = async () => {
-    try {
-        isLoading.value = true;
-        error.value = null;
-        
-        const response = await axios.get('/api/teachers/all');
-        if (!Array.isArray(response.data)) {
-            throw new Error('Invalid response format');
-        }
-        
-        const processedTeachers = await Promise.all(
-            response.data.map(processTeacher)
-        );
-        
-        teachers.value = processedTeachers;
-        showBecomingTeacher.value = true;
-    } catch (err) {
-        console.error('Error loading teachers:', err);
-        error.value = 'Failed to load teachers. Please try again.';
-    } finally {
-        isLoading.value = false;
-    }
+const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 };
 
 const handleSearch = async () => {
     try {
         isSearching.value = true;
-        error.value = null;
-
         if (!searchQuery.value.trim()) {
-            return loadTeachers();
-        }
+            // If search is cleared, reload all teachers
+            await store.dispatch('loadTeachers');
+        } else {
+            // First try to search in existing data
+            const existingTeachers = store.getters.getTeachers;
+            const filteredTeachers = existingTeachers.filter(teacher => 
+                teacher.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                teacher.profession.toLowerCase().includes(searchQuery.value.toLowerCase())
+            );
 
-        const formData = new FormData();
-        formData.append('name', searchQuery.value.trim());
-        
-        const response = await axios.post('/api/teachers/search', formData);
-        if (!Array.isArray(response.data)) {
-            throw new Error('Invalid response format');
+            if (filteredTeachers.length > 0) {
+                // If we found results in existing data, use them
+                store.commit('setTeachers', filteredTeachers);
+            } else {
+                // If no results found in existing data, perform API search
+                await store.dispatch('searchTeachers', searchQuery.value);
+            }
         }
-        
-        const processedTeachers = await Promise.all(
-            response.data.map(processTeacher)
-        );
-        
-        teachers.value = processedTeachers;
-        showBecomingTeacher.value = false;
     } catch (err) {
         console.error('Error searching teachers:', err);
-        error.value = 'Failed to search teachers. Please try again.';
     } finally {
         isSearching.value = false;
     }
@@ -231,11 +170,29 @@ const handleSearch = async () => {
 
 // Debounced search
 const debouncedSearch = debounce(() => {
-    handleSearch();
+    if (searchQuery.value.trim()) {
+        handleSearch();
+    } else {
+        // If input is empty, reload all teachers
+        store.dispatch('loadTeachers');
+    }
 }, 500);
 
 // Lifecycle
-onMounted(() => {
-    loadTeachers();
+onMounted(async () => {
+    await store.dispatch('loadTeachers');
+});
+
+// Watch for route changes
+watch(() => router.currentRoute.value, async () => {
+    await store.dispatch('loadTeachers');
+});
+
+// Watch for search query changes
+watch(searchQuery, (newValue) => {
+    if (!newValue.trim()) {
+        // If input is empty, reload all teachers
+        store.dispatch('loadTeachers');
+    }
 });
 </script>

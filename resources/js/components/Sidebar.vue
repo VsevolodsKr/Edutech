@@ -25,20 +25,21 @@
             </div>
 
             <!-- User Profile Section -->
-            <template v-else-if="userData">
+            <template v-else-if="user">
                 <div class="py-[3rem] px-[2rem] text-center">
                     <div class="flex justify-center">
                         <img 
-                            :src="userData.image" 
-                            :alt="userData.name"
+                            :src="user.image" 
+                            :alt="user.name"
+                            @error="handleImageError"
                             class="h-[9rem] w-[9rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]"
                         >
                     </div>
                     <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">
-                        {{ userData.name }}
+                        {{ user.name }}
                     </h3>
                     <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">
-                        {{ userData.role || 'student' }}
+                        {{ user.role || 'student' }}
                     </p>
                     <router-link 
                         to="/profile"
@@ -88,7 +89,7 @@
                 </router-link>
 
                 <button 
-                    v-if="userData"
+                    v-if="user"
                     @click="handleLogout"
                     :disabled="isLoggingOut"
                     class="block w-full p-[2rem] text-[1.3rem] text-left [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:pl-[2rem]"
@@ -117,9 +118,8 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const userData = ref(null);
-const isLoading = ref(true);
 const isLoggingOut = ref(false);
+const isLoading = ref(false);
 
 // Navigation items
 const navigationItems = [
@@ -132,33 +132,42 @@ const navigationItems = [
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const user = computed(() => {
+    const storedUser = store.getters.getUser;
+    if (!storedUser) return null;
+
+    // Format image URL
+    let imageUrl = storedUser.image;
+    if (imageUrl) {
+        if (imageUrl.startsWith('http')) {
+            // Keep external URLs as is
+        } else if (imageUrl.includes('/storage/app/public/') || imageUrl.includes('storage/app/public/')) {
+            // Clean up storage path
+            imageUrl = imageUrl.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+            imageUrl = `/storage/${imageUrl}`;
+        } else if (!imageUrl.startsWith('/storage/')) {
+            // Add storage prefix if missing
+            imageUrl = `/storage/${imageUrl}`;
+        }
+    } else {
+        imageUrl = '/storage/default-avatar.png';
+    }
+
+    return {
+        ...storedUser,
+        image: imageUrl
+    };
+});
+const storeIsLoading = computed(() => store.getters.getIsLoading);
 
 // Methods
 const toggleSidebar = () => {
     store.commit('setShowSidebar', false);
 };
 
-const loadUserData = async () => {
-    try {
-        isLoading.value = true;
-        const token = localStorage.getItem('token');
-        if (!token) {
-            isLoading.value = false;
-            return;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        userData.value = {
-            ...response.data,
-            image: new URL(response.data.image, import.meta.url)
-        };
-    } catch (err) {
-        console.error('Error loading user data:', err);
-    } finally {
-        isLoading.value = false;
+const handleImageError = (event) => {
+    if (!event.target.src.includes('default-avatar.png')) {
+        event.target.src = '/storage/default-avatar.png';
     }
 };
 
@@ -167,7 +176,6 @@ const handleLogout = async () => {
         isLoggingOut.value = true;
         localStorage.removeItem('token');
         store.commit('setUser', null);
-        userData.value = null;
         await router.push('/login');
     } catch (err) {
         console.error('Error during logout:', err);
@@ -181,9 +189,14 @@ watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
 
-// Lifecycle hooks
+watch(storeIsLoading, (newValue) => {
+    isLoading.value = newValue;
+});
+
+// Initialize
 onMounted(() => {
-    loadUserData();
+    // No need to load user data here as it's already in the store
+    isLoading.value = false;
 });
 </script>
 

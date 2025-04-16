@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Swal from 'sweetalert2';
@@ -94,13 +94,13 @@ const { width } = useWindowSize();
 
 // State
 const comments = ref([]);
-const user = ref(null);
-const isLoading = ref(true);
 const isDeleting = ref(null);
 const error = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const user = computed(() => store.getters.getUser);
+const isLoading = computed(() => store.getters.getIsLoading);
 
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -113,79 +113,66 @@ const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: 'numeric'
     });
-};
-
-const loadUser = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return null;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        return {
-            ...response.data,
-            image: new URL(response.data.image, import.meta.url)
-        };
-    } catch (err) {
-        console.error('Error loading user:', err);
-        router.push('/');
-        return null;
-    }
 };
 
 const loadComments = async () => {
     try {
-        isLoading.value = true;
         error.value = null;
 
-        const userData = await loadUser();
-        if (!userData) return;
+        if (!user.value?.id) {
+            await store.dispatch('loadUserData');
+            if (!user.value?.id) {
+                router.push('/');
+                return;
+            }
+        }
 
-        user.value = userData;
         const token = localStorage.getItem('token');
         const headers = { 
             Authorization: `Bearer ${token}`,
             Accept: 'application/json'
         };
 
-        const response = await axios.get(`/api/comments/user/${userData.id}`, { headers });
+        // Load data in parallel
+        const [commentsResponse, contentsResponse] = await Promise.all([
+            axios.get(`/api/comments/user/${user.value.id}`, { headers }),
+            axios.get(`/api/contents/all`, { headers })
+        ]);
+
+        // Create a map of content data for quick lookup
+        const contentsMap = new Map(contentsResponse.data.map(content => [content.id, content]));
 
         // Transform and combine data
-        comments.value = response.data.comments.map((comment, index) => ({
-            ...comment,
-            content: response.data.contents[index]
-        }));
+        comments.value = commentsResponse.data.comments.map(comment => {
+            const content = contentsMap.get(comment.content_id);
+            
+            // Clean up content thumbnail path if it exists
+            let cleanThumbPath = content?.thumb;
+            if (cleanThumbPath) {
+                cleanThumbPath = cleanThumbPath
+                    .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                    .replace(/^\//, '');
+                cleanThumbPath = `/storage/${cleanThumbPath}`;
+            }
+
+            return {
+                ...comment,
+                content: {
+                    ...content,
+                    thumb: cleanThumbPath || '/storage/default-thumbnail.png'
+                }
+            };
+        });
     } catch (err) {
         console.error('Error loading comments:', err);
         error.value = 'Failed to load comments. Please try again.';
-    } finally {
-        isLoading.value = false;
     }
 };
 
 const deleteComment = async (commentId) => {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'You must be logged in to delete a comment',
-                icon: 'error',
-                color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
-                background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
-            });
-            return;
-        }
-
         // Get computed styles for SweetAlert
         const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
         const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
@@ -194,7 +181,7 @@ const deleteComment = async (commentId) => {
         // Show confirmation dialog
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'This action cannot be undone.',
+            text: 'This comment will be permanently deleted.',
             icon: 'warning',
             color: text_dark,
             background: background,
@@ -206,16 +193,19 @@ const deleteComment = async (commentId) => {
 
         if (result.isConfirmed) {
             isDeleting.value = commentId;
+            const token = localStorage.getItem('token');
+            const headers = { 
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json'
+            };
 
-            await axios.delete(`/api/comments/delete/${commentId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
+            await axios.delete(`/api/comments/delete/${commentId}`, { headers });
 
             // Remove the comment from the list
             comments.value = comments.value.filter(comment => comment.id !== commentId);
+
+            // Update store stats
+            await store.dispatch('loadUserStats', user.value.id);
 
             await Swal.fire({
                 title: 'Deleted!',
@@ -227,10 +217,6 @@ const deleteComment = async (commentId) => {
         }
     } catch (err) {
         console.error('Error deleting comment:', err);
-        if (err.response?.status === 401) {
-            router.push('/');
-            return;
-        }
         Swal.fire({
             title: 'Error!',
             text: 'Failed to delete the comment. Please try again.',
@@ -242,6 +228,13 @@ const deleteComment = async (commentId) => {
         isDeleting.value = null;
     }
 };
+
+// Watchers
+watch(() => user.value?.id, (newId) => {
+    if (newId) {
+        loadComments();
+    }
+});
 
 // Initialize
 onMounted(() => {

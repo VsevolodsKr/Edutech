@@ -150,6 +150,22 @@ const fileInput = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const user = computed(() => {
+    const storedUser = store.getters.getUser;
+    if (!storedUser) return null;
+
+    // Ensure image URL is properly formatted
+    const imageUrl = storedUser.image ? 
+        (storedUser.image.startsWith('http') ? 
+            storedUser.image : 
+            `${window.location.origin}/storage/${storedUser.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`) :
+        `${window.location.origin}/storage/default-avatar.png`;
+
+    return {
+        ...storedUser,
+        image: imageUrl
+    };
+});
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -171,12 +187,26 @@ const handleFileChange = (event) => {
 
 const loadUserData = async () => {
     try {
-        const response = await axios.get('/api/user/profile');
-        const { name, email, image } = response.data;
-        formData.value.name = name;
-        formData.value.email = email;
-        if (image) {
-            imagePreview.value = `/storage/${image}`;
+        // Use store data if available
+        if (user.value) {
+            formData.value.name = user.value.name;
+            formData.value.email = user.value.email;
+            if (user.value.image) {
+                imagePreview.value = user.value.image;
+            }
+            return;
+        }
+
+        // Load user data from store
+        await store.dispatch('loadUserData');
+        
+        // Update form data with store data
+        if (user.value) {
+            formData.value.name = user.value.name;
+            formData.value.email = user.value.email;
+            if (user.value.image) {
+                imagePreview.value = user.value.image;
+            }
         }
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -223,11 +253,16 @@ const handleSubmit = async () => {
             data.append('image', formData.value.image);
         }
 
-        await axios.post('/api/user/update-profile', data, {
+        const response = await axios.post('/api/user/update-profile', data, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
+
+        // Update store with new user data
+        if (response.data.user) {
+            store.commit('setUser', response.data.user);
+        }
 
         await Swal.fire({
             title: 'Success!',
@@ -255,7 +290,7 @@ const handleSubmit = async () => {
 };
 
 // Lifecycle
-onMounted(() => {
-    loadUserData();
+onMounted(async () => {
+    await loadUserData();
 });
 </script> 

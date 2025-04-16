@@ -19,7 +19,7 @@
                             <i class="fas fa-exclamation-circle"></i>
                             {{ error }}
                         </p>
-            </div>
+                    </div>
 
                     <!-- Dashboard Content -->
                     <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
@@ -27,19 +27,19 @@
                             <!-- User Profile -->
                             <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                 <img 
-                                    :src="userData?.image" 
-                                    :alt="userData?.name"
+                                    :src="user?.image" 
+                                    :alt="user?.name"
                                     class="h-[4rem] w-[4rem] rounded-[50%] object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                                 >
                                 <div>
                                     <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:mb-0">
-                                        {{ userData?.name }}
+                                        {{ user?.name }}
                                     </h3>
                                     <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                        {{ userData?.profession || 'Student' }}
+                                        {{ user?.profession || 'Student' }}
                                     </span>
-                </div>
-            </div>
+                                </div>
+                            </div>
 
                             <!-- Statistics -->
                             <div class="grid grid-cols-3 gap-[1.5rem] mb-[2rem]">
@@ -61,8 +61,8 @@
                                     >
                                         View All
                                     </router-link>
-                </div>
-            </div>
+                                </div>
+                            </div>
 
                             <!-- Action Buttons -->
                             <div class="flex gap-[1rem]">
@@ -84,8 +84,8 @@
                                     <span v-else>Logout</span>
                                 </button>
                             </div>
-                </div>
-            </div>
+                        </div>
+                    </div>
                 </template>
 
                 <!-- Latest Courses Section (For all users) -->
@@ -102,17 +102,17 @@
                     <div v-else-if="playlistsError" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                         {{ playlistsError }}
                         <button 
-                            @click="loadLatestPlaylists" 
+                            @click="store.dispatch('loadLatestPlaylists')" 
                             class="block mx-auto mt-4 text-button hover:text-text_dark"
                         >
                             Try Again
                         </button>
-            </div>
+                    </div>
 
                     <!-- Empty State -->
                     <div v-else-if="latestPlaylists.length === 0" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
                         No courses available yet
-        </div>
+                    </div>
 
                     <!-- Playlists Grid -->
                     <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
@@ -120,13 +120,13 @@
                              :key="playlist.id" 
                              class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                             <!-- Teacher Info -->
-                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
+                            <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                 <img 
                                     :src="playlist.teacher?.image" 
                                     :alt="playlist.teacher?.name"
                                     class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                                 >
-                    <div>
+                                <div>
                                     <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem]">
                                         {{ playlist.teacher?.name }}
                                     </h3>
@@ -181,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Header from '../components/Header.vue';
@@ -192,24 +192,33 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const userData = ref(null);
-const playlistsAmount = ref(0);
-const contentsAmount = ref(0);
-const likesAmount = ref(0);
-const bookmarksAmount = ref(0);
-const commentsAmount = ref(0);
-const isLoading = ref(true);
 const isLoggingOut = ref(false);
 const error = ref(null);
 const isAuthenticated = ref(false);
 
-// Latest Playlists State
-const latestPlaylists = ref([]);
-const isPlaylistsLoading = ref(true);
-const playlistsError = ref(null);
-
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const user = computed(() => {
+    const storedUser = store.getters.getUser;
+    if (!storedUser) return null;
+
+    // Ensure image URL is properly formatted
+    const imageUrl = storedUser.image ? 
+        (storedUser.image.startsWith('http') ? 
+            storedUser.image : 
+            `${window.location.origin}/storage/${storedUser.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`) :
+        `${window.location.origin}/storage/default-avatar.png`;
+
+    return {
+        ...storedUser,
+        image: imageUrl
+    };
+});
+const isLoading = computed(() => store.getters.getIsLoading);
+const dashboardStats = computed(() => store.getters.getDashboardStats);
+const latestPlaylists = computed(() => store.getters.getLatestPlaylists);
+const isPlaylistsLoading = computed(() => store.getters.getLatestPlaylistsLoading);
+const playlistsError = computed(() => store.getters.getLatestPlaylistsError);
 
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -218,9 +227,9 @@ const sectionClasses = computed(() => [
 ]);
 
 const statistics = computed(() => [
-    { value: likesAmount.value, label: 'Liked Videos', link: '/likes' },
-    { value: bookmarksAmount.value, label: 'Bookmarked Playlists', link: '/bookmarks' },
-    { value: commentsAmount.value, label: 'Comments', link: '/comments' }
+    { value: dashboardStats.value?.likes || 0, label: 'Liked Videos', link: '/likes' },
+    { value: dashboardStats.value?.playlists || 0, label: 'Bookmarked Playlists', link: '/bookmarks' },
+    { value: dashboardStats.value?.comments || 0, label: 'Comments', link: '/comments' }
 ]);
 
 // Format date helper
@@ -231,143 +240,6 @@ const formatDate = (dateString) => {
         month: 'short',
         day: 'numeric'
     });
-};
-
-// Process playlist helper
-const processPlaylist = async (playlist) => {
-    try {
-        if (!playlist) return null;
-
-        const processed = { ...playlist };
-
-        // Handle thumbnail
-        if (processed.thumb) {
-            const cleanPath = processed.thumb
-                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                .replace(/^\//, '');
-            processed.thumb = `/storage/${cleanPath}`;
-        } else {
-            processed.thumb = '/storage/default-thumbnail.png';
-        }
-
-        // Fetch teacher data if we have teacher_id
-        if (processed.teacher_id) {
-            try {
-                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
-                
-                if (teacherResponse.data.data) {
-                    const teacherData = teacherResponse.data.data;
-                    let teacherImage = teacherData.image;
-                    if (teacherImage) {
-                        const cleanTeacherPath = teacherImage
-                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                            .replace(/^\//, '');
-                        teacherImage = `/storage/${cleanTeacherPath}`;
-                    }
-                    
-                    processed.teacher = {
-                        ...teacherData,
-                        name: teacherData.name || 'Unknown Teacher',
-                        image: teacherImage || '/storage/default-avatar.png'
-                    };
-                } else {
-                    throw new Error('No teacher data received');
-                }
-            } catch (teacherError) {
-                console.error('Error fetching teacher:', teacherError);
-                processed.teacher = {
-                    name: 'Unknown Teacher',
-                    image: '/storage/default-avatar.png'
-                };
-            }
-        } else {
-            processed.teacher = {
-                name: 'Unknown Teacher',
-                image: '/storage/default-avatar.png'
-            };
-        }
-
-        // Get content count
-        try {
-            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
-            processed.content_count = contentResponse.data || 0;
-        } catch (contentError) {
-            console.error('Error fetching content count:', contentError);
-            processed.content_count = 0;
-        }
-
-        return processed;
-    } catch (error) {
-        console.error(`Error processing playlist ${playlist?.id}:`, error);
-        return {
-            ...playlist,
-            thumb: '/storage/default-thumbnail.png',
-            teacher: {
-                name: 'Unknown Teacher',
-                image: '/storage/default-avatar.png'
-            },
-            content_count: 0
-        };
-    }
-};
-
-// Methods
-const loadUserData = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            isAuthenticated.value = false;
-            return null;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        userData.value = {
-            ...response.data,
-            image: new URL(response.data.image, import.meta.url)
-        };
-        isAuthenticated.value = true;
-        return userData.value;
-    } catch (error) {
-        console.error('Error loading user data:', error);
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            isAuthenticated.value = false;
-        }
-        return null;
-    }
-};
-
-const loadStatistics = async (userId) => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            isAuthenticated.value = false;
-            return;
-        }
-
-        const headers = {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json'
-        };
-
-        const [likes, bookmarks, comments] = await Promise.all([
-            axios.get(`/api/likes/count_user/${userId}`, { headers }),
-            axios.get(`/api/bookmarks/count_user/${userId}`, { headers }),
-            axios.get(`/api/comments/count_user/${userId}`, { headers })
-        ]);
-        
-        likesAmount.value = likes.data?.data || 0;
-        bookmarksAmount.value = bookmarks.data?.data || 0;
-        commentsAmount.value = comments.data?.data || 0;
-    } catch (error) {
-        console.error('Error loading statistics:', error);
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            isAuthenticated.value = false;
-        }
-    }
 };
 
 const handleLogout = async () => {
@@ -383,52 +255,34 @@ const handleLogout = async () => {
     }
 };
 
-const loadLatestPlaylists = async () => {
-    try {
-        isPlaylistsLoading.value = true;
-        playlistsError.value = null;
-        
-        // Get latest playlists without authentication
-        const response = await axios.get('/api/playlists/latest');
-        
-        if (!Array.isArray(response.data)) {
-            throw new Error('Invalid response format');
-        }
+// Watchers
+watch(width, (value) => {
+    store.commit('setShowSidebar', value >= 1180);
+});
 
-        const processedPlaylists = await Promise.all(
-            response.data.map(async (playlist) => {
-                return await processPlaylist(playlist);
-            })
-        );
-
-        latestPlaylists.value = processedPlaylists.filter(Boolean);
-    } catch (err) {
-        console.error('Error loading playlists:', err);
-        playlistsError.value = 'Failed to load latest courses. Please try again.';
-    } finally {
-        isPlaylistsLoading.value = false;
+watch(() => user.value?.id, async (newId) => {
+    if (newId) {
+        await store.dispatch('loadUserStats', newId);
     }
-};
+});
 
 // Lifecycle
 onMounted(async () => {
     try {
-        // Set initial loading state
-        isLoading.value = true;
-        error.value = null;
-
         // Check authentication first
         const token = localStorage.getItem('token');
         isAuthenticated.value = !!token;
 
         // Load latest playlists for all users
-        await loadLatestPlaylists();
+        await store.dispatch('loadLatestPlaylists');
 
-        // If authenticated, load dashboard data
+        // If authenticated, load user data and stats
         if (isAuthenticated.value) {
-            const user = await loadUserData();
-            if (user) {
-                await loadStatistics(user.id);
+            if (!user.value?.id) {
+                await store.dispatch('loadUserData');
+            }
+            if (user.value?.id) {
+                await store.dispatch('loadUserStats', user.value.id);
             }
         }
     } catch (err) {
@@ -439,8 +293,6 @@ onMounted(async () => {
         } else {
             error.value = 'Failed to load dashboard data. Please try again later.';
         }
-    } finally {
-        isLoading.value = false;
     }
 });
 </script>

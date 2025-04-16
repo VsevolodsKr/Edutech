@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Swal from 'sweetalert2';
@@ -104,13 +104,13 @@ const { width } = useWindowSize();
 
 // State
 const contents = ref([]);
-const user = ref(null);
-const isLoading = ref(true);
 const isDeleting = ref(null);
 const error = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const user = computed(() => store.getters.getUser);
+const isLoading = computed(() => store.getters.getIsLoading);
 
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -127,72 +127,93 @@ const formatDate = (dateString) => {
     });
 };
 
-const loadUser = async () => {
+const getThumbnailUrl = (content) => {
+    if (!content.url) return content.thumb || '/storage/default-thumbnail.png';
+    
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return null;
+        // Handle YouTube URLs
+        if (content.url.includes('youtube.com') || content.url.includes('youtu.be')) {
+            let videoId = '';
+            
+            // Handle youtu.be links
+            if (content.url.includes('youtu.be/')) {
+                videoId = content.url.split('youtu.be/')[1].split('?')[0];
+            }
+            // Handle youtube.com links
+            else if (content.url.includes('youtube.com')) {
+                const urlObj = new URL(content.url);
+                videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
+            }
+            
+            if (videoId) {
+                return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            }
         }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        return {
-            ...response.data,
-            image: new URL(response.data.image, import.meta.url)
-        };
+        
+        // Handle local thumbnails
+        let cleanPath = content.thumb;
+        if (cleanPath) {
+            if (cleanPath.includes('/storage/app/public/')) {
+                cleanPath = cleanPath.replace('/storage/app/public/', '');
+            } else if (cleanPath.includes('storage/app/public/')) {
+                cleanPath = cleanPath.replace('storage/app/public/', '');
+            }
+            cleanPath = cleanPath.replace(/^\/+/, '');
+            return `/storage/${cleanPath}`;
+        }
+        
+        return '/storage/default-thumbnail.png';
     } catch (err) {
-        console.error('Error loading user:', err);
-        router.push('/');
-        return null;
+        console.error('Error getting thumbnail URL:', err);
+        return '/storage/default-thumbnail.png';
     }
 };
 
 const loadLikedContent = async () => {
     try {
-        isLoading.value = true;
         error.value = null;
 
-        const userData = await loadUser();
-        if (!userData) return;
+        if (!user.value?.id) {
+            await store.dispatch('loadUserData');
+            if (!user.value?.id) {
+                router.push('/');
+                return;
+            }
+        }
 
-        user.value = userData;
         const token = localStorage.getItem('token');
         const headers = { 
             Authorization: `Bearer ${token}`,
             Accept: 'application/json'
         };
 
-        const response = await axios.get(`/api/likes/user/${userData.id}`, { headers });
+        // Load data in parallel
+        const [likesResponse, teachersResponse] = await Promise.all([
+            axios.get(`/api/likes/user/${user.value.id}`, { headers }),
+            axios.get(`/api/teachers/all`, { headers })
+        ]);
+
+        // Create a map of teacher data for quick lookup
+        const teachersMap = new Map(teachersResponse.data.map(teacher => [teacher.id, teacher]));
 
         // Transform and combine data
-        contents.value = response.data.contents.map((content, index) => {
-            // Clean up thumbnail path
-            const cleanThumbPath = content.thumb
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
-
-            // Clean up teacher image path
-            const cleanTeacherImagePath = response.data.teachers[index].image
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
-
+        contents.value = likesResponse.data.contents.map(content => {
+            const teacher = teachersMap.get(content.teacher_id);
+            
             return {
                 ...content,
-                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
+                thumb: getThumbnailUrl(content),
                 teacher: {
-                    ...response.data.teachers[index],
-                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+                    ...teacher,
+                    image: teacher?.image ? `/storage/${teacher.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}` : '/storage/default-avatar.png'
                 }
             };
         });
 
-        // Get like IDs for each content
+        // Get like IDs in parallel
         const likePromises = contents.value.map(content => 
             axios.post('/api/likes/check', {
-                user_id: userData.id,
+                user_id: user.value.id,
                 teacher_id: content.teacher.id,
                 content_id: content.id
             }, { headers })
@@ -209,8 +230,6 @@ const loadLikedContent = async () => {
     } catch (err) {
         console.error('Error loading liked content:', err);
         error.value = 'Failed to load liked content. Please try again.';
-    } finally {
-        isLoading.value = false;
     }
 };
 
@@ -253,6 +272,9 @@ const deleteLike = async (contentId) => {
             // Remove the content from the list
             contents.value = contents.value.filter(c => c.id !== contentId);
 
+            // Update store stats
+            await store.dispatch('loadUserStats', user.value.id);
+
             await Swal.fire({
                 title: 'Removed!',
                 text: 'Liked video has been removed.',
@@ -274,6 +296,13 @@ const deleteLike = async (contentId) => {
         isDeleting.value = null;
     }
 };
+
+// Watchers
+watch(() => user.value?.id, (newId) => {
+    if (newId) {
+        loadLikedContent();
+    }
+});
 
 // Initialize
 onMounted(() => {

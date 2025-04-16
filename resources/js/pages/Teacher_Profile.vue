@@ -122,7 +122,7 @@ const { width } = useWindowSize();
 // State
 const teacher = ref(null);
 const playlists = ref([]);
-const isLoading = ref(true);
+const isLoading = ref(true); // Keep local loading state
 const totalPlaylists = ref(0);
 const totalContents = ref(0);
 
@@ -135,45 +135,27 @@ const sectionClasses = computed(() => [
 ]);
 
 // Methods
-const processPlaylist = async (playlist) => {
-    try {
-        if (!playlist) return null;
+const processPlaylist = (playlist) => {
+    if (!playlist) return null;
 
-        // Create a processed copy of the playlist
-        const processed = { ...playlist };
+    // Create a processed copy of the playlist
+    const processed = { ...playlist };
 
-        // Handle thumbnail path
-        if (processed.thumb) {
-            // Clean up the path by removing duplicate /storage/ prefixes
-            let cleanPath = processed.thumb
-                .replace(/^\/storage\/+/g, '') // Remove leading /storage/ and any duplicate slashes
-                .replace(/^storage\/+/, '') // Also remove without leading slash
-                .replace(/\/+/g, '/'); // Replace any remaining multiple slashes with single slash
-            
-            // Add single /storage/ prefix
-            processed.thumb = `/storage/${cleanPath}`;
-        } else {
-            processed.thumb = '/storage/default-thumbnail.png';
-        }
-
-        // Get content count without authentication
-        try {
-            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
-            processed.content_count = contentResponse.data || 0;
-        } catch (contentError) {
-            console.error('Error fetching content count:', contentError);
-            processed.content_count = 0;
-        }
-
-        return processed;
-    } catch (error) {
-        console.error(`Error processing playlist ${playlist?.id}:`, error);
-        return {
-            ...playlist,
-            thumb: '/storage/default-thumbnail.png',
-            content_count: 0
-        };
+    // Handle thumbnail path
+    if (processed.thumb) {
+        // Clean up the path by removing duplicate /storage/ prefixes
+        let cleanPath = processed.thumb
+            .replace(/^\/storage\/+/g, '') // Remove leading /storage/ and any duplicate slashes
+            .replace(/^storage\/+/, '') // Also remove without leading slash
+            .replace(/\/+/g, '/'); // Replace any remaining multiple slashes with single slash
+        
+        // Add single /storage/ prefix
+        processed.thumb = `/storage/${cleanPath}`;
+    } else {
+        processed.thumb = '/storage/default-thumbnail.png';
     }
+
+    return processed;
 };
 
 const loadTeacherData = async () => {
@@ -181,15 +163,18 @@ const loadTeacherData = async () => {
         isLoading.value = true;
         const teacherId = route.params.id;
         
-        // Fetch teacher data
-        const teacherResponse = await axios.get(`/api/teachers/find/${teacherId}`);
-        console.log('Teacher response:', teacherResponse.data);
+        // Load all data in parallel
+        const [teacherResponse, playlistsResponse, userData] = await Promise.all([
+            axios.get(`/api/teachers/find/${teacherId}`),
+            axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`),
+            store.dispatch('loadUserData')
+        ]);
         
+        // Process teacher data
         if (!teacherResponse.data.data) {
             throw new Error('Teacher not found');
         }
 
-        // Clean up teacher image path
         const teacherData = teacherResponse.data.data;
         const cleanTeacherImagePath = teacherData.image
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -200,16 +185,26 @@ const loadTeacherData = async () => {
             image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
         };
 
-        // Fetch playlists data using the correct endpoint
-        const playlistsResponse = await axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`);
-        console.log('Playlists response:', playlistsResponse.data);
-        
+        // Process playlists data
         if (playlistsResponse.data.status === 200) {
-            const processedPlaylists = await Promise.all(
-                playlistsResponse.data.data.map(processPlaylist)
+            // Process playlists without content count first
+            const processedPlaylists = playlistsResponse.data.data.map(processPlaylist).filter(Boolean);
+            
+            // Get content counts in parallel
+            const contentCountPromises = processedPlaylists.map(playlist => 
+                axios.get(`/api/contents/playlist/${playlist.id}/amount`)
+                    .then(response => ({ id: playlist.id, count: response.data || 0 }))
+                    .catch(() => ({ id: playlist.id, count: 0 }))
             );
             
-            playlists.value = processedPlaylists.filter(Boolean);
+            const contentCounts = await Promise.all(contentCountPromises);
+            const contentCountMap = new Map(contentCounts.map(({ id, count }) => [id, count]));
+            
+            // Add content counts to playlists
+            playlists.value = processedPlaylists.map(playlist => ({
+                ...playlist,
+                content_count: contentCountMap.get(playlist.id) || 0
+            }));
             
             // Calculate totals
             totalPlaylists.value = playlists.value.length;

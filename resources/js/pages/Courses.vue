@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { useRouter } from 'vue-router';
 import { debounce } from 'lodash';
@@ -124,14 +124,23 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const playlists = ref([]);
 const searchQuery = ref('');
-const isLoading = ref(true);
 const isSearching = ref(false);
-const error = ref(null);
+const originalCourses = ref([]);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const playlists = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return store.getters.getCourses;
+    }
+    return store.getters.getCourses.filter(course => 
+        course.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        course.teacher?.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+const isLoading = computed(() => store.getters.getCoursesLoading);
+const error = computed(() => store.getters.getCoursesError);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -147,134 +156,27 @@ const formatDate = (dateString) => {
     });
 };
 
-const processPlaylist = async (playlist) => {
-    try {
-        if (!playlist) return null;
-
-        const processed = { ...playlist };
-
-        // Handle thumbnail
-        if (processed.thumb) {
-            const cleanPath = processed.thumb
-                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                .replace(/^\//, '');
-            processed.thumb = `/storage/${cleanPath}`;
-        } else {
-            processed.thumb = '/storage/default-thumbnail.png';
-        }
-
-        // Fetch teacher data if we have teacher_id
-        if (processed.teacher_id) {
-            try {
-                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
-                
-                if (teacherResponse.data?.data) {
-                    const teacherData = teacherResponse.data.data;
-                    let teacherImage = teacherData.image;
-                    if (teacherImage) {
-                        const cleanTeacherPath = teacherImage
-                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                            .replace(/^\//, '');
-                        teacherImage = `/storage/${cleanTeacherPath}`;
-                    }
-                    
-                    processed.teacher = {
-                        ...teacherData,
-                        name: teacherData.name || 'Unknown Teacher',
-                        image: teacherImage || '/storage/default-avatar.png'
-                    };
-                } else {
-                    throw new Error('No teacher data received');
-                }
-            } catch (teacherError) {
-                console.error('Error fetching teacher:', teacherError);
-                processed.teacher = {
-                    name: 'Unknown Teacher',
-                    image: '/storage/default-avatar.png'
-                };
-            }
-        } else {
-            processed.teacher = {
-                name: 'Unknown Teacher',
-                image: '/storage/default-avatar.png'
-            };
-        }
-
-        // Get content count
-        try {
-            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
-            processed.content_count = contentResponse.data || 0;
-        } catch (contentError) {
-            console.error('Error fetching content count:', contentError);
-            processed.content_count = 0;
-        }
-
-        return processed;
-    } catch (error) {
-        console.error(`Error processing playlist ${playlist?.id}:`, error);
-        return {
-            ...playlist,
-            thumb: '/storage/default-thumbnail.png',
-            teacher: {
-                name: 'Unknown Teacher',
-                image: '/storage/default-avatar.png'
-            },
-            content_count: 0
-        };
-    }
-};
-
-const loadPlaylistData = async () => {
-    try {
-        isLoading.value = true;
-        error.value = null;
-
-        // Get all playlists without authentication
-        const response = await axios.get('/api/playlists/active');
-
-        if (!Array.isArray(response.data)) {
-            throw new Error('Invalid response format');
-        }
-
-        const processedPlaylists = await Promise.all(
-            response.data.map(async (playlist) => {
-                return await processPlaylist(playlist);
-            })
-        );
-
-        playlists.value = processedPlaylists.filter(Boolean);
-    } catch (err) {
-        console.error('Error loading playlists:', err);
-        error.value = 'Failed to load courses. Please try again.';
-    } finally {
-        isLoading.value = false;
-    }
-};
-
 const handleSearch = async () => {
     try {
         isSearching.value = true;
-        error.value = null;
-
         if (!searchQuery.value.trim()) {
-            return loadPlaylistData();
+            // If search is cleared, just let the computed property handle it
+            return;
+        } else {
+            // First try to search in existing data
+            const existingCourses = store.getters.getCourses;
+            const filteredCourses = existingCourses.filter(course => 
+                course.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                course.teacher?.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+            );
+
+            if (filteredCourses.length === 0) {
+                // If no results found in existing data, perform API search
+                await store.dispatch('searchCourses', searchQuery.value);
+            }
         }
-
-        const formData = new FormData();
-        formData.append('name', searchQuery.value.trim());
-
-        const response = await axios.post('/api/playlists/search', formData);
-
-        const processedPlaylists = await Promise.all(
-            response.data.map(async (playlist) => {
-                return await processPlaylist(playlist);
-            })
-        );
-
-        playlists.value = processedPlaylists.filter(Boolean);
     } catch (err) {
         console.error('Error searching courses:', err);
-        error.value = 'Failed to search courses. Please try again.';
     } finally {
         isSearching.value = false;
     }
@@ -282,11 +184,26 @@ const handleSearch = async () => {
 
 // Debounced search
 const debouncedSearch = debounce(() => {
-    handleSearch();
+    if (searchQuery.value.trim()) {
+        handleSearch();
+    }
 }, 500);
 
 // Lifecycle
-onMounted(() => {
-    loadPlaylistData();
+onMounted(async () => {
+    await store.dispatch('loadCourses');
+});
+
+// Watch for route changes
+watch(() => router.currentRoute.value, async () => {
+    await store.dispatch('loadCourses');
+});
+
+// Watch for search query changes
+watch(searchQuery, (newValue) => {
+    if (!newValue.trim()) {
+        // If input is empty, reload all courses
+        store.dispatch('loadCourses');
+    }
 });
 </script>

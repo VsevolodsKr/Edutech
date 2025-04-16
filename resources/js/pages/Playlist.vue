@@ -104,8 +104,9 @@
                         >
                             <div class="relative group">
                                 <img 
-                                    :src="content.thumb" 
+                                    :src="getThumbnailUrl(content)" 
                                     :alt="content.title"
+                                    @error="handleImageError"
                                     class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]"
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-30 rounded-lg flex items-center justify-center text-[3rem] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -140,17 +141,17 @@ const { width } = useWindowSize();
 // State
 const playlist = ref(null);
 const teacher = ref(null);
-const user = ref(null);
 const contents = ref([]);
 const contentCount = ref(0);
 const isBookmarked = ref(false);
 const bookmarkId = ref(null);
-const isLoading = ref(true);
 const isBookmarkLoading = ref(false);
 const error = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const isLoading = computed(() => store.getters.getIsLoading);
+const user = computed(() => store.getters.getUser);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -166,43 +167,92 @@ const formatDate = (dateString) => {
     });
 };
 
-const loadUser = async () => {
+const getThumbnailUrl = (content) => {
+    if (!content.url) return content.thumb || '/storage/default-thumbnail.png';
+    
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            user.value = null;
-            return;
+        // Handle YouTube URLs
+        if (content.url.includes('youtube.com') || content.url.includes('youtu.be')) {
+            let videoId = '';
+            
+            // Handle youtu.be links
+            if (content.url.includes('youtu.be/')) {
+                videoId = content.url.split('youtu.be/')[1].split('?')[0];
+            }
+            // Handle youtube.com links
+            else if (content.url.includes('youtube.com')) {
+                const urlObj = new URL(content.url);
+                videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
+            }
+            
+            if (videoId) {
+                // Return the full YouTube thumbnail URL without any prefix
+                return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            }
         }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        user.value = {
-            ...response.data,
-            image: new URL(response.data.image, import.meta.url)
-        };
+        
+        // Handle local thumbnails
+        let cleanPath = content.thumb;
+        if (cleanPath) {
+            if (cleanPath.includes('/storage/app/public/')) {
+                cleanPath = cleanPath.replace('/storage/app/public/', '');
+            } else if (cleanPath.includes('storage/app/public/')) {
+                cleanPath = cleanPath.replace('storage/app/public/', '');
+            }
+            cleanPath = cleanPath.replace(/^\/+/, '');
+            return `${window.location.origin}/storage/${cleanPath}`;
+        }
+        
+        return '/storage/default-thumbnail.png';
     } catch (err) {
-        console.error('Error loading user:', err);
-        user.value = null;
+        console.error('Error getting thumbnail URL:', err);
+        return '/storage/default-thumbnail.png';
+    }
+};
+
+const handleImageError = (event) => {
+    console.log('Image error:', event.target.src);
+    event.target.src = '/storage/default-thumbnail.png';
+};
+
+const loadContents = async () => {
+    try {
+        if (!playlist.value) return;
+
+        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
+        console.log('API Response:', response.data); // Debug log
+
+        contents.value = response.data.map(content => {
+            console.log('Original content:', content); // Debug log
+            
+            // Get the thumbnail URL using our helper function
+            const thumbnailUrl = getThumbnailUrl(content);
+            console.log('Generated thumbnail URL:', thumbnailUrl); // Debug log
+            
+            return {
+                ...content,
+                thumb: thumbnailUrl
+            };
+        });
+    } catch (err) {
+        console.error('Error loading contents:', err);
+        contents.value = [];
     }
 };
 
 const loadPlaylistData = async () => {
     try {
-        isLoading.value = true;
         error.value = null;
 
-        const response = await axios.get(`/api/playlists/find/${route.params.id}`);
+        // First load playlist to get teacher_id
+        const playlistResponse = await axios.get(`/api/playlists/find/${route.params.id}`);
         
-        if (!response.data?.playlist) {
+        if (!playlistResponse.data?.playlist) {
             throw new Error('Playlist not found');
         }
 
         // Handle playlist data
-        const playlistData = response.data.playlist;
-        
-        // Clean up thumbnail path
+        const playlistData = playlistResponse.data.playlist;
         const cleanThumbPath = playlistData.thumb
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
@@ -212,29 +262,40 @@ const loadPlaylistData = async () => {
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        // Handle teacher data
-        if (response.data?.teacher) {
-            const teacherData = response.data.teacher;
-            const cleanTeacherImagePath = teacherData.image
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
+        // Now load teacher data using the correct teacher_id
+        try {
+            const teacherResponse = await axios.get(`/api/teachers/find/${playlist.value.teacher_id}`);
+            if (teacherResponse.data?.data) {
+                const teacherData = teacherResponse.data.data;
+                const cleanTeacherImagePath = teacherData.image
+                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                    ?.replace(/^\//, '');
 
-            teacher.value = {
-                ...teacherData,
-                image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
-            };
-        } else {
+                teacher.value = {
+                    ...teacherData,
+                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+                };
+            } else {
+                teacher.value = {
+                    name: 'Unknown Teacher',
+                    image: '/storage/default-avatar.png'
+                };
+            }
+        } catch (teacherErr) {
+            console.error('Error loading teacher:', teacherErr);
             teacher.value = {
                 name: 'Unknown Teacher',
                 image: '/storage/default-avatar.png'
             };
         }
 
-        // Get content count
-        const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`);
-        contentCount.value = countResponse.data;
+        // Load content count and contents in parallel
+        const [countResponse, contentsResponse] = await Promise.all([
+            axios.get(`/api/contents/playlist/${playlist.value.id}/amount`),
+            axios.get(`/api/playlists/${playlist.value.id}/contents`)
+        ]);
 
-        // Load contents
+        contentCount.value = countResponse.data;
         await loadContents();
 
         // Check bookmark status if user is logged in
@@ -247,30 +308,6 @@ const loadPlaylistData = async () => {
         error.value = 'Failed to load playlist. Please try again.';
         playlist.value = null;
         teacher.value = null;
-    } finally {
-        isLoading.value = false;
-    }
-};
-
-const loadContents = async () => {
-    try {
-        if (!playlist.value) return;
-
-        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
-
-        contents.value = response.data.map(content => {
-            const cleanThumbPath = content.thumb
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
-                
-            return {
-                ...content,
-                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
-            };
-        });
-    } catch (err) {
-        console.error('Error loading contents:', err);
-        contents.value = [];
     }
 };
 
@@ -378,8 +415,9 @@ const toggleBookmark = async () => {
 // Initialize
 onMounted(async () => {
     try {
+        // Load user data and playlist data in parallel
         await Promise.all([
-            loadUser(),
+            store.dispatch('loadUserData'),
             loadPlaylistData()
         ]);
     } catch (err) {
