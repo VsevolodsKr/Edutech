@@ -104,6 +104,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
+import Swal from 'sweetalert2';
 import Admin_Header from '../components/Admin_Header.vue';
 import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
@@ -150,31 +151,58 @@ const handleImageError = (event) => {
 };
 
 const handleDelete = async (id) => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/login');
-            return;
-        }
+    const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
+    const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
+    const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
 
-        const response = await axios.delete(`/api/playlists/delete/${id}`, {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
+    try {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Playlist will be deleted permanently!',
+            icon: 'warning',
+            color: text_dark,
+            background: background,
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: button4,
+            confirmButtonText: 'Yes, delete it!'
         });
 
-        if (response.data.status === 200) {
-            // Update store instead of local state
-            const updatedPlaylists = playlists.value.filter(playlist => playlist.id !== id);
-            store.commit('setPlaylists', updatedPlaylists);
-            error.value = null;
-        } else {
-            error.value = response.data.message || 'Failed to delete playlist';
+        if (result.isConfirmed) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                router.push('/login');
+                return;
+            }
+
+            const response = await axios.delete(`/api/playlists/delete/${id}`, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
+            });
+
+            if (response.data.status === 200) {
+                // Update store instead of local state
+                const updatedPlaylists = playlists.value.filter(playlist => playlist.id !== id);
+                store.commit('setPlaylists', updatedPlaylists);
+                
+                await Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Your playlist has been deleted.',
+                    icon: 'success'
+                });
+            } else {
+                throw new Error(response.data.message || 'Failed to delete playlist');
+            }
         }
-    } catch (err) {
-        console.error('Error deleting playlist:', err);
-        error.value = err.response?.data?.message || 'Failed to delete playlist';
+    } catch (error) {
+        console.error('Error deleting playlist:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: error.message || 'Failed to delete playlist',
+            icon: 'error'
+        });
     }
 };
 

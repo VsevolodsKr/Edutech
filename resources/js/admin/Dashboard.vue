@@ -94,6 +94,8 @@ const chartInstance = ref(null);
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const teacherData = computed(() => store.getters.getUser);
 const statistics = computed(() => store.getters.getDashboardStats);
+const playlists = computed(() => store.getters.getPlaylists);
+const contents = computed(() => store.getters.getContents);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -102,6 +104,8 @@ const sectionClasses = computed(() => [
 
 // Methods
 const updateEngagementChart = (data) => {
+    if (!engagementChart.value) return;
+    
     if (chartInstance.value) {
         chartInstance.value.destroy();
     }
@@ -169,17 +173,26 @@ const updateEngagementChart = (data) => {
 };
 
 // Lifecycle
-onMounted(() => {
-    // Update chart when engagement data is available
-    if (statistics.value.engagement) {
-        updateEngagementChart(statistics.value.engagement);
+onMounted(async () => {
+    // Load initial data
+    const user = store.getters.getUser;
+    if (user) {
+        await store.dispatch('loadDashboardStats', user.id);
     }
 });
 
 // Watch for changes in engagement data
-watch(() => statistics.value.engagement, (newData) => {
-    if (newData) {
+watch(() => statistics.value?.engagement, (newData) => {
+    if (newData && engagementChart.value) {
         updateEngagementChart(newData);
     }
-});
+}, { immediate: true });
+
+// Watch for changes in playlists and contents
+watch([playlists, contents], async ([newPlaylists, newContents]) => {
+    const user = store.getters.getUser;
+    if (user) {
+        await store.dispatch('loadDashboardStats', user.id);
+    }
+}, { deep: true });
 </script>
