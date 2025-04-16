@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Chart from 'chart.js/auto';
@@ -87,19 +87,13 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const teacherData = ref(null);
-const statistics = ref({
-    contents: 0,
-    playlists: 0,
-    likes: 0,
-    comments: 0
-});
 const engagementChart = ref(null);
-const popularContents = ref([]);
 const chartInstance = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const teacherData = computed(() => store.getters.getUser);
+const statistics = computed(() => store.getters.getDashboardStats);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -107,49 +101,6 @@ const sectionClasses = computed(() => [
 ]);
 
 // Methods
-const loadTeacherData = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        teacherData.value = response.data;
-
-        // Load all statistics in parallel
-        const [playlists, contents, likes, comments, engagement, popular] = await Promise.all([
-            axios.get(`/api/playlists/amount/${teacherData.value.id}`),
-            axios.get(`/api/contents/amount/${teacherData.value.id}`),
-            axios.get(`/api/likes/count_teacher/${teacherData.value.id}`),
-            axios.get(`/api/comments/count_teacher/${teacherData.value.id}`),
-            axios.get(`/api/engagement/teacher/${teacherData.value.id}`),
-            axios.get(`/api/contents/popular/${teacherData.value.id}`)
-        ]);
-
-        statistics.value = {
-            playlists: playlists.data.data || 0,
-            contents: contents.data || 0,
-            likes: likes.data.data || 0,
-            comments: comments.data.data || 0
-        };
-
-        // Update popular contents
-        popularContents.value = popular.data;
-
-        // Update engagement chart
-        updateEngagementChart(engagement.data);
-    } catch (error) {
-        console.error('Error loading teacher data:', error);
-        if (error.response?.status === 401) {
-            router.push('/');
-        }
-    }
-};
-
 const updateEngagementChart = (data) => {
     if (chartInstance.value) {
         chartInstance.value.destroy();
@@ -219,6 +170,16 @@ const updateEngagementChart = (data) => {
 
 // Lifecycle
 onMounted(() => {
-    loadTeacherData();
+    // Update chart when engagement data is available
+    if (statistics.value.engagement) {
+        updateEngagementChart(statistics.value.engagement);
+    }
+});
+
+// Watch for changes in engagement data
+watch(() => statistics.value.engagement, (newData) => {
+    if (newData) {
+        updateEngagementChart(newData);
+    }
 });
 </script>

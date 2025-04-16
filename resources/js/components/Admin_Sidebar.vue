@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import store from '../store/store';
@@ -112,9 +112,26 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const adminData = ref(null);
-const isLoading = ref(true);
+const isLoading = ref(false);
 const isLoggingOut = ref(false);
+
+// Computed properties
+const adminData = computed(() => {
+    const storedUser = store.getters.getUser;
+    if (!storedUser) return null;
+
+    // Ensure image URL is properly formatted
+    const imageUrl = storedUser.image ? 
+        (storedUser.image.startsWith('http') ? 
+            storedUser.image : 
+            `${window.location.origin}/storage/uploads/${storedUser.image.split('/').pop()}`) :
+        `${window.location.origin}/images/default-avatar.png`;
+
+    return {
+        ...storedUser,
+        image: imageUrl
+    };
+});
 
 // Navigation items
 const navigationItems = [
@@ -127,71 +144,6 @@ const navigationItems = [
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
-// Methods
-const loadAdminData = async () => {
-    try {
-        isLoading.value = true;
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        
-        if (!token || !storedUser) {
-            router.push('/login');
-            return;
-        }
-
-        const user = JSON.parse(storedUser);
-        if (!user.profession) {
-            await Swal.fire({
-                title: 'Access Denied',
-                text: 'You do not have permission to access the admin dashboard.',
-                icon: 'error'
-            });
-            router.push('/');
-            return;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        console.log('Raw response data:', response.data);
-        console.log('Image path from response:', response.data.image);
-
-        // Set admin data
-        const imageUrl = response.data.image ? 
-            (response.data.image.startsWith('http') ? 
-                response.data.image : 
-                `${window.location.origin}/storage/uploads/${response.data.image.split('/').pop()}`) :
-            `${window.location.origin}/images/default-avatar.png`;
-
-        console.log('Final image URL:', imageUrl);
-
-        adminData.value = {
-            ...response.data,
-            image: imageUrl
-        };
-
-        // Update stored user data
-        localStorage.setItem('user', JSON.stringify(response.data));
-        store.commit('setUser', response.data);
-    } catch (err) {
-        console.error('Error loading admin data:', err);
-        if (err.response?.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            router.push('/login');
-        } else {
-            await Swal.fire({
-                title: 'Error',
-                text: 'Failed to load admin data. Please try again.',
-                icon: 'error'
-            });
-        }
-    } finally {
-        isLoading.value = false;
-    }
-};
-
 const toggleSidebar = () => {
     store.commit('setShowSidebar', false);
 };
@@ -200,9 +152,7 @@ const handleLogout = async () => {
     try {
         isLoggingOut.value = true;
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
         store.commit('setUser', null);
-        adminData.value = null;
         
         await Swal.fire({
             title: 'Success',
@@ -230,10 +180,6 @@ watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
 
-// Lifecycle hooks
-onMounted(() => {
-    loadAdminData();
-});
 </script>
 
 <style scoped>

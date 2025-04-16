@@ -6,7 +6,7 @@
             <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
 
             <!-- Loading State -->
-            <div v-if="loading" class="flex justify-center items-center min-h-[50vh]">
+            <div v-if="loading && !playlists.length && playlists.length != 0" class="flex justify-center items-center min-h-[50vh]">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Admin_Header from '../components/Admin_Header.vue';
@@ -112,12 +112,14 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const loading = ref(true);
 const error = ref(null);
-const playlists = ref([]);
+const isLoading = ref(true);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const playlists = computed(() => store.getters.getPlaylists);
+const storeIsLoading = computed(() => store.getters.getIsLoading);
+const loading = computed(() => isLoading.value || storeIsLoading.value);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -128,115 +130,22 @@ const sectionClasses = computed(() => [
 const defaultThumb = '/storage/default-thumb.png';
 
 const getImageUrl = (image) => {
-    console.log('Original image path:', image);
-    
-    if (!image) {
-        console.log('No image path provided, using default thumbnail');
-        return defaultThumb;
-    }
-    
-    if (image.startsWith('data:')) {
-        console.log('Using data URL image');
-        return image;
-    }
-    
-    if (image.startsWith('http')) {
-        console.log('Using full URL image');
-        return image;
-    }
+    if (!image) return defaultThumb;
+    if (image.startsWith('data:')) return image;
+    if (image.startsWith('http')) return image;
 
     // Clean up the storage path
     let cleanPath = image;
-    
-    // Remove all instances of 'storage/' from the beginning of the path
     cleanPath = cleanPath.replace(/^(storage\/)+/, '');
-    
-    // Remove all instances of '/storage/' from the path
     cleanPath = cleanPath.replace(/(\/storage\/)+/, '/');
-    
-    // Remove any leading or multiple consecutive slashes
     cleanPath = cleanPath.replace(/^\/+/, '').replace(/\/+/g, '/');
     
-    console.log('Cleaned path:', cleanPath);
-    
-    // Construct the final URL
-    const finalUrl = `${window.location.origin}/storage/${cleanPath}`;
-    console.log('Final URL:', finalUrl);
-    
-    return finalUrl;
+    return `${window.location.origin}/storage/${cleanPath}`;
 };
 
 const handleImageError = (event) => {
-    console.log('Image failed to load:', event.target.src);
-    // Only set default thumbnail if it's not already the default
     if (!event.target.src.includes('default-thumb.png')) {
         event.target.src = defaultThumb;
-    }
-};
-
-const loadPlaylists = async () => {
-    try {
-        loading.value = true;
-        error.value = null;
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/login');
-            return;
-        }
-
-        // Get user first to get teacher_id
-        const userResponse = await axios.get('/api/user', {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
-        });
-
-        console.log('User response:', userResponse.data);
-
-        // Get playlists for this teacher using the correct endpoint
-        const playlistsResponse = await axios.get(`/api/playlists/teacher_playlists/${userResponse.data.id}`, {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
-        });
-
-        console.log('Raw playlists response:', playlistsResponse.data);
-
-        // Handle the response data
-        if (playlistsResponse.data && playlistsResponse.data.data) {
-            playlists.value = playlistsResponse.data.data;
-            console.log('Playlists loaded:', playlists.value);
-        } else {
-            console.error('Unexpected response format:', playlistsResponse.data);
-            error.value = 'Invalid response format from server';
-        }
-
-        // Log each playlist for debugging
-        playlists.value.forEach(playlist => {
-            console.log('Playlist:', {
-                id: playlist.id,
-                title: playlist.title,
-                status: playlist.status,
-                thumb: playlist.thumb
-            });
-        });
-    } catch (err) {
-        console.error('Error loading playlists:', err);
-        if (err.response) {
-            console.error('Error response:', err.response.data);
-            error.value = err.response.data.message || 'Failed to load playlists';
-        } else if (err.request) {
-            console.error('No response received:', err.request);
-            error.value = 'No response received from server';
-        } else {
-            console.error('Error setting up request:', err.message);
-            error.value = 'Failed to set up request';
-        }
-    } finally {
-        loading.value = false;
     }
 };
 
@@ -256,9 +165,9 @@ const handleDelete = async (id) => {
         });
 
         if (response.data.status === 200) {
-            // Remove the deleted playlist from the list
-            playlists.value = playlists.value.filter(playlist => playlist.id !== id);
-            // Show success message
+            // Update store instead of local state
+            const updatedPlaylists = playlists.value.filter(playlist => playlist.id !== id);
+            store.commit('setPlaylists', updatedPlaylists);
             error.value = null;
         } else {
             error.value = response.data.message || 'Failed to delete playlist';
@@ -270,8 +179,24 @@ const handleDelete = async (id) => {
 };
 
 // Lifecycle
-onMounted(() => {
-    loadPlaylists();
+onMounted(async () => {
+    try {
+        const user = store.getters.getUser;
+        if (user) {
+            await store.dispatch('loadPlaylists', user.id);
+        }
+    } catch (error) {
+        console.error('Error loading playlists:', error);
+    } finally {
+        isLoading.value = false;
+    }
+});
+
+// Watch for store loading state changes
+watch(storeIsLoading, (newValue) => {
+    if (!newValue && playlists.value.length === 0) {
+        isLoading.value = false;
+    }
 });
 </script>
 

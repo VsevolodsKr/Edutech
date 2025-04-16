@@ -100,15 +100,13 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 // State
-const comments = ref([]);
-const teacherData = ref(null);
-const isLoading = ref(true);
 const isDeleting = ref(null);
 const error = ref(null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
-
+const comments = computed(() => store.getters.getComments);
+const isLoading = computed(() => store.getters.getIsLoading);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -124,77 +122,6 @@ const formatDate = (dateString) => {
         hour: '2-digit',
         minute: '2-digit'
     });
-};
-
-const loadTeacher = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return null;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        return response.data;
-    } catch (err) {
-        console.error('Error loading teacher:', err);
-        router.push('/');
-        return null;
-    }
-};
-
-const loadComments = async () => {
-    try {
-        isLoading.value = true;
-        error.value = null;
-
-        const teacher = await loadTeacher();
-        if (!teacher) return;
-
-        teacherData.value = teacher;
-        const token = localStorage.getItem('token');
-        const headers = { 
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json'
-        };
-
-        // Get all comments where teacher_id matches
-        const response = await axios.get(`/api/comments/teacher/${teacher.id}`, { headers });
-
-        // Process comments to include user and content information
-        comments.value = response.data.comments.map((comment, index) => {
-            const user = response.data.users[index];
-            // Clean up user image path
-            let userImage = user?.image;
-            if (userImage) {
-                userImage = userImage
-                    .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                    .replace(/^\//, '');
-                userImage = `/storage/${userImage}`;
-            }
-
-            return {
-                ...comment,
-                user: {
-                    ...user,
-                    image: userImage || '/storage/default-avatar.png'
-                },
-                content: response.data.contents[index]
-            };
-        });
-
-        // Sort comments by date (newest first)
-        comments.value.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    } catch (err) {
-        console.error('Error loading comments:', err);
-        error.value = 'Failed to load comments. Please try again.';
-    } finally {
-        isLoading.value = false;
-    }
 };
 
 const deleteComment = async (commentId) => {
@@ -233,8 +160,9 @@ const deleteComment = async (commentId) => {
                 }
             });
 
-            // Remove the comment from the list
-            comments.value = comments.value.filter(comment => comment.id !== commentId);
+            // Update store instead of local state
+            const updatedComments = comments.value.filter(comment => comment.id !== commentId);
+            store.commit('setComments', updatedComments);
 
             await Swal.fire({
                 title: 'Deleted!',
@@ -262,8 +190,8 @@ const deleteComment = async (commentId) => {
     }
 };
 
-// Initialize
+// Lifecycle
 onMounted(() => {
-    loadComments();
+    // No need to load data here as it's handled by the store
 });
 </script> 
