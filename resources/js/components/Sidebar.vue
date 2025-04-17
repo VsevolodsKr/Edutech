@@ -4,7 +4,6 @@
             v-if="showSidebar" 
             class="fixed top-0 left-0 w-[20rem] bg-base h-[100vh] border-r-2 border-[#ccc] z-120 [@media(max-width:550px)]:w-[15rem]"
         >
-            <!-- Close Button (Mobile) -->
             <div class="text-right p-[2rem] hidden [@media(max-width:1180px)]:block">
                 <div class="flex justify-end">
                     <button 
@@ -16,15 +15,13 @@
                 </div>
             </div>
 
-            <!-- Loading State -->
             <div v-if="isLoading" class="py-[3rem] px-[2rem] text-center">
                 <div class="flex justify-center mb-4">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                 </div>
-                <p class="text-text_light">Loading...</p>
+                <p class="text-text_light">Ielādē...</p>
             </div>
 
-            <!-- User Profile Section -->
             <template v-else-if="user">
                 <div class="py-[3rem] px-[2rem] text-center">
                     <div class="flex justify-center">
@@ -39,41 +36,39 @@
                         {{ user.name }}
                     </h3>
                     <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">
-                        {{ user.role || 'student' }}
+                        {{ user.role || 'students' }}
                     </p>
                     <router-link 
                         to="/profile"
                         class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        View Profile
+                        Skatīt profilu
                     </router-link>
                 </div>
             </template>
 
-            <!-- Guest Section -->
             <template v-else>
                 <div class="py-[2rem] px-[2rem]">
                     <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">
-                        Please login or register
+                        Lūdzu ielogojieties vai reģistrējieties
                     </h3>
                     <div class="w-full flex gap-[.5rem] pt-[.5rem] mb-[2rem]">
                         <router-link 
                             to="/login"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Login
+                            Ielogojies
                         </router-link>
                         <router-link 
                             to="/register"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Register
+                            Reģistrēties
                         </router-link>
                     </div>
                 </div>
             </template>
 
-            <!-- Navigation Menu -->
             <nav class="mt-[1rem]">
                 <router-link 
                     v-for="(item, index) in navigationItems" 
@@ -98,9 +93,9 @@
                         <i class="fa-solid fa-right-from-bracket mr-[1.5rem]"></i>
                         <span v-if="isLoggingOut" class="flex items-center gap-2">
                             <div class="animate-spin rounded-full h-4 w-4 border-2 border-button"></div>
-                            Logging out...
+                            Izlogošana...
                         </span>
-                        <span v-else>Logout</span>
+                        <span v-else>Iziet</span>
                     </span>
                 </button>
             </nav>
@@ -123,11 +118,11 @@ const isLoading = ref(false);
 
 // Navigation items
 const navigationItems = [
-    { path: '/', icon: 'fa fa-home', label: 'Home' },
-    { path: '/about', icon: 'fa fa-question', label: 'About' },
-    { path: '/courses', icon: 'fa fa-graduation-cap', label: 'Courses' },
-    { path: '/teachers', icon: 'fas fa-chalkboard-user', label: 'Teachers' },
-    { path: '/contact', icon: 'fas fa-handshake', label: 'Contact Us' }
+    { path: '/', icon: 'fa fa-home', label: 'Sākumlapa' },
+    { path: '/about', icon: 'fa fa-question', label: 'Par mums' },
+    { path: '/courses', icon: 'fa fa-graduation-cap', label: 'Kursi' },
+    { path: '/teachers', icon: 'fas fa-chalkboard-user', label: 'Pasniedzēji' },
+    { path: '/contact', icon: 'fas fa-handshake', label: 'Sazinies ar mums' }
 ];
 
 // Computed

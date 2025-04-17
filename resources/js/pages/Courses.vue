@@ -3,17 +3,16 @@
 <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-        <h1 class="text-[1.5rem] text-text_dark capitalize">Our Courses</h1>
+        <h1 class="text-[1.5rem] text-text_dark capitalize">Mūsu kursi</h1>
         <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-                
-                <!-- Search Bar -->
+
                 <div class="w-full rounded-lg bg-base py-[.5rem] mb-[1rem] px-[1.5rem] flex gap-[2rem] items-center">
                     <input 
                         v-model="searchQuery"
                         @input="debouncedSearch"
                         class="w-full text-[1.3rem] bg-transparent outline-none border-transparent text-text_light focus:outline-none [@media(max-width:550px)]:text-[1rem]"
                         type="text" 
-                        placeholder="Search courses..." 
+                        placeholder="Meklēt kursus..." 
                         maxlength="100"
                     >
                     <button 
@@ -24,34 +23,29 @@
                         <i :class="isSearching ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
                     </button>
         </div>
-
-                <!-- Loading State -->
+        
                 <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                     </div>
 
-                <!-- Error State -->
                 <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                     {{ error }}
                     <button 
                         @click="loadPlaylistData" 
                         class="block mx-auto mt-4 text-button hover:text-text_dark"
                     >
-                        Try Again
+                        Mēģināt vēlreiz
                     </button>
                 </div>
 
-                <!-- Empty State -->
                 <div v-else-if="playlists.length === 0" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
-                    {{ searchQuery ? 'No courses found matching your search' : 'No courses available' }}
+                    {{ searchQuery ? 'Nav kursu, kas atbilst jūsu meklēšanas kritērijiem' : 'Nav pieejami kursi' }}
                 </div>
 
-                <!-- Course Grid -->
                 <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                     <div v-for="playlist in playlists" 
                          :key="playlist.id" 
                          class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
-                        <!-- Teacher Info -->
                         <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                             <img 
                                 :src="playlist.teacher?.image" 
@@ -68,7 +62,6 @@
                             </div>
                         </div>
 
-                        <!-- Course Thumbnail -->
                         <div class="relative group">
                             <img 
                                 :src="playlist.thumb" 
@@ -80,15 +73,14 @@
                                     :to="'/playlist/' + playlist.id"
                                     class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                 >
-                                    View Course
+                                    Skatīt kursu
                                 </router-link>
                             </div>
                             <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                {{ playlist.content_count }} videos
+                                {{ playlist.content_count }} video
                             </span>
                         </div>
 
-                        <!-- Course Info -->
                         <div class="mt-4">
                             <h3 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.2rem]">
                                 {{ playlist.title }}
@@ -100,7 +92,7 @@
                                 :to="'/playlist/' + playlist.id"
                                 class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                             >
-                                Start Learning
+                                Sākt mācīties
                             </router-link>
                         </div>
             </div>
@@ -123,12 +115,9 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const searchQuery = ref('');
 const isSearching = ref(false);
-const originalCourses = ref([]);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const playlists = computed(() => {
     if (!searchQuery.value.trim()) {
@@ -147,23 +136,23 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 const handleSearch = async () => {
     try {
         isSearching.value = true;
         if (!searchQuery.value.trim()) {
-            // If search is cleared, just let the computed property handle it
             return;
         } else {
-            // First try to search in existing data
             const existingCourses = store.getters.getCourses;
             const filteredCourses = existingCourses.filter(course => 
                 course.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -171,7 +160,6 @@ const handleSearch = async () => {
             );
 
             if (filteredCourses.length === 0) {
-                // If no results found in existing data, perform API search
                 await store.dispatch('searchCourses', searchQuery.value);
             }
         }
@@ -182,27 +170,22 @@ const handleSearch = async () => {
     }
 };
 
-// Debounced search
 const debouncedSearch = debounce(() => {
     if (searchQuery.value.trim()) {
         handleSearch();
     }
 }, 500);
 
-// Lifecycle
 onMounted(async () => {
     await store.dispatch('loadCourses');
 });
 
-// Watch for route changes
 watch(() => router.currentRoute.value, async () => {
     await store.dispatch('loadCourses');
 });
 
-// Watch for search query changes
 watch(searchQuery, (newValue) => {
     if (!newValue.trim()) {
-        // If input is empty, reload all courses
         store.dispatch('loadCourses');
     }
 });

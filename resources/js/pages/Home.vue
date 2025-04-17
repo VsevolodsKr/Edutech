@@ -3,17 +3,14 @@
     <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <!-- Dashboard Section (Only for authenticated users) -->
                 <template v-if="isAuthenticated">
-                    <h1 class="text-[1.5rem] text-text_dark capitalize">Dashboard</h1>
+                    <h1 class="text-[1.5rem] text-text_dark">Vadības panelis</h1>
                     <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
-                    
-                    <!-- Loading State -->
+
                     <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                     </div>
 
-                    <!-- Error State -->
                     <div v-else-if="error" class="bg-[#fcb6b6] text-[#912020] p-4 rounded-lg mb-4">
                         <p class="flex items-center gap-2">
                             <i class="fas fa-exclamation-circle"></i>
@@ -21,10 +18,8 @@
                         </p>
                     </div>
 
-                    <!-- Dashboard Content -->
                     <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                         <div class="bg-base rounded-lg p-[2rem] w-full">
-                            <!-- User Profile -->
                             <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                 <img 
                                     :src="user?.image" 
@@ -36,12 +31,11 @@
                                         {{ user?.name }}
                                     </h3>
                                     <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                        {{ user?.profession || 'Student' }}
+                                        {{ user?.profession || 'students' }}
                                     </span>
                                 </div>
                             </div>
 
-                            <!-- Statistics -->
                             <div class="grid grid-cols-3 gap-[1.5rem] mb-[2rem]">
                                 <div 
                                     v-for="(stat, index) in statistics" 
@@ -59,7 +53,7 @@
                                         :to="stat.link"
                                         class="text-button text-sm hover:text-text_dark transition-colors duration-200 opacity-0 group-hover:opacity-100 absolute bottom-2 left-1/2 transform -translate-x-1/2"
                                     >
-                                        View All
+                                        Skatīt visu
                                     </router-link>
                                 </div>
                             </div>
@@ -70,7 +64,7 @@
                                     @click="$router.push('/update-profile')" 
                                     class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                                 >
-                                    Update Profile
+                                    Rediģēt profilu
                                 </button>
                                 <button 
                                     @click="handleLogout" 
@@ -79,39 +73,35 @@
                                 >
                                     <span v-if="isLoggingOut" class="flex items-center justify-center gap-2">
                                         <div class="animate-spin rounded-full h-4 w-4 border-2 border-base"></div>
-                                        Logging out...
+                                        Izlogošana...
                                     </span>
-                                    <span v-else>Logout</span>
+                                    <span v-else>Iziet</span>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </template>
 
-                <!-- Latest Courses Section (For all users) -->
                 <div class="mt-8">
-                    <h2 class="text-[1.5rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.2rem]">Latest Courses</h2>
+                    <h2 class="text-[1.5rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.2rem]">Jaunākie kursi</h2>
                     <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
 
-                    <!-- Loading State -->
                     <div v-if="isPlaylistsLoading" class="flex justify-center items-center min-h-[20vh]">
                         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                     </div>
 
-                    <!-- Error State -->
                     <div v-else-if="playlistsError" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                         {{ playlistsError }}
                         <button 
                             @click="store.dispatch('loadLatestPlaylists')" 
                             class="block mx-auto mt-4 text-button hover:text-text_dark"
                         >
-                            Try Again
+                            Mēģināt vēlreiz
                         </button>
                     </div>
 
-                    <!-- Empty State -->
                     <div v-else-if="latestPlaylists.length === 0" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
-                        No courses available yet
+                        Nav pieejami kursi
                     </div>
 
                     <!-- Playlists Grid -->
@@ -148,11 +138,11 @@
                                         :to="'/playlist/' + playlist.id"
                                         class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                     >
-                                        View Course
+                                        Skatīt kursu
                                     </router-link>
                                 </div>
                                 <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                    {{ playlist.content_count }} videos
+                                    {{ playlist.content_count }} video
                                 </span>
                             </div>
 
@@ -168,7 +158,7 @@
                                     :to="'/playlist/' + playlist.id"
                                     class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                                 >
-                                    Start Learning
+                                    Sākt mācīties
                                 </router-link>
                             </div>
                         </div>
@@ -202,7 +192,6 @@ const user = computed(() => {
     const storedUser = store.getters.getUser;
     if (!storedUser) return null;
 
-    // Ensure image URL is properly formatted
     const imageUrl = storedUser.image ? 
         (storedUser.image.startsWith('http') ? 
             storedUser.image : 
@@ -227,9 +216,9 @@ const sectionClasses = computed(() => [
 ]);
 
 const statistics = computed(() => [
-    { value: dashboardStats.value?.likes || 0, label: 'Liked Videos', link: '/likes' },
-    { value: dashboardStats.value?.playlists || 0, label: 'Bookmarked Playlists', link: '/bookmarks' },
-    { value: dashboardStats.value?.comments || 0, label: 'Comments', link: '/comments' }
+    { value: dashboardStats.value?.likes || 0, label: 'Favorītvideo', link: '/likes' },
+    { value: dashboardStats.value?.playlists || 0, label: 'Gramātiezīmētie kursi', link: '/bookmarks' },
+    { value: dashboardStats.value?.comments || 0, label: 'Komentāri', link: '/comments' }
 ]);
 
 const formatDate = (dateString) => {
@@ -267,17 +256,13 @@ watch(() => user.value?.id, async (newId) => {
     }
 });
 
-// Lifecycle
 onMounted(async () => {
     try {
-        // Check authentication first
         const token = localStorage.getItem('token');
         isAuthenticated.value = !!token;
-
-        // Load latest playlists for all users
+        
         await store.dispatch('loadLatestPlaylists');
 
-        // If authenticated, load user data and stats
         if (isAuthenticated.value) {
             if (!user.value?.id) {
                 await store.dispatch('loadUserData');

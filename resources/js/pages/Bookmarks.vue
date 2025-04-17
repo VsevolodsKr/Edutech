@@ -2,40 +2,35 @@
     <div>
         <Header />
         <section :class="sectionClasses">
-            <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                Bookmarked Playlists
+            <h1 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
+                Gramātiezīmētie kursi
             </h1>
             <hr class="border-[#ccc] mb-[2rem]">
 
-            <!-- Loading State -->
             <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                 {{ error }}
                 <button 
                     @click="loadBookmarks"
                     class="block mx-auto mt-4 text-button hover:text-text_dark"
                 >
-                    Try Again
+                    Mēģināt vēlreiz
                 </button>
             </div>
 
-            <!-- No Bookmarks -->
             <div v-else-if="!playlists.length" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
-                You haven't bookmarked any playlists yet.
+                Jums nav grāmatzīmēts neviens kurss.
             </div>
 
-            <!-- Bookmarks Grid -->
             <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(33rem,_1fr))] gap-[1rem] pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                 <div 
                     v-for="playlist in playlists" 
                     :key="playlist.id" 
                     class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300"
                 >
-                    <!-- Teacher Info -->
                     <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                         <img 
                             :src="playlist.teacher?.image" 
@@ -52,7 +47,6 @@
                         </div>
                     </div>
 
-                    <!-- Playlist Thumbnail -->
                     <div class="relative group">
                         <img 
                             :src="playlist.thumb" 
@@ -64,7 +58,6 @@
                         </div>
                     </div>
 
-                    <!-- Playlist Title and Actions -->
                     <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
                         {{ playlist.title }}
                     </h3>
@@ -73,14 +66,14 @@
                             :to="'/playlist/' + playlist.id"
                             class="flex-1 bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            View Playlist
+                            Skatīt kursu
                         </router-link>
                         <button 
                             @click="() => deleteBookmark(playlist.bookmark_id)"
                             :disabled="isDeleting === playlist.bookmark_id"
                             class="flex-1 bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            {{ isDeleting === playlist.bookmark_id ? 'Removing...' : 'Remove' }}
+                            {{ isDeleting === playlist.bookmark_id ? 'Dzēšana...' : 'Dzēst' }}
                         </button>
                     </div>
                 </div>
@@ -102,14 +95,12 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const playlists = ref([]);
 const user = ref(null);
 const isLoading = ref(true);
 const isDeleting = ref(null);
 const error = ref(null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const sectionClasses = computed(() => [
@@ -118,13 +109,15 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 const loadUser = async () => {
@@ -167,14 +160,11 @@ const loadBookmarks = async () => {
 
         const response = await axios.get(`/api/bookmarks/user/${userData.id}`, { headers });
 
-        // Transform and combine data
         playlists.value = response.data.playlists.map((playlist, index) => {
-            // Clean up playlist thumbnail path
             const cleanThumbPath = playlist.thumb
                 ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 ?.replace(/^\//, '');
 
-            // Clean up teacher image path
             const cleanTeacherImagePath = response.data.teachers[index].image
                 ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 ?.replace(/^\//, '');
@@ -199,22 +189,21 @@ const loadBookmarks = async () => {
 
 const deleteBookmark = async (bookmarkId) => {
     try {
-        // Get computed styles for SweetAlert
         const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
         const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
         const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
 
-        // Show confirmation dialog
         const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'This playlist will be removed from your bookmarks.',
+            title: 'Vai esat pārliecināts?',
+            text: 'Šis gramātiezīmēts kurss tiks dzēsts.',
             icon: 'warning',
             color: text_dark,
             background: background,
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: button4,
-            confirmButtonText: 'Yes, remove it!'
+            confirmButtonText: 'Jā, dzēst!',
+            cancelButtonText: 'Atcelt'
         });
 
         if (result.isConfirmed) {
@@ -227,12 +216,11 @@ const deleteBookmark = async (bookmarkId) => {
 
             await axios.delete(`/api/bookmarks/delete/${bookmarkId}`, { headers });
 
-            // Remove the playlist from the list
             playlists.value = playlists.value.filter(playlist => playlist.bookmark_id !== bookmarkId);
 
             await Swal.fire({
-                title: 'Removed!',
-                text: 'Playlist has been removed from your bookmarks.',
+                title: 'Dzēsts!',
+                text: 'Gramātiezīmēts kurss ir dzēsts.',
                 icon: 'success',
                 color: text_dark,
                 background: background,
@@ -241,8 +229,8 @@ const deleteBookmark = async (bookmarkId) => {
     } catch (err) {
         console.error('Error deleting bookmark:', err);
         Swal.fire({
-            title: 'Error!',
-            text: 'Failed to remove the bookmark. Please try again.',
+            title: 'Kļūda!',
+            text: 'Neizdevās dzēst grāmatzīmēto kursu. Lūdzu, mēģiniet vēlreiz.',
             icon: 'error',
             color: text_dark,
             background: background,
@@ -252,7 +240,6 @@ const deleteBookmark = async (bookmarkId) => {
     }
 };
 
-// Initialize
 onMounted(() => {
     loadBookmarks();
 });

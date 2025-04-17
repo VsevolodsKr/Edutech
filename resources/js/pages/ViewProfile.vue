@@ -4,36 +4,32 @@
         <div class="main-content">
             <section :class="sectionClasses">
                 <div class="flex justify-between items-center mb-4">
-                    <h1 class="text-[1.5rem] text-text_dark capitalize">Profile</h1>
+                    <h1 class="text-[1.5rem] text-text_dark capitalize">Profils</h1>
                     <router-link 
                         to="/update-profile"
                         class="bg-button text-base border-2 border-button px-4 py-2 rounded-lg hover:bg-button1 transition-colors duration-200 hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:px-3 [@media(max-width:550px)]:py-1"
                     >
-                        Edit Profile
+                        Rediģēt profilu
                     </router-link>
                 </div>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
                 
-                <!-- Loading State -->
                 <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                 </div>
 
-                <!-- Error State -->
                 <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                     {{ error }}
                     <button 
                         @click="loadUserData"
                         class="block mx-auto mt-4 text-button hover:text-text_dark"
                     >
-                        Try Again
+                        Mēģināt vēlreiz
                     </button>
                 </div>
 
-                <!-- Profile Content -->
                 <div v-else class="flex items-center justify-center">
                     <div class="bg-base rounded-lg p-[2rem] w-[50rem]">
-                        <!-- Profile Picture -->
                         <div class="flex justify-center mb-6">
                             <img 
                                 :src="userData.image"
@@ -42,38 +38,37 @@
                             >
                         </div>
 
-                        <!-- User Information -->
                         <div class="space-y-6">
                             <div class="bg-background rounded-lg p-4">
                                 <h3 class="text-[1rem] text-text_light mb-1 [@media(max-width:550px)]:text-[.8rem]">
-                                    Full Name
+                                    Vārds
                                 </h3>
                                 <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
-                                    {{ userData.name || 'Not set' }}
+                                    {{ userData.name || 'Vārda nav' }}
                                 </p>
                             </div>
 
                             <div class="bg-background rounded-lg p-4">
                                 <h3 class="text-[1rem] text-text_light mb-1 [@media(max-width:550px)]:text-[.8rem]">
-                                    Email Address
+                                    E-pasts
                                 </h3>
                                 <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
-                                    {{ userData.email || 'Not set' }}
+                                    {{ userData.email || 'E-pasta nav' }}
                                 </p>
                             </div>
 
                             <div class="bg-background rounded-lg p-4">
                                 <h3 class="text-[1rem] text-text_light mb-1 [@media(max-width:550px)]:text-[.8rem]">
-                                    Role
+                                    Loma
                                 </h3>
                                 <p class="text-[1.2rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1rem]">
-                                    Student
+                                    students
                                 </p>
                             </div>
 
                             <div class="bg-background rounded-lg p-4">
                                 <h3 class="text-[1rem] text-text_light mb-1 [@media(max-width:550px)]:text-[.8rem]">
-                                    Account Created
+                                    Izveidots
                                 </h3>
                                 <p class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
                                     {{ userData.created_at }}
@@ -100,11 +95,9 @@ import axios from 'axios';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const isLoading = ref(true);
 const error = ref(null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const userData = computed(() => {
@@ -115,15 +108,14 @@ const userData = computed(() => {
         if (!user) {
             console.log('No user data found in store');
             return {
-                name: 'Not set',
-                email: 'Not set',
+                name: 'Vārda nav',
+                email: 'E-pasta nav',
                 image: '/images/avatar.png',
-                created_at: 'Not available'
+                created_at: 'Nav pieejams'
             };
         }
 
-        // Handle the image URL properly
-        let imageUrl = '/images/avatar.png'; // Default avatar
+        let imageUrl = '/images/avatar.png';
         console.log('Original image path:', user.image);
         
         if (user.image) {
@@ -139,20 +131,20 @@ const userData = computed(() => {
         }
 
         const result = {
-            name: user.name || 'Not set',
-            email: user.email || 'Not set',
+            name: user.name || 'Vārda nav',
+            email: user.email || 'E-pasta nav',
             image: imageUrl,
-            created_at: user.created_at ? formatDate(user.created_at) : 'Not available'
+            created_at: user.created_at ? formatDate(user.created_at) : 'Nav pieejams'
         };
         console.log('Final userData object:', result);
         return result;
     } catch (err) {
         console.error('Error accessing user data:', err);
         return {
-            name: 'Not set',
-            email: 'Not set',
+            name: 'Vārda nav',
+            email: 'E-pasta nav',
             image: '/images/avatar.png',
-            created_at: 'Not available'
+            created_at: 'Nav pieejams'
         };
     }
 });
@@ -163,20 +155,18 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const formatDate = (dateString) => {
-    if (!dateString) return 'Not available';
+    if (!dateString) return 'Nav pieejams';
     try {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        return `${day}.${month}.${year}`;
     } catch (err) {
         console.error('Error formatting date:', err);
-        return 'Not available';
+        return 'Nav pieejams';
     }
 };
 
@@ -200,7 +190,6 @@ const loadUserData = async () => {
         });
 
         if (response.data) {
-            // Store the user data in Vuex
             store.commit('setUser', response.data);
             console.log('User data loaded:', response.data);
         } else {
@@ -210,7 +199,6 @@ const loadUserData = async () => {
     } catch (err) {
         console.error('Error loading user data:', err);
         if (err.response?.status === 401) {
-            // Token is invalid or expired
             localStorage.removeItem('token');
             router.push('/login');
         } else if (err.response?.data?.message) {
@@ -223,7 +211,6 @@ const loadUserData = async () => {
     }
 };
 
-// Lifecycle
 onMounted(() => {
     loadUserData();
 });

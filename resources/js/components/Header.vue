@@ -26,7 +26,6 @@
                 </button>
             </div>
 
-            <!-- User Menu (Authenticated) -->
             <div 
                 v-if="show && user" 
                 class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100"
@@ -35,41 +34,40 @@
                     <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
                 <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
-                <p class="text-[1.3rem] text-text_light">student</p>
+                <p class="text-[1.3rem] text-text_light">students</p>
                 <router-link 
                     to="/profile" 
                     class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem]"
                 >
-                    View Profile
+                    Skatīt profilu
                 </router-link>
                 <button 
                     @click="logout" 
                     class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base"
                 >
-                    Logout
+                    Iziet
                 </button>
             </div>
 
-            <!-- Guest Menu -->
             <div 
                 v-if="show && !user" 
                 class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100"
             >
                 <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">
-                    Please login or register
+                    Lūdzu ielogojieties vai reģistrējieties
                 </h3>
                 <div class="w-full flex gap-[.5rem] px-[1rem] pt-[.5rem]">
                     <router-link 
                         to="/login" 
                         class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        Login
+                        Ielogojies
                     </router-link>
                     <router-link 
                         to="/register" 
                         class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        Register
+                        Reģistrēties
                     </router-link>
                 </div>
             </div>
@@ -107,7 +105,6 @@
                 </button>
             </div>
 
-            <!-- User Menu (Authenticated) -->
             <div 
                 v-if="show && user" 
                 class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100"
@@ -116,41 +113,40 @@
                     <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
                 </div>
                 <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
-                <p class="text-[1.3rem] text-text_light">student</p>
+                <p class="text-[1.3rem] text-text_light">students</p>
                 <router-link 
                     to="/profile" 
                     class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem]"
                 >
-                    View Profile
+                    Skatīt profilu
                 </router-link>
                 <button 
                     @click="logout" 
                     class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base"
                 >
-                    Logout
+                    Iziet
                 </button>
             </div>
 
-            <!-- Guest Menu -->
             <div 
                 v-if="show && !user" 
                 class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100"
             >
                 <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">
-                    Please login or register
+                    Lūdzu ielogojieties vai reģistrējieties
                 </h3>
                 <div class="w-full flex gap-[.5rem] px-[1rem] pt-[.5rem]">
                     <router-link 
                         to="/login" 
                         class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        Login
+                        Ielogojies
                     </router-link>
                     <router-link 
                         to="/register" 
                         class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:text-button2 hover:bg-base hover:transition hover:ease-linear hover:duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        Register
+                        Reģistrēties
                     </router-link>
                 </div>
             </div>

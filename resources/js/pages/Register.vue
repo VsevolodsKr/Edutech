@@ -2,13 +2,11 @@
     <div>
         <Header />
         <section :class="sectionClasses">
-            <!-- Register Form -->
             <form @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[2rem] w-[50rem] max-w-[95%] transition-all duration-300">
                 <h3 class="text-[1.5rem] capitalize text-text_dark text-center mb-[1.5rem] [@media(max-width:550px)]:text-[1.2rem]">
-                    Register
+                    Reģistrēties
                 </h3>
 
-                <!-- Validation Messages -->
                 <TransitionGroup 
                     name="list" 
                     tag="ul" 
@@ -28,15 +26,14 @@
                     </li>
                 </TransitionGroup>
 
-                <!-- Name Field -->
                 <div class="mb-[1rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Your name <span class="text-[#ff0000]">*</span>
+                        Jūsu vārds <span class="text-[#ff0000]">*</span>
                     </label>
                     <input 
                         v-model="name"
                         type="text"
-                        placeholder="Enter your name..."
+                        placeholder="Ievadiet savu vārdu..."
                         :disabled="isLoading"
                         maxlength="50"
                         class="mt-2 text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
@@ -44,15 +41,14 @@
                     >
                 </div>
 
-                <!-- Email Field -->
                 <div class="mb-[1rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Your email <span class="text-[#ff0000]">*</span>
+                        Jūsu e-pasts <span class="text-[#ff0000]">*</span>
                     </label>
                     <input 
                         v-model="email"
                         type="email"
-                        placeholder="Enter your email..."
+                        placeholder="Ievadiet savu e-pastu..."
                         :disabled="isLoading"
                         maxlength="50"
                         class="mt-2 text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
@@ -60,16 +56,15 @@
                     >
                 </div>
 
-                <!-- Password Field -->
                 <div class="mb-[1rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Your password <span class="text-[#ff0000]">*</span>
+                        Jūsu parole <span class="text-[#ff0000]">*</span>
                     </label>
                     <div class="relative">
                         <input 
                             v-model="password"
                             :type="showPassword ? 'text' : 'password'"
-                            placeholder="Enter your password..."
+                            placeholder="Ievadiet savu paroli..."
                             :disabled="isLoading"
                             maxlength="50"
                             class="mt-2 text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
@@ -85,16 +80,15 @@
                     </div>
                 </div>
 
-                <!-- Confirm Password Field -->
                 <div class="mb-[1rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Confirm password <span class="text-[#ff0000]">*</span>
+                        Apstipriniet savu paroli <span class="text-[#ff0000]">*</span>
                     </label>
                     <div class="relative">
                         <input 
                             v-model="confirmPassword"
                             :type="showConfirmPassword ? 'text' : 'password'"
-                            placeholder="Confirm your password..."
+                            placeholder="Apstipriniet savu paroli..."
                             :disabled="isLoading"
                             maxlength="50"
                             class="mt-2 text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
@@ -110,10 +104,9 @@
                     </div>
                 </div>
 
-                <!-- Image Upload -->
                 <div class="mb-[1.5rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Select image <span class="text-[#ff0000]">*</span>
+                        Izvēlieties attēlu <span class="text-[#ff0000]">*</span>
                     </label>
                     <div class="mt-2 relative">
                         <input 
@@ -130,7 +123,7 @@
                         >
                             <div v-if="!selectedImage" class="text-center">
                                 <i class="fas fa-cloud-upload-alt text-2xl text-text_light"></i>
-                                <p class="mt-2 text-text_light">Click to upload image</p>
+                                <p class="mt-2 text-text_light">Noklikšķiniet, lai augšupielādētu attēlu</p>
                             </div>
                             <div v-else class="relative w-full">
                                 <img 
@@ -149,7 +142,6 @@
                     </div>
                 </div>
 
-                <!-- Submit Button -->
                 <button 
                     type="submit"
                     :disabled="isLoading || !isFormValid"
@@ -157,16 +149,15 @@
                 >
                     <span v-if="isLoading" class="flex items-center justify-center gap-2">
                         <div class="animate-spin rounded-full h-4 w-4 border-2 border-base"></div>
-                        Registering...
+                        Reģistrēšana...
                     </span>
-                    <span v-else>Register</span>
+                    <span v-else>Reģistrēties</span>
                 </button>
 
-                <!-- Login Link -->
                 <p class="text-center mt-4 text-text_light">
-                    Already have an account? 
+                    Jums jau ir konts? 
                     <router-link to="/login" class="text-button hover:text-button1 transition-colors">
-                        Login now
+                        Ielogoties
                     </router-link>
                 </p>
             </form>
@@ -187,7 +178,6 @@ import axios from 'axios';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const name = ref('');
 const email = ref('');
 const password = ref('');
@@ -200,7 +190,6 @@ const isLoading = ref(false);
 const validationMessages = ref([]);
 const isError = ref(false);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const sectionClasses = computed(() => [
@@ -218,7 +207,6 @@ const isFormValid = computed(() => {
            password.value === confirmPassword.value;
 });
 
-// Methods
 const togglePassword = () => {
     showPassword.value = !showPassword.value;
 };
@@ -230,15 +218,15 @@ const toggleConfirmPassword = () => {
 const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        if (file.size > 2 * 1024 * 1024) { // 2MB limit
-            validationMessages.value = ['Image size should not exceed 2MB'];
+        if (file.size > 2 * 1024 * 1024) {
+            validationMessages.value = ['Attēla izmērs nedrīkst pārsniegt 2MB'];
             isError.value = true;
             event.target.value = '';
             return;
         }
 
         if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-            validationMessages.value = ['Please select a valid image file (JPEG, PNG, or GIF)'];
+            validationMessages.value = ['Lūdzu, izvēlieties derīgu attēla failu (JPEG, PNG, vai GIF)'];
             isError.value = true;
             event.target.value = '';
             return;
@@ -263,27 +251,27 @@ const validateForm = () => {
     const errors = [];
 
     if (!name.value.trim()) {
-        errors.push('Name is required');
+        errors.push('Vārds ir obligāts');
     }
 
     if (!email.value.trim()) {
-        errors.push('Email is required');
+        errors.push('E-pasts ir obligāts');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        errors.push('Please enter a valid email address');
+        errors.push('Lūdzu, ievadiet derīgu e-pasta adresi');
     }
 
     if (!password.value) {
-        errors.push('Password is required');
+        errors.push('Parole ir obligāta');
     } else if (password.value.length < 6) {
-        errors.push('Password must be at least 6 characters long');
+        errors.push('Parole ir jābūt vismaz 6 simbolu garai');
     }
 
     if (password.value !== confirmPassword.value) {
-        errors.push('Passwords do not match');
+        errors.push('Paroles nesakrīt');
     }
 
     if (!fileInput.value?.files[0]) {
-        errors.push('Please select a profile image');
+        errors.push('Lūdzu, izvēlieties profila attēlu');
     }
 
     return errors;
@@ -294,7 +282,6 @@ const handleSubmit = async () => {
         validationMessages.value = [];
         isError.value = false;
 
-        // Validate form
         const errors = validateForm();
         if (errors.length > 0) {
             validationMessages.value = errors;
@@ -304,7 +291,6 @@ const handleSubmit = async () => {
 
         isLoading.value = true;
 
-        // Prepare form data
         const formData = new FormData();
         formData.append('name', name.value.trim());
         formData.append('email', email.value.trim());
@@ -315,7 +301,6 @@ const handleSubmit = async () => {
             formData.append('image', fileInput.value.files[0]);
         }
 
-        // Submit registration request
         const response = await axios.post('api/register/send', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -327,7 +312,6 @@ const handleSubmit = async () => {
             : [response.data.message];
         isError.value = false;
 
-        // Redirect to login page
         setTimeout(() => {
             router.push('/login');
         }, 500);
@@ -336,7 +320,7 @@ const handleSubmit = async () => {
         
         validationMessages.value = Array.isArray(err.response?.data?.message)
             ? err.response.data.message
-            : [err.response?.data?.message || 'An error occurred during registration. Please try again.'];
+            : [err.response?.data?.message || 'Radās kļūda reģistrācijā. Lūdzu, mēģiniet vēlreiz.'];
         isError.value = true;
     } finally {
         isLoading.value = false;

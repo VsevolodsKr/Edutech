@@ -3,7 +3,7 @@
         <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">About Us</h1>
+                <h1 class="text-[1.5rem] text-text_dark capitalize">Par mums</h1>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
                 
                 <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] items-center">
@@ -11,10 +11,10 @@
                         <img src="../images/about-img.svg" alt="About Us" class="w-full h-[40rem] [@media(max-width:550px)]:h-[20rem]">
                     </div>
                     <div class="text-center">
-                        <h3 class="text-[1.75rem] text-text_dark mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Why Choose Us?</h3>
+                        <h3 class="text-[1.75rem] text-text_dark mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Kāpēc mēs?</h3>
                         <p class="text-[1.1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.9rem]">
-                            We are dedicated to providing high-quality education through our innovative online learning platform. 
-                            Our courses are designed by industry experts and educators to ensure you receive the best possible learning experience.
+                            Mēs esam paredzēti nodrošināt augstas kvalitātes izglītību caur mūsu inovatīvo tiešsaistes mācīšanās platformu. 
+                            Mūsu kursi ir izstrādāti nozarēs ekspertiem un mācītājiem, lai nodrošinātu jums labāko iespējamo mācīšanās pieredzi.
                         </p>
                         <div class="mt-[2rem] grid grid-cols-[repeat(auto-fit,_minmax(16rem,_1fr))] gap-[1.5rem]">
                             <div v-for="(stat, index) in statistics" 
@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="mt-[3rem]">
-                    <h3 class="text-[1.75rem] text-text_dark text-center mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Our Features</h3>
+                    <h3 class="text-[1.75rem] text-text_dark text-center mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Mūsu priekšrocības</h3>
                     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem]">
                         <div v-for="(feature, index) in features" 
                              :key="index"
@@ -70,50 +70,50 @@ const statistics = [
     {
         icon: 'fas fa-graduation-cap',
         value: '1.5K+',
-        label: 'Online Courses'
+        label: 'Tiešsaistes kursi'
     },
     {
         icon: 'fas fa-user-graduate',
         value: '100K+',
-        label: 'Students'
+        label: 'Studenti'
     },
     {
         icon: 'fas fa-chalkboard-user',
         value: '1K+',
-        label: 'Expert Tutors'
+        label: 'Eksperti'
     }
 ];
 
 const features = [
     {
         icon: 'fas fa-graduation-cap',
-        title: 'Expert Tutors',
-        description: 'Learn from industry professionals and experienced educators who are passionate about teaching.'
+        title: 'Eksperti',
+        description: 'Mācīties no nozarēs ekspertiem un mācītājiem, kuri ir pārliecināti par mūsu kursu.'
     },
     {
         icon: 'fas fa-video',
-        title: 'Video Lectures',
-        description: 'Access high-quality video content that makes complex concepts easy to understand.'
+        title: 'Video lekcijas',
+        description: 'Piekļūstiet augstas kvalitātes video saturam, kas padara sarežģītus jēdzienus vieglāk saprast.'
     },
     {
         icon: 'fas fa-certificate',
-        title: 'Certificates',
-        description: 'Earn recognized certificates upon completion of our courses to boost your career.'
+        title: 'Sertifikāti',
+        description: 'Iegūstiet sertifikātus pēc mūsu kursu pabeigšanas, lai palielinātu jūsu karjeru.'
     },
     {
         icon: 'fas fa-clock',
-        title: 'Lifetime Access',
-        description: 'Get unlimited access to course materials and learn at your own pace.'
+        title: 'Nelimitēts piekļūšanas laiks',
+        description: 'Iegūstiet nelimitētu piekļūšanas laiku mūsu kursu materiāliem un mācīties jūsu paša laikā.'
     },
     {
         icon: 'fas fa-book',
-        title: 'Rich Content',
-        description: 'Access comprehensive study materials, quizzes, and practical assignments.'
+        title: 'Bagāts materiālu klāsts',
+        description: 'Piekļūstiet bagātam materiālu klāstam, kas palīdz jums labāk saprast un atgūt prasmes.'
     },
     {
         icon: 'fas fa-headset',
-        title: '24/7 Support',
-        description: 'Get help whenever you need it through our dedicated support system.'
+        title: '24/7 Palīdzība',
+        description: 'Iegūstiet palību jebkurā laikā caur mūsu paredzēto palīdzības sistēmu.'
     }
 ];
 </script>

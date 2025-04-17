@@ -4,12 +4,12 @@
         <div class="main-content">
             <section :class="sectionClasses">
                 <div class="flex justify-between items-center mb-4">
-                    <h1 class="text-[1.5rem] text-text_dark capitalize">Teacher Profile</h1>
+                    <h1 class="text-[1.5rem] text-text_dark">Pasniedzēja profils</h1>
                     <router-link 
                         to="/teachers"
                         class="bg-background text-text_dark px-4 py-2 rounded-lg hover:bg-base transition-colors duration-200 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:px-3 [@media(max-width:550px)]:py-1"
                     >
-                        Back to Teachers
+                        Atpakaļ uz pasniedzējiem
                     </router-link>
                 </div>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
@@ -19,7 +19,6 @@
                 </div>
                 
                 <div v-else-if="teacher" class="grid grid-cols-1 lg:grid-cols-[1fr,_2fr] gap-[2rem]">
-                    <!-- Teacher Info -->
                     <div class="bg-base rounded-lg p-[2rem] text-center h-fit">
                         <img 
                             :src="teacher.image" 
@@ -32,24 +31,23 @@
                         <div class="grid grid-cols-2 gap-4 mb-6 bg-background rounded-lg p-4">
                             <div class="text-center">
                                 <h3 class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.25rem]">{{ totalPlaylists }}</h3>
-                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Playlists</p>
+                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Atskaņošanas saraksti</p>
                             </div>
                             <div class="text-center">
                                 <h3 class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.25rem]">{{ totalContents }}</h3>
-                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Contents</p>
+                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Video</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Teacher Playlists -->
                     <div class="space-y-4">
                         <h3 class="text-[1.25rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.1rem]">
-                            Playlists by {{ teacher.name }}
+                            {{ teacher.name }} atskaņošanas saraksti
                         </h3>
                         
                         <div v-if="playlists.length === 0" 
                              class="text-center text-text_light text-[1rem] bg-base rounded-lg p-8 [@media(max-width:550px)]:text-[0.9rem]">
-                            No playlists available yet
+                            Atskaņošanas saraksti nav pieejami
                         </div>
                         
                         <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -57,7 +55,6 @@
                                  :key="playlist.id"
                                  class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                                 
-                                <!-- Course Thumbnail -->
                                 <div class="relative group">
                                     <img 
                                         :src="playlist.thumb" 
@@ -69,15 +66,14 @@
                                             :to="'/playlist/' + playlist.id"
                                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                         >
-                                            View Course
+                                            Skatīt atskaņošanas sarakstu
                                         </router-link>
                                     </div>
                                     <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                        {{ playlist.content_count }} videos
+                                        {{ playlist.content_count }} video
                                     </span>
                                 </div>
 
-                                <!-- Course Info -->
                                 <div class="mt-4">
                                     <h3 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.2rem]">
                                         {{ playlist.title }}
@@ -89,7 +85,7 @@
                                         :to="'/playlist/' + playlist.id"
                                         class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                                     >
-                                        Start Learning
+                                        Sākt mācīties
                                     </router-link>
                                 </div>
                             </div>
@@ -99,7 +95,7 @@
                 
                 <div v-else class="flex flex-col items-center justify-center min-h-[50vh] bg-base rounded-lg p-8">
                     <i class="fas fa-user-slash text-[2rem] text-text_light mb-4"></i>
-                    <p class="text-text_light text-[1.1rem] [@media(max-width:550px)]:text-[1rem]">Teacher not found</p>
+                    <p class="text-text_light text-[1.1rem] [@media(max-width:550px)]:text-[1rem]">Pasniedzējs nav atrasts</p>
                 </div>
             </section>
         </div>
@@ -119,14 +115,12 @@ import axios from 'axios';
 const route = useRoute();
 const { width } = useWindowSize();
 
-// State
 const teacher = ref(null);
 const playlists = ref([]);
-const isLoading = ref(true); // Keep local loading state
+const isLoading = ref(true);
 const totalPlaylists = ref(0);
 const totalContents = ref(0);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -134,22 +128,17 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const processPlaylist = (playlist) => {
     if (!playlist) return null;
 
-    // Create a processed copy of the playlist
     const processed = { ...playlist };
 
-    // Handle thumbnail path
     if (processed.thumb) {
-        // Clean up the path by removing duplicate /storage/ prefixes
         let cleanPath = processed.thumb
-            .replace(/^\/storage\/+/g, '') // Remove leading /storage/ and any duplicate slashes
-            .replace(/^storage\/+/, '') // Also remove without leading slash
-            .replace(/\/+/g, '/'); // Replace any remaining multiple slashes with single slash
+            .replace(/^\/storage\/+/g, '')
+            .replace(/^storage\/+/, '')
+            .replace(/\/+/g, '/');
         
-        // Add single /storage/ prefix
         processed.thumb = `/storage/${cleanPath}`;
     } else {
         processed.thumb = '/storage/default-thumbnail.png';
@@ -163,13 +152,11 @@ const loadTeacherData = async () => {
         isLoading.value = true;
         const teacherId = route.params.id;
         
-        // Load teacher and playlists data in parallel
         const [teacherResponse, playlistsResponse] = await Promise.all([
             axios.get(`/api/teachers/find/${teacherId}`),
             axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`)
         ]);
         
-        // Process teacher data
         if (!teacherResponse.data.data) {
             throw new Error('Teacher not found');
         }
@@ -184,12 +171,9 @@ const loadTeacherData = async () => {
             image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
         };
 
-        // Process playlists data
         if (playlistsResponse.data.status === 200) {
-            // Process playlists without content count first
             const processedPlaylists = playlistsResponse.data.data.map(processPlaylist).filter(Boolean);
             
-            // Get content counts in parallel
             const contentCountPromises = processedPlaylists.map(playlist => 
                 axios.get(`/api/contents/playlist/${playlist.id}/amount`)
                     .then(response => ({ id: playlist.id, count: response.data || 0 }))
@@ -199,13 +183,11 @@ const loadTeacherData = async () => {
             const contentCounts = await Promise.all(contentCountPromises);
             const contentCountMap = new Map(contentCounts.map(({ id, count }) => [id, count]));
             
-            // Add content counts to playlists
             playlists.value = processedPlaylists.map(playlist => ({
                 ...playlist,
                 content_count: contentCountMap.get(playlist.id) || 0
             }));
             
-            // Calculate totals
             totalPlaylists.value = playlists.value.length;
             totalContents.value = playlists.value.reduce((sum, playlist) => sum + (playlist.content_count || 0), 0);
         } else {
@@ -229,15 +211,12 @@ const loadTeacherData = async () => {
     }
 };
 
-// Initialize
 onMounted(async () => {
     try {
-        // Load user data if not already loaded
         if (!store.getters.getUser) {
             await store.dispatch('loadUserData');
         }
         
-        // Then load teacher data
         await loadTeacherData();
     } catch (error) {
         console.error('Error initializing component:', error);

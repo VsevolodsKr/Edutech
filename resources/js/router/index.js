@@ -1,14 +1,12 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Swal from "sweetalert2";
 
-// Route modules
 const publicRoutes = [
     {
         path: '/',
         component: () => import('../pages/Home.vue'),
         name: 'Home',
         meta: { 
-            title: 'Home',
+            title: 'Sākumlapa',
             requiresAuth: false
         }
     },
@@ -17,7 +15,7 @@ const publicRoutes = [
         component: () => import('../pages/About.vue'),
         name: 'About',
         meta: { 
-            title: 'About Us',
+            title: 'Par mums',
             requiresAuth: false
         }
     },
@@ -26,7 +24,7 @@ const publicRoutes = [
         component: () => import('../pages/Courses.vue'),
         name: 'Courses',
         meta: { 
-            title: 'Courses',
+            title: 'Kursi',
             requiresAuth: false
         }
     },
@@ -35,7 +33,7 @@ const publicRoutes = [
         component: () => import('../pages/Teachers.vue'),
         name: 'Teachers',
         meta: { 
-            title: 'Teachers',
+            title: 'Mācītāji',
             requiresAuth: false
         }
     },
@@ -44,19 +42,10 @@ const publicRoutes = [
         component: () => import('../pages/Contact.vue'),
         name: 'Contact',
         meta: { 
-            title: 'Contact Us',
+            title: 'Sazinies ar mums',
             requiresAuth: false
         }
     },
-    {
-        path: '/search',
-        component: () => import('../pages/Search.vue'),
-        name: 'Search',
-        meta: { 
-            title: 'Playlists',
-            requiresAuth: false
-        }
-    }
 ];
 
 const authRoutes = [
@@ -65,7 +54,7 @@ const authRoutes = [
         component: () => import('../pages/Login.vue'),
         name: 'Login',
         meta: { 
-            title: 'Authorization',
+            title: 'Autentifikācija',
             requiresAuth: false,
             guestOnly: true
         }
@@ -75,7 +64,7 @@ const authRoutes = [
         component: () => import('../pages/Register.vue'),
         name: 'Register',
         meta: { 
-            title: 'Authorization',
+            title: 'Reģistrācija',
             requiresAuth: false,
             guestOnly: true
         }
@@ -88,7 +77,7 @@ const userRoutes = [
         name: 'profile',
         component: () => import('../pages/ViewProfile.vue'),
         meta: { 
-            title: 'Profile',
+            title: 'Profils',
             requiresAuth: true 
         }
     },
@@ -97,7 +86,7 @@ const userRoutes = [
         name: 'update-profile',
         component: () => import('../pages/UpdateProfile.vue'),
         meta: { 
-            title: 'Update Profile',
+            title: 'Rediģēt profilu',
             requiresAuth: true 
         }
     },
@@ -106,7 +95,7 @@ const userRoutes = [
         component: () => import('../pages/Playlist.vue'),
         name: 'Playlist',
         meta: { 
-            title: 'Playlist',
+            title: 'Atskaņošanas saraksts',
             requiresAuth: false
         }
     },
@@ -124,7 +113,7 @@ const userRoutes = [
         component: () => import('../pages/Teacher_Profile.vue'),
         name: 'Teacher_Profile',
         meta: { 
-            title: 'Profile',
+            title: 'Profils',
             requiresAuth: false
         }
     },
@@ -133,7 +122,7 @@ const userRoutes = [
         component: () => import('../pages/Likes.vue'),
         name: 'Likes',
         meta: { 
-            title: 'Your likes',
+            title: 'Jūsu favorītvideo',
             requiresAuth: true
         }
     },
@@ -142,7 +131,7 @@ const userRoutes = [
         component: () => import('../pages/Bookmarks.vue'),
         name: 'Bookmarks',
         meta: { 
-            title: 'Your bookmarks',
+            title: 'Jūsu gramātiezīmētie saraksti',
             requiresAuth: true
         }
     },
@@ -151,7 +140,7 @@ const userRoutes = [
         component: () => import('../pages/Edit_Comment.vue'),
         name: 'Comment',
         meta: { 
-            title: 'Edit Comment',
+            title: 'Rediģēt komentāru',
             requiresAuth: true
         }
     },
@@ -160,19 +149,17 @@ const userRoutes = [
         component: () => import('../pages/Comments.vue'),
         name: 'Comments',
         meta: { 
-            title: 'Your comments',
+            title: 'Jūsu komentāri',
             requiresAuth: true
         }
     }
 ];
 
-// Auth guard for admin routes
 const requireAdminAuth = (to, from, next) => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
     
     if (!token || !user) {
-        // Save the intended destination
         localStorage.setItem('adminRedirectTo', to.fullPath);
         next('/login');
         return;
@@ -187,7 +174,7 @@ const adminRoutes = [
         component: () => import('../admin/Dashboard.vue'),
         name: 'Dashboard',
         meta: { 
-            title: 'Dashboard',
+            title: 'Pārvaldības panelis',
             requiresAuth: true,
             isAdmin: true
         },
@@ -198,7 +185,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Profile.vue'),
         name: 'Admin_Profile',
         meta: { 
-            title: 'Profile',
+            title: 'Profils',
             requiresAuth: true,
             isAdmin: true
         },
@@ -209,7 +196,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Update.vue'),
         name: 'Admin_Update',
         meta: { 
-            title: 'Update Profile',
+            title: 'Rediģēt profilu',
             requiresAuth: true,
             isAdmin: true
         },
@@ -220,7 +207,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Playlists.vue'),
         name: 'Admin_Playlists',
         meta: { 
-            title: 'Playlists',
+            title: 'Atskaņošanas saraksti',
             requiresAuth: true,
             isAdmin: true
         },
@@ -231,7 +218,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Add_Playlist.vue'),
         name: 'Admin_Add_Playlist',
         meta: { 
-            title: 'Add Playlist',
+            title: 'Pievienot atskaņošanas sarakstu',
             requiresAuth: true,
             isAdmin: true
         },
@@ -242,7 +229,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Update_Playlist.vue'),
         name: 'Admin_Update_Playlist',
         meta: { 
-            title: 'Update Playlist',
+            title: 'Rediģēt atskaņošanas sarakstu',
             requiresAuth: true,
             isAdmin: true
         }
@@ -252,7 +239,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Contents.vue'),
         name: 'Admin_Contents',
         meta: { 
-            title: 'Contents',
+            title: 'Saturs',
             requiresAuth: true,
             isAdmin: true
         },
@@ -263,7 +250,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Add_Content.vue'),
         name: 'Admin_Add_Content',
         meta: { 
-            title: 'Upload Content',
+            title: 'Augšupielādēt video',
             requiresAuth: true,
             isAdmin: true
         },
@@ -274,7 +261,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Watch_Playlist.vue'),
         name: 'Admin_Watch_Playlist',
         meta: { 
-            title: 'Playlist',
+            title: 'Atskaņošanas saraksts',
             requiresAuth: true,
             isAdmin: true
         }
@@ -284,7 +271,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Update_Content.vue'),
         name: 'Admin_Update_Content',
         meta: { 
-            title: 'Update Content',
+            title: 'Rediģēt video',
             requiresAuth: true,
             isAdmin: true
         }
@@ -294,7 +281,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Watch_Content.vue'),
         name: 'Admin_Watch_Content',
         meta: { 
-            title: 'Watch Content',
+            title: 'Apskatīt video',
             requiresAuth: true,
             isTeacher: true
         }
@@ -304,27 +291,25 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Comments.vue'),
         name: 'Admin_Comments',
         meta: { 
-            title: 'Comments',
+            title: 'Komentāri',
             requiresAuth: true,
             isTeacher: true
         }
     }
 ];
 
-// Error routes
 const errorRoutes = [
     {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: () => import('../pages/NotFound.vue'),
         meta: { 
-            title: 'Page Not Found',
+            title: 'Kļūda',
             requiresAuth: false
         }
     }
 ];
 
-// Combine all routes
 const routes = [
     ...publicRoutes,
     ...authRoutes,
@@ -333,7 +318,6 @@ const routes = [
     ...errorRoutes
 ];
 
-// Create router instance
 const router = createRouter({
     history: createWebHistory(),
     routes,
@@ -346,24 +330,22 @@ const router = createRouter({
     }
 });
 
-// Navigation guards
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
     
-    // If the route requires authentication and user is not logged in
+    document.title = to.meta.title ? `${to.meta.title}` : 'Edutech';
+    
     if (to.meta.requiresAuth && !token) {
         next('/login');
         return;
     }
     
-    // If user is logged in and tries to access guest-only pages
     if (token && to.meta.guestOnly) {
         next('/');
         return;
     }
     
-    // Check admin routes access
     if (to.meta.isAdmin) {
         if (!token || !user) {
             localStorage.setItem('adminRedirectTo', to.fullPath);
@@ -372,7 +354,6 @@ router.beforeEach((to, from, next) => {
         }
     }
     
-    // Allow access to public routes
     if (!to.meta.requiresAuth) {
         next();
         return;

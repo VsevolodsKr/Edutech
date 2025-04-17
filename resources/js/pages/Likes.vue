@@ -3,39 +3,34 @@
         <Header />
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                Liked Content
+                Favorītvideo
             </h1>
             <hr class="border-[#ccc] mb-[2rem]">
 
-            <!-- Loading State -->
             <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                 {{ error }}
                 <button 
                     @click="loadLikedContent"
                     class="block mx-auto mt-4 text-button hover:text-text_dark"
                 >
-                    Try Again
+                    Mēģināt vēlreiz
                 </button>
             </div>
 
-            <!-- No Liked Content -->
             <div v-else-if="!contents.length" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
-                You haven't liked any content yet.
+                Jūs vēl neesat iepatīkusi nevienu video.
             </div>
 
-            <!-- Content Grid -->
             <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(33rem,_1fr))] gap-[1rem] pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                 <div 
                     v-for="content in contents" 
                     :key="content.id" 
                     class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300"
                 >
-                    <!-- Teacher Info -->
                     <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                         <img 
                             :src="content.teacher?.image" 
@@ -52,7 +47,6 @@
                         </div>
                     </div>
 
-                    <!-- Video Thumbnail -->
                     <div class="relative group">
                         <img 
                             :src="content.thumb" 
@@ -64,7 +58,6 @@
                         </div>
                     </div>
 
-                    <!-- Video Title and Actions -->
                     <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
                         {{ content.title }}
                     </h3>
@@ -73,14 +66,14 @@
                             :to="'/watch_video/' + content.id"
                             class="flex-1 bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Watch Video
+                            Skatīt video
                         </router-link>
                         <button 
                             @click="() => deleteLike(content.id)"
                             :disabled="isDeleting === content.id"
                             class="flex-1 bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            {{ isDeleting === content.id ? 'Removing...' : 'Remove' }}
+                            {{ isDeleting === content.id ? 'Dzēšana...' : 'Dzēst' }}
                         </button>
                     </div>
                 </div>
@@ -102,12 +95,10 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const contents = ref([]);
 const isDeleting = ref(null);
 const error = ref(null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const user = computed(() => store.getters.getUser);
 const isLoading = computed(() => store.getters.getIsLoading);
@@ -118,28 +109,27 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 const getThumbnailUrl = (content) => {
     if (!content.url) return content.thumb || '/storage/default-thumbnail.png';
     
     try {
-        // Handle YouTube URLs
         if (content.url.includes('youtube.com') || content.url.includes('youtu.be')) {
             let videoId = '';
             
-            // Handle youtu.be links
             if (content.url.includes('youtu.be/')) {
                 videoId = content.url.split('youtu.be/')[1].split('?')[0];
             }
-            // Handle youtube.com links
             else if (content.url.includes('youtube.com')) {
                 const urlObj = new URL(content.url);
                 videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
@@ -150,7 +140,6 @@ const getThumbnailUrl = (content) => {
             }
         }
         
-        // Handle local thumbnails
         let cleanPath = content.thumb;
         if (cleanPath) {
             if (cleanPath.includes('/storage/app/public/')) {
@@ -187,30 +176,49 @@ const loadLikedContent = async () => {
             Accept: 'application/json'
         };
 
-        // Load data in parallel
         const [likesResponse, teachersResponse] = await Promise.all([
             axios.get(`/api/likes/user/${user.value.id}`, { headers }),
             axios.get(`/api/teachers/all`, { headers })
         ]);
 
-        // Create a map of teacher data for quick lookup
-        const teachersMap = new Map(teachersResponse.data.map(teacher => [teacher.id, teacher]));
+        console.log('Likes Response:', likesResponse.data);
+        console.log('Teachers Response:', teachersResponse.data);
 
-        // Transform and combine data
+        const teachersMap = new Map();
+        teachersResponse.data.forEach(teacher => {
+            console.log('Processing teacher:', teacher);
+            if (teacher.id) {
+                const cleanTeacherImagePath = teacher.image
+                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                    ?.replace(/^\//, '');
+                
+                teachersMap.set(Number(teacher.id), {
+                    ...teacher,
+                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+                });
+            }
+        });
+
         contents.value = likesResponse.data.contents.map(content => {
-            const teacher = teachersMap.get(content.teacher_id);
+            console.log('Processing content:', content);
+            const teacher = teachersMap.get(Number(content.teacher_id));
+            console.log('Found teacher for content:', teacher);
             
             return {
                 ...content,
                 thumb: getThumbnailUrl(content),
-                teacher: {
+                teacher: teacher ? {
                     ...teacher,
-                    image: teacher?.image ? `/storage/${teacher.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}` : '/storage/default-avatar.png'
+                    name: teacher.name || 'Unknown Teacher',
+                    image: teacher.image || '/storage/default-avatar.png'
+                } : {
+                    id: content.teacher_id,
+                    name: 'Unknown Teacher',
+                    image: '/storage/default-avatar.png'
                 }
             };
         });
 
-        // Get like IDs in parallel
         const likePromises = contents.value.map(content => 
             axios.post('/api/likes/check', {
                 user_id: user.value.id,
@@ -220,8 +228,7 @@ const loadLikedContent = async () => {
         );
 
         const likeResponses = await Promise.all(likePromises);
-        
-        // Add like IDs to content objects
+            
         contents.value = contents.value.map((content, index) => ({
             ...content,
             like_id: likeResponses[index].data.id
@@ -235,28 +242,26 @@ const loadLikedContent = async () => {
 
 const deleteLike = async (contentId) => {
     try {
-        // Get computed styles for SweetAlert
         const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
         const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
         const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
 
-        // Find the content with its like ID
         const content = contents.value.find(c => c.id === contentId);
         if (!content?.like_id) {
             console.error('Like ID not found for content:', contentId);
             return;
         }
 
-        // Show confirmation dialog
         const result = await Swal.fire({
-            title: 'Are you sure?',
+            title: 'Vai esat pārliecināts?',
             icon: 'warning',
             color: text_dark,
             background: background,
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: button4,
-            confirmButtonText: 'Yes, remove it!'
+            confirmButtonText: 'Jā, dzēst',
+            cancelButtonText: 'Atcelt'
         });
 
         if (result.isConfirmed) {
@@ -269,15 +274,13 @@ const deleteLike = async (contentId) => {
 
             await axios.delete(`/api/likes/delete/${content.like_id}`, { headers });
 
-            // Remove the content from the list
             contents.value = contents.value.filter(c => c.id !== contentId);
 
-            // Update store stats
             await store.dispatch('loadUserStats', user.value.id);
 
             await Swal.fire({
-                title: 'Removed!',
-                text: 'Liked video has been removed.',
+                title: 'Dzēsts!',
+                text: 'Favorītvideo ir dzēsts.',
                 icon: 'success',
                 color: text_dark,
                 background: background,
@@ -286,8 +289,8 @@ const deleteLike = async (contentId) => {
     } catch (err) {
         console.error('Error deleting like:', err);
         Swal.fire({
-            title: 'Error!',
-            text: 'Failed to remove the liked video. Please try again.',
+            title: 'Kļūda!',
+            text: 'Neizdevās dzēst favorītvideo. Mēģiniet vēlreiz.',
             icon: 'error',
             color: text_dark,
             background: background,
@@ -297,14 +300,12 @@ const deleteLike = async (contentId) => {
     }
 };
 
-// Watchers
 watch(() => user.value?.id, (newId) => {
     if (newId) {
         loadLikedContent();
     }
 });
 
-// Initialize
 onMounted(() => {
     loadLikedContent();
 });

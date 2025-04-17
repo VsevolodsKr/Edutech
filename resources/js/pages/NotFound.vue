@@ -7,16 +7,16 @@
                     404
                 </div>
                 <h1 class="text-[2rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.5rem]">
-                    Page Not Found
+                   Lapa netika atrasta
                 </h1>
                 <p class="text-text_light text-[1.2rem] mb-8 [@media(max-width:550px)]:text-[1rem]">
-                    The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+                    Lapa, kuru meklējat, varēja tikt noņemta, tā nosaukums ir mainīts, vai arī ir tīmējusi.
                 </p>
                 <router-link 
                     to="/" 
                     class="bg-button text-base inline-block border-2 border-button rounded-lg py-[.8rem] px-[2rem] transition-all duration-200 hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.5rem]"
                 >
-                    Back to Home
+                    Atpakaļ uz sākumlapu
                 </router-link>
             </div>
         </section>
@@ -33,7 +33,6 @@ import store from '../store/store';
 
 const { width } = useWindowSize();
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const sectionClasses = computed(() => [

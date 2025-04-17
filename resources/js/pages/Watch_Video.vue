@@ -2,7 +2,6 @@
     <div>
 <Header />
         <section :class="sectionClasses">
-            <!-- Video Player Section -->
     <div class="bg-base rounded-lg p-[1rem]">
         <div class="relative mb-[1rem]">
                     <div v-if="content">
@@ -32,20 +31,17 @@
                     <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
                         {{ content.title }}
                     </h3>
-                    
-                    <!-- Video Stats -->
         <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
                         <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                            <i class="fas fa-calendar text-button"></i> 
+                            <i class="fas fa-calendar text-button mr-[.2rem]"></i> 
                             <span class="text-text_light">{{ formatDate(content.date) }}</span>
                         </p>
                         <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                            <i class="fas fa-heart text-button"></i> 
-                            <span class="text-text_light">{{ likesCount }} likes</span>
+                            <i class="fas fa-heart text-button mr-[.2rem]"></i> 
+                            <span class="text-text_light">{{ likesCount }}</span>
                         </p>
         </div>
 
-                    <!-- Teacher Info -->
         <div class="flex items-center gap-[1rem] mb-[1rem]">
                         <img 
                             :src="teacher.image" 
@@ -62,13 +58,12 @@
             </div>
         </div>
 
-                    <!-- Action Buttons -->
                     <div class="flex items-center justify-between gap-[1rem]">
                         <router-link 
                             :to="'/playlist/' + content.playlist_id"
                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                         >
-                            View Playlist
+                            Skatīt atskaņošanas sarakstu
                         </router-link>
                         
                         <button 
@@ -78,11 +73,10 @@
                             class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition hover:text-base hover:bg-text_light disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem]"
                         >
                             <i :class="[isLiked ? 'fa-solid' : 'far', 'fa-heart', isLiked ? 'text-button' : '']"></i>
-                            <span class="ml-2">{{ isLiked ? 'Unlike' : 'Like' }}</span>
+                            <span class="ml-2">{{ isLiked ? 'Atzīmēt' : 'Iezīmēt' }}</span>
                         </button>
             </div>
 
-                    <!-- Description -->
                     <p class="leading-7 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem]">
                         {{ content.description }}
                     </p>
@@ -90,24 +84,21 @@
     </div>
 </section>
 
-        <!-- Comments Section -->
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                {{ commentsCount }} Comments
+                {{ commentsCount }} komentāri
             </h1>
     <hr class="border-[#ccc] mb-[2rem]">
 
-            <!-- Add Comment Form -->
             <form 
                 v-if="user" 
                 @submit.prevent="handleAddComment"
                 class="bg-base rounded-lg p-[1rem] mb-[1rem]"
             >
                 <h3 class="text-[1.5rem] text-text_dark mb-[.5rem] [@media(max-width:550px)]:text-[1.2rem]">
-                    Add Comment
+                    Pievienot komentāru
                 </h3>
 
-                <!-- Error Messages -->
                 <TransitionGroup 
                     name="list" 
                     tag="ul" 
@@ -122,10 +113,9 @@
                     </li>
                 </TransitionGroup>
 
-                <!-- Comment Input -->
                 <textarea 
                     v-model="newComment"
-                    placeholder="Enter your comment..."
+                    placeholder="Ievadiet savu komentāru..."
                     maxlength="1000"
                     class="h-[20rem] resize-none bg-background rounded-lg border-line p-[1rem] text-[1rem] text-text_light w-full my-[.5rem] outline-none hover:outline-none [@media(max-width:550px)]:text-[.7rem]"
                     :disabled="isCommentLoading"
@@ -136,14 +126,13 @@
                     :disabled="isCommentLoading || !newComment.trim()"
                     class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem]"
                 >
-                    {{ isCommentLoading ? 'Adding...' : 'Add Comment' }}
+                    {{ isCommentLoading ? 'Pievienošana...' : 'Pievienot komentāru' }}
                 </button>
     </form>
 
-            <!-- Comments List -->
     <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
-                <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                    User Comments
+                <h1 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
+                    Lietotāju komentāri
                 </h1>
 
                 <TransitionGroup name="list">
@@ -152,7 +141,6 @@
                         :key="comment.id"
                         class="mb-8 last:mb-0"
                     >
-                        <!-- Comment Author -->
             <div class="flex items-center gap-[1rem] mb-[1rem]">
                             <img 
                                 :src="comment.user.image" 
@@ -169,25 +157,23 @@
                 </div>
             </div>
 
-                        <!-- Comment Content -->
                         <div class="rounded-lg bg-background p-[1rem] whitespace-pre-line my-[.5rem] text-[1rem] text-text_light leading-7 relative [@media(max-width:550px)]:text-[.7rem]">
                             {{ comment.comment }}
                 </div>
 
-                        <!-- Comment Actions -->
                         <div v-if="user?.id === comment.user.id" class="flex gap-[1rem] mt-[.5rem]">
                             <router-link 
                                 :to="'/edit_comment/' + comment.id"
                                 class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem]"
                             >
-                                Edit Comment
+                                Rediģēt komentāru
                             </router-link>
                             <button 
                                 @click="handleDeleteComment(comment.id)"
                                 :disabled="isDeletingComment === comment.id"
                                 class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem]"
                             >
-                                {{ isDeletingComment === comment.id ? 'Deleting...' : 'Delete Comment' }}
+                                {{ isDeletingComment === comment.id ? 'Dzēšana...' : 'Dzēst komentāru' }}
                             </button>
             </div>
         </div>
@@ -211,7 +197,6 @@ const route = useRoute();
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const content = ref(null);
 const teacher = ref(null);
 const user = ref(null);
@@ -228,7 +213,6 @@ const isCommentLoading = ref(false);
 const isDeletingComment = ref(null);
 const error = ref(null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -236,18 +220,19 @@ const sectionClasses = computed(() => [
     'pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 const getYoutubeEmbedUrl = (url) => {
     try {
-        // Extract video ID from various YouTube URL formats
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         const videoId = (match && match[2].length === 11) ? match[2] : null;
@@ -274,15 +259,12 @@ const loadContent = async () => {
             throw new Error('Content not found');
         }
 
-        // Handle content data
         const contentData = response.data.content;
         
-        // Clean up thumbnail path
         const cleanThumbPath = contentData.thumb
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
             
-        // Clean up video path
         const cleanVideoPath = contentData.video
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
@@ -293,7 +275,6 @@ const loadContent = async () => {
             video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null
         };
 
-        // Handle teacher data
         if (response.data?.teacher) {
             const teacherData = response.data.teacher;
             const cleanTeacherImagePath = teacherData.image
@@ -306,18 +287,16 @@ const loadContent = async () => {
             };
         } else {
             teacher.value = {
-                name: 'Unknown Teacher',
+                name: 'Nezināms pasniedzējs',
                 image: '/storage/default-avatar.png'
             };
         }
 
-        // Load likes count and comments count first
         await Promise.all([
             loadLikesCount(),
             loadCommentsCount()
         ]);
 
-        // Then load comments and like status if user is logged in
         if (user.value) {
             await Promise.all([
                 checkLikeStatus(),
@@ -347,7 +326,6 @@ const loadUser = async () => {
             headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Clean up user image path
         const cleanUserImagePath = response.data.image
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
@@ -399,7 +377,6 @@ const loadComments = async () => {
     try {
         const response = await axios.get(`/api/comments/video/${route.params.id}`);
         comments.value = response.data.comments.map((comment, index) => {
-            // Clean up user image path
             const cleanUserImagePath = response.data.users[index].image
                 ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 ?.replace(/^\//, '');
@@ -453,8 +430,8 @@ const handleAddComment = async () => {
         });
 
         await Swal.fire({
-            title: 'Comment Added!',
-            text: 'Thank you for sharing your thoughts!',
+            title: 'Komentārs pievienots!',
+            text: 'Paldies par dalīšanos ar savu domu!',
             icon: 'success',
             color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
@@ -484,15 +461,16 @@ const handleDeleteComment = async (commentId) => {
 
         const token = localStorage.getItem('token');
         const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'This action cannot be undone.',
+            title: 'Vai esat pārliecināts?',
+            text: 'Šī darbība nav atsaukama.',
             icon: 'warning',
             color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--button4'),
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Jā, dzēst!',
+            cancelButtonText: 'Atcelt'
         });
 
         if (result.isConfirmed) {
@@ -505,8 +483,8 @@ const handleDeleteComment = async (commentId) => {
             });
             
             await Swal.fire({
-                title: 'Deleted!',
-                text: 'Your comment has been deleted.',
+                title: 'Dzēsts!',
+                text: 'Jūsu komentārs ir dzēsts.',
                 icon: 'success',
                 color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                 background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
@@ -524,8 +502,8 @@ const handleDeleteComment = async (commentId) => {
             return;
         }
                     Swal.fire({
-            title: 'Error!',
-            text: 'Failed to delete comment',
+            title: 'Kļūda!',
+            text: 'Neizdevās dzēst komentāru',
             icon: 'error',
             color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
@@ -568,7 +546,7 @@ const toggleLike = async () => {
             });
             isLiked.value = true;
             likesCount.value++;
-            await checkLikeStatus(); // Get the new like ID
+            await checkLikeStatus();
         }
     } catch (err) {
         console.error('Error toggling like:', err);
@@ -580,7 +558,6 @@ const toggleLike = async () => {
     }
 };
 
-// Lifecycle hooks
 onMounted(async () => {
     try {
         await loadUser();

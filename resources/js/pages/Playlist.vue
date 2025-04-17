@@ -2,31 +2,27 @@
     <div>
 <Header />
         <section :class="sectionClasses">
-            <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                Playlist Details
+            <h1 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
+                Atskaņošanas saraksta informācija
             </h1>
     <hr class="border-[#ccc] mb-[2rem]">
 
-            <!-- Loading State -->
             <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                 {{ error }}
                 <button 
                     @click="loadPlaylistData"
                     class="block mx-auto mt-4 text-button hover:text-text_dark"
                 >
-                    Try Again
+                    Mēģināt vēlreiz
                 </button>
             </div>
 
-            <!-- Playlist Content -->
             <template v-else-if="playlist && teacher">
     <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
-                    <!-- Playlist Thumbnail Section -->
         <div class="flex-[1_1_20rem]">
             <div class="mb-[1rem]">
                             <button 
@@ -37,7 +33,7 @@
                             >
                                 <i :class="[isBookmarked ? 'fa-solid text-button' : 'far', 'fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]']"></i>
                                 <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">
-                                    {{ isBookmarked ? 'Remove Playlist' : 'Save Playlist' }}
+                                    {{ isBookmarked ? 'Grāmatatzīmēt' : 'Grāmatiezīmēt' }}
                                 </span>
                             </button>
             </div>
@@ -48,12 +44,11 @@
                                 class="h-[30rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]"
                             >
                             <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-30 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                {{ contentCount }} videos
+                                {{ contentCount }} video
                             </span>
             </div>
         </div>
 
-                    <!-- Playlist Info Section -->
         <div class="flex-[1_1_40rem]">
             <div class="flex items-center gap-[1rem] mb-[1rem]">
                             <img 
@@ -81,20 +76,18 @@
                                 :to="'/teacher_profile/' + teacher.id"
                                 class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                             >
-                                View Profile
+                                Skatīt profilu
                             </router-link>
             </div>
         </div>
     </div>
 
-                <!-- Videos Section -->
                 <div class="pt-[2rem] bg-background [@media(max-width:550px)]:px-[.5rem]">
-                    <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                        Playlist Videos
+                    <h1 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
+                        Atskaņošanas saraksta video
                     </h1>
     <hr class="border-[#ccc] mb-[2rem]">
 
-                    <!-- Videos Grid -->
                     <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] pb-[2rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                         <router-link 
                             v-for="content in contents" 
@@ -132,13 +125,11 @@ import { useWindowSize } from '@vueuse/core';
 import Header from '../components/Header.vue';
 import Sidebar from '../components/Sidebar.vue';
 import store from '../store/store';
-import Swal from 'sweetalert2';
 
 const route = useRoute();
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const playlist = ref(null);
 const teacher = ref(null);
 const contents = ref([]);
@@ -149,7 +140,6 @@ const isBookmarkLoading = ref(false);
 const error = ref(null);
 const isPlaylistLoading = ref(false);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const isLoading = computed(() => isPlaylistLoading.value && !playlist.value);
 const user = computed(() => store.getters.getUser);
@@ -159,40 +149,37 @@ const sectionClasses = computed(() => [
     'pt-[2rem] bg-background pr-[2rem] min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 const getThumbnailUrl = (content) => {
     if (!content.url) return content.thumb || '/storage/default-thumbnail.png';
     
     try {
-        // Handle YouTube URLs
         if (content.url.includes('youtube.com') || content.url.includes('youtu.be')) {
             let videoId = '';
             
-            // Handle youtu.be links
             if (content.url.includes('youtu.be/')) {
                 videoId = content.url.split('youtu.be/')[1].split('?')[0];
             }
-            // Handle youtube.com links
             else if (content.url.includes('youtube.com')) {
                 const urlObj = new URL(content.url);
                 videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
             }
             
             if (videoId) {
-                // Return the full YouTube thumbnail URL without any prefix
                 return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
             }
         }
         
-        // Handle local thumbnails
         let cleanPath = content.thumb;
         if (cleanPath) {
             if (cleanPath.includes('/storage/app/public/')) {
@@ -221,14 +208,12 @@ const loadPlaylistData = async () => {
         isPlaylistLoading.value = true;
         error.value = null;
 
-        // First load playlist data to get teacher_id
         const playlistResponse = await axios.get(`/api/playlists/find/${route.params.id}`);
         
         if (!playlistResponse.data?.playlist) {
             throw new Error('Playlist not found');
         }
 
-        // Handle playlist data
         const playlistData = playlistResponse.data.playlist;
         const cleanThumbPath = playlistData.thumb
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -239,14 +224,12 @@ const loadPlaylistData = async () => {
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        // Now load teacher, content count, and contents in parallel
         const [teacherResponse, countResponse, contentsResponse] = await Promise.all([
             axios.get(`/api/teachers/find/${playlist.value.teacher_id}`),
             axios.get(`/api/contents/playlist/${playlist.value.id}/amount`),
             axios.get(`/api/playlists/${playlist.value.id}/contents`)
         ]);
 
-        // Handle teacher data
         if (teacherResponse.data?.data) {
             const teacherData = teacherResponse.data.data;
             const cleanTeacherImagePath = teacherData.image
@@ -264,7 +247,6 @@ const loadPlaylistData = async () => {
             };
         }
 
-        // Handle content data
         contentCount.value = countResponse.data;
         if (contentsResponse.data) {
             contents.value = contentsResponse.data.map(content => ({
@@ -273,7 +255,6 @@ const loadPlaylistData = async () => {
             }));
         }
 
-        // Check bookmark status if user is logged in
         if (user.value) {
             await checkBookmarkStatus();
         }
@@ -327,38 +308,10 @@ const toggleBookmark = async () => {
             'Accept': 'application/json'
         };
 
-        // Get computed styles for SweetAlert
-        const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
-        const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
-        const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
-
         if (isBookmarked.value) {
-            // Show confirmation dialog
-            const result = await Swal.fire({
-                title: 'Are you sure?',
-                text: 'This playlist will be removed from your bookmarks.',
-                icon: 'warning',
-                color: text_dark,
-                background: background,
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: button4,
-                confirmButtonText: 'Yes, remove it!'
-            });
-
-            if (result.isConfirmed) {
                 await axios.delete(`/api/bookmarks/delete/${bookmarkId.value}`, { headers });
                 isBookmarked.value = false;
                 bookmarkId.value = null;
-
-                await Swal.fire({
-                    title: 'Removed!',
-                    text: 'Playlist has been removed from your bookmarks.',
-                    icon: 'success',
-                    color: text_dark,
-                    background: background,
-                });
-            }
         } else {
             const formData = new FormData();
             formData.append('user_id', user.value.id);
@@ -366,36 +319,18 @@ const toggleBookmark = async () => {
 
             await axios.post('/api/bookmarks/add', formData, { headers });
             await checkBookmarkStatus();
-
-            await Swal.fire({
-                title: 'Bookmarked!',
-                text: 'Playlist has been added to your bookmarks.',
-                icon: 'success',
-                color: text_dark,
-                background: background,
-            });
         }
     } catch (err) {
         console.error('Error toggling bookmark:', err);
-        await Swal.fire({
-            title: 'Error!',
-            text: 'Failed to update bookmark. Please try again.',
-            icon: 'error',
-            color: text_dark,
-            background: background,
-        });
     } finally {
         isBookmarkLoading.value = false;
     }
 };
 
-// Initialize
 onMounted(async () => {
     try {
-        // Load playlist data immediately
         loadPlaylistData();
         
-        // Load user data in parallel if needed
         if (!store.getters.getUser) {
             store.dispatch('loadUserData');
         }
@@ -404,14 +339,12 @@ onMounted(async () => {
     }
 });
 
-// Watch for user changes to update bookmark status
 watch(() => store.getters.getUser, (newUser) => {
     if (newUser && playlist.value) {
         checkBookmarkStatus();
     }
 }, { immediate: true });
 
-// Watch for playlist changes to update bookmark status
 watch(() => playlist.value, (newPlaylist) => {
     if (newPlaylist && store.getters.getUser) {
         checkBookmarkStatus();

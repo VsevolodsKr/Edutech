@@ -2,13 +2,11 @@
     <div>
         <Header />
         <section :class="sectionClasses">
-            <!-- Login Form -->
             <form @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[2rem] w-[50rem] max-w-[95%] transition-all duration-300">
                 <h3 class="text-[1.5rem] capitalize text-text_dark text-center mb-[1.5rem] [@media(max-width:550px)]:text-[1.2rem]">
-                    Login Now
+                    Ielogoties
                 </h3>
 
-                <!-- Validation Messages -->
                 <TransitionGroup 
                     name="list" 
                     tag="ul" 
@@ -28,15 +26,14 @@
                     </li>
                 </TransitionGroup>
 
-                <!-- Email Field -->
                 <div class="mb-[1rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Your email <span class="text-[#ff0000]">*</span>
+                        Jūsu e-pasts <span class="text-[#ff0000]">*</span>
                     </label>
                     <input 
                         v-model="email"
                         type="email" 
-                        placeholder="Enter your email..."
+                        placeholder="Ievadiet savu e-pastu..."
                         :disabled="isLoading"
                         maxlength="50"
                         class="mt-2 text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
@@ -44,16 +41,15 @@
                     >
                 </div>
 
-                <!-- Password Field -->
                 <div class="mb-[1.5rem]">
                     <label class="text-[1.2rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">
-                        Your password <span class="text-[#ff0000]">*</span>
+                        Jūsu parole <span class="text-[#ff0000]">*</span>
                     </label>
                     <div class="relative">
                         <input 
                             v-model="password"
                             :type="showPassword ? 'text' : 'password'"
-                            placeholder="Enter your password..."
+                            placeholder="Ievadiet savu paroli..."
                             :disabled="isLoading"
                             maxlength="50"
                             class="mt-2 text-[1rem] text-text_light rounded-lg p-[.8rem] bg-background w-full outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
@@ -69,7 +65,6 @@
                     </div>
                 </div>
 
-                <!-- Submit Button -->
                 <button 
                     type="submit"
                     :disabled="isLoading || !isFormValid"
@@ -77,16 +72,15 @@
                 >
                     <span v-if="isLoading" class="flex items-center justify-center gap-2">
                         <div class="animate-spin rounded-full h-4 w-4 border-2 border-base"></div>
-                        Logging in...
+                        Ielogojoties...
                     </span>
-                    <span v-else>Login</span>
+                    <span v-else>Ielogoties</span>
                 </button>
 
-                <!-- Register Link -->
                 <p class="text-center mt-4 text-text_light">
-                    Don't have an account? 
+                    Nav jums konts? 
                     <router-link to="/register" class="text-button hover:text-button1 transition-colors">
-                        Register now
+                        Reģistrēties
                     </router-link>
                 </p>
             </form>
@@ -106,7 +100,6 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
@@ -114,7 +107,6 @@ const isLoading = ref(false);
 const validationMessages = ref([]);
 const isError = ref(false);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const sectionClasses = computed(() => [
@@ -128,7 +120,6 @@ const isFormValid = computed(() => {
     return email.value.trim() && emailRegex.test(email.value) && password.value.length >= 6;
 });
 
-// Methods
 const togglePassword = () => {
     showPassword.value = !showPassword.value;
 };
@@ -139,7 +130,6 @@ const handleSubmit = async () => {
         isError.value = false;
         isLoading.value = true;
 
-        // Client-side validation
         if (!email.value.trim()) {
             validationMessages.value.push('Email is required');
             isError.value = true;
@@ -152,17 +142,13 @@ const handleSubmit = async () => {
             return;
         }
 
-        // Prepare form data
         const formData = new FormData();
         formData.append('email', email.value.trim());
         formData.append('password', password.value);
 
-        // Submit login request
         const response = await axios.post('api/login/send', formData);
 
-        // Handle successful login
         localStorage.setItem('token', response.data.token);
-        // Store the complete user data including is_teacher flag
         const userData = {
             ...response.data.data,
             is_teacher: response.data.is_teacher
@@ -175,7 +161,6 @@ const handleSubmit = async () => {
             : [response.data.message];
         isError.value = false;
 
-        // Redirect based on user role
         setTimeout(() => {
             router.push(response.data.is_teacher ? '/dashboard' : '/');
         }, 500);

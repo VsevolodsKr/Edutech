@@ -3,31 +3,26 @@
         <Header />
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                Edit Comment
+                Rediģēt komentāru
             </h1>
             <hr class="border-[#ccc] mb-[2rem]">
 
-            <!-- Loading State -->
             <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                 {{ error }}
                 <button 
                     @click="loadComment"
                     class="block mx-auto mt-4 text-button hover:text-text_dark"
                 >
-                    Try Again
+                    Mēģināt vēlreiz
                 </button>
             </div>
 
-            <!-- Edit Form -->
             <div v-else-if="comment && content" class="space-y-4">
-                <!-- Comment Form -->
                 <form @submit.prevent="handleSubmit" class="bg-base rounded-lg px-[1rem] py-[.5rem] mb-[2rem]">
-                    <!-- Validation Errors -->
                     <TransitionGroup 
                         name="list" 
                         tag="ul" 
@@ -44,14 +39,13 @@
                         </li>
                     </TransitionGroup>
 
-                    <!-- Comment Textarea -->
                     <div class="relative">
                         <textarea 
                             v-model="commentText"
                             :disabled="isSubmitting"
                             rows="10"
                             maxlength="1000"
-                            placeholder="Your comment..."
+                            placeholder="Jūsu komentārs..."
                             class="h-[20rem] resize-none bg-background rounded-lg border-line p-[1rem] text-[1rem] text-text_light w-full my-[.5rem] outline-none hover:outline-none focus:ring-2 focus:ring-button transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem]"
                             :class="{ 'border-button4': validationErrors.length }"
                         ></textarea>
@@ -60,25 +54,23 @@
                         </span>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div v-if="canEdit" class="flex justify-between mt-4">
                         <router-link 
                             :to="'/watch_video/' + content.id"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:px-[1.5rem]"
                         >
-                            Cancel Edit
+                            Atcelt rediģēšanu
                         </router-link>
                         <button 
                             type="submit"
                             :disabled="isSubmitting || !commentText.trim()"
                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:px-[1.5rem]"
                         >
-                            {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
+                            {{ isSubmitting ? 'Saglabā...' : 'Saglabāt izmaiņas' }}
                         </button>
                     </div>
                 </form>
 
-                <!-- Video Preview -->
                 <div class="bg-base rounded-lg px-[1rem] py-[.5rem]">
                     <div class="relative">
                         <div v-if="content">
@@ -123,7 +115,6 @@ const route = useRoute();
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const user = ref(null);
 const comment = ref(null);
 const content = ref(null);
@@ -133,7 +124,6 @@ const isLoading = ref(true);
 const isSubmitting = ref(false);
 const error = ref(null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const canEdit = computed(() => user.value?.id === comment.value?.user_id);
 
@@ -143,7 +133,6 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const loadUser = async () => {
     try {
         const token = localStorage.getItem('token');
@@ -197,14 +186,11 @@ const loadComment = async () => {
 
         comment.value = response.data.comment;
 
-        // Handle content data
         const contentData = response.data.content;
         
-        // Check if it's a YouTube video
         const isYouTube = contentData.video?.includes('youtube.com') || contentData.video?.includes('youtu.be');
         
         if (isYouTube) {
-            // For YouTube videos, use the URLs directly
             content.value = {
                 ...contentData,
                 video_source_type: 'youtube',
@@ -212,7 +198,6 @@ const loadComment = async () => {
                 thumb: contentData.thumb
             };
         } else {
-            // For local videos, clean up the paths
             const cleanThumbPath = contentData.thumb
                 ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 ?.replace(/^\//, '');
@@ -231,7 +216,6 @@ const loadComment = async () => {
 
         commentText.value = comment.value.comment;
 
-        // Redirect if not the comment owner
         if (userData.id !== comment.value.user_id) {
             router.push(`/watch_video/${content.value.id}`);
         }
@@ -257,9 +241,8 @@ const handleSubmit = async () => {
             return;
         }
 
-        // Validate comment
         if (!commentText.value.trim()) {
-            validationErrors.value.push('Comment cannot be empty');
+            validationErrors.value.push('Komentārs nevar būt tukšs');
             return;
         }
 
@@ -268,12 +251,10 @@ const handleSubmit = async () => {
             return;
         }
 
-        // Prepare form data
         const formData = new FormData();
         formData.append('comment_id', route.params.id);
         formData.append('comment', commentText.value.trim());
 
-        // Submit update
         await axios.post(`/api/comments/${route.params.id}/edit`, formData, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -281,16 +262,14 @@ const handleSubmit = async () => {
             }
         });
 
-        // Show success message
         await Swal.fire({
-            title: 'Success!',
-            text: 'Your comment has been updated.',
+            title: 'Veiksmīgi!',
+            text: 'Jūsu komentārs ir atjaunināts.',
             icon: 'success',
             color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
         });
 
-        // Redirect back to video
         router.push(`/watch_video/${content.value.id}`);
     } catch (err) {
         console.error('Error updating comment:', err);
@@ -314,7 +293,6 @@ const handleSubmit = async () => {
 
 const getYoutubeEmbedUrl = (url) => {
     try {
-        // Extract video ID from various YouTube URL formats
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         const videoId = (match && match[2].length === 11) ? match[2] : null;
@@ -331,7 +309,6 @@ const getYoutubeEmbedUrl = (url) => {
     }
 };
 
-// Initialize
 onMounted(() => {
     loadComment();
 });
