@@ -163,11 +163,10 @@ const loadTeacherData = async () => {
         isLoading.value = true;
         const teacherId = route.params.id;
         
-        // Load all data in parallel
-        const [teacherResponse, playlistsResponse, userData] = await Promise.all([
+        // Load teacher and playlists data in parallel
+        const [teacherResponse, playlistsResponse] = await Promise.all([
             axios.get(`/api/teachers/find/${teacherId}`),
-            axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`),
-            store.dispatch('loadUserData')
+            axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`)
         ]);
         
         // Process teacher data
@@ -230,8 +229,18 @@ const loadTeacherData = async () => {
     }
 };
 
-// Lifecycle
-onMounted(() => {
-    loadTeacherData();
+// Initialize
+onMounted(async () => {
+    try {
+        // Load user data if not already loaded
+        if (!store.getters.getUser) {
+            await store.dispatch('loadUserData');
+        }
+        
+        // Then load teacher data
+        await loadTeacherData();
+    } catch (error) {
+        console.error('Error initializing component:', error);
+    }
 });
 </script>

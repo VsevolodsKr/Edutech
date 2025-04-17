@@ -144,13 +144,13 @@ const user = computed(() => {
         } else if (imageUrl.includes('/storage/app/public/') || imageUrl.includes('storage/app/public/')) {
             // Clean up storage path
             imageUrl = imageUrl.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
-            imageUrl = `/storage/${imageUrl}`;
+            imageUrl = `${window.location.origin}/storage/${imageUrl}`;
         } else if (!imageUrl.startsWith('/storage/')) {
             // Add storage prefix if missing
-            imageUrl = `/storage/${imageUrl}`;
+            imageUrl = `${window.location.origin}/storage/${imageUrl}`;
         }
     } else {
-        imageUrl = '/storage/default-avatar.png';
+        imageUrl = `${window.location.origin}/storage/default-avatar.png`;
     }
 
     return {

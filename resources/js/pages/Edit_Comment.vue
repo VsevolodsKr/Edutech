@@ -81,14 +81,27 @@
                 <!-- Video Preview -->
                 <div class="bg-base rounded-lg px-[1rem] py-[.5rem]">
                     <div class="relative">
-                        <video 
-                            :src="content.video" 
-                            :poster="content.thumb"
-                            controls
-                            class="rounded-lg w-full object-contain bg-black"
-                        >
-                            <track kind="captions">
-                        </video>
+                        <div v-if="content">
+                            <div v-if="content.video_source_type === 'youtube'" class="relative pb-[56.25%] h-0">
+                                <iframe 
+                                    :src="getYoutubeEmbedUrl(content.video)"
+                                    class="absolute top-0 left-0 w-full h-full rounded-lg"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen
+                                ></iframe>
+                            </div>
+                            <video 
+                                v-else
+                                :src="content.video" 
+                                :poster="content.thumb" 
+                                controls
+                                class="rounded-lg w-full object-contain bg-black"
+                            ></video>
+                        </div>
+                        <div v-else class="w-full h-[400px] bg-gray-800 rounded-lg flex items-center justify-center">
+                            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,21 +197,37 @@ const loadComment = async () => {
 
         comment.value = response.data.comment;
 
-        // Clean up thumbnail path
-        const cleanThumbPath = response.data.content.thumb
-            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-            ?.replace(/^\//, '');
-            
-        // Clean up video path
-        const cleanVideoPath = response.data.content.video
-            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-            ?.replace(/^\//, '');
+        // Handle content data
+        const contentData = response.data.content;
+        
+        // Check if it's a YouTube video
+        const isYouTube = contentData.video?.includes('youtube.com') || contentData.video?.includes('youtu.be');
+        
+        if (isYouTube) {
+            // For YouTube videos, use the URLs directly
+            content.value = {
+                ...contentData,
+                video_source_type: 'youtube',
+                video: contentData.video,
+                thumb: contentData.thumb
+            };
+        } else {
+            // For local videos, clean up the paths
+            const cleanThumbPath = contentData.thumb
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+                
+            const cleanVideoPath = contentData.video
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
 
-        content.value = {
-            ...response.data.content,
-            thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
-            video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null
-        };
+            content.value = {
+                ...contentData,
+                video_source_type: 'file',
+                video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null,
+                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
+            };
+        }
 
         commentText.value = comment.value.comment;
 
@@ -280,6 +309,25 @@ const handleSubmit = async () => {
         }
     } finally {
         isSubmitting.value = false;
+    }
+};
+
+const getYoutubeEmbedUrl = (url) => {
+    try {
+        // Extract video ID from various YouTube URL formats
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        const videoId = (match && match[2].length === 11) ? match[2] : null;
+        
+        if (!videoId) {
+            console.error('Invalid YouTube URL');
+            return '';
+        }
+        
+        return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
+    } catch (error) {
+        console.error('Error processing YouTube URL:', error);
+        return '';
     }
 };
 

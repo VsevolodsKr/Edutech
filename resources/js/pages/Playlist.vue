@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Header from '../components/Header.vue';
@@ -147,10 +147,11 @@ const isBookmarked = ref(false);
 const bookmarkId = ref(null);
 const isBookmarkLoading = ref(false);
 const error = ref(null);
+const isPlaylistLoading = ref(false);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
-const isLoading = computed(() => store.getters.getIsLoading);
+const isLoading = computed(() => isPlaylistLoading.value && !playlist.value);
 const user = computed(() => store.getters.getUser);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -215,36 +216,12 @@ const handleImageError = (event) => {
     event.target.src = '/storage/default-thumbnail.png';
 };
 
-const loadContents = async () => {
-    try {
-        if (!playlist.value) return;
-
-        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
-        console.log('API Response:', response.data); // Debug log
-
-        contents.value = response.data.map(content => {
-            console.log('Original content:', content); // Debug log
-            
-            // Get the thumbnail URL using our helper function
-            const thumbnailUrl = getThumbnailUrl(content);
-            console.log('Generated thumbnail URL:', thumbnailUrl); // Debug log
-            
-            return {
-                ...content,
-                thumb: thumbnailUrl
-            };
-        });
-    } catch (err) {
-        console.error('Error loading contents:', err);
-        contents.value = [];
-    }
-};
-
 const loadPlaylistData = async () => {
     try {
+        isPlaylistLoading.value = true;
         error.value = null;
 
-        // First load playlist to get teacher_id
+        // First load playlist data to get teacher_id
         const playlistResponse = await axios.get(`/api/playlists/find/${route.params.id}`);
         
         if (!playlistResponse.data?.playlist) {
@@ -256,47 +233,45 @@ const loadPlaylistData = async () => {
         const cleanThumbPath = playlistData.thumb
             ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
             ?.replace(/^\//, '');
-            
+
         playlist.value = {
             ...playlistData,
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        // Now load teacher data using the correct teacher_id
-        try {
-            const teacherResponse = await axios.get(`/api/teachers/find/${playlist.value.teacher_id}`);
-            if (teacherResponse.data?.data) {
-                const teacherData = teacherResponse.data.data;
-                const cleanTeacherImagePath = teacherData.image
-                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                    ?.replace(/^\//, '');
+        // Now load teacher, content count, and contents in parallel
+        const [teacherResponse, countResponse, contentsResponse] = await Promise.all([
+            axios.get(`/api/teachers/find/${playlist.value.teacher_id}`),
+            axios.get(`/api/contents/playlist/${playlist.value.id}/amount`),
+            axios.get(`/api/playlists/${playlist.value.id}/contents`)
+        ]);
 
-                teacher.value = {
-                    ...teacherData,
-                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
-                };
-            } else {
-                teacher.value = {
-                    name: 'Unknown Teacher',
-                    image: '/storage/default-avatar.png'
-                };
-            }
-        } catch (teacherErr) {
-            console.error('Error loading teacher:', teacherErr);
+        // Handle teacher data
+        if (teacherResponse.data?.data) {
+            const teacherData = teacherResponse.data.data;
+            const cleanTeacherImagePath = teacherData.image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            teacher.value = {
+                ...teacherData,
+                image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
+            };
+        } else {
             teacher.value = {
                 name: 'Unknown Teacher',
                 image: '/storage/default-avatar.png'
             };
         }
 
-        // Load content count and contents in parallel
-        const [countResponse, contentsResponse] = await Promise.all([
-            axios.get(`/api/contents/playlist/${playlist.value.id}/amount`),
-            axios.get(`/api/playlists/${playlist.value.id}/contents`)
-        ]);
-
+        // Handle content data
         contentCount.value = countResponse.data;
-        await loadContents();
+        if (contentsResponse.data) {
+            contents.value = contentsResponse.data.map(content => ({
+                ...content,
+                thumb: getThumbnailUrl(content)
+            }));
+        }
 
         // Check bookmark status if user is logged in
         if (user.value) {
@@ -308,6 +283,8 @@ const loadPlaylistData = async () => {
         error.value = 'Failed to load playlist. Please try again.';
         playlist.value = null;
         teacher.value = null;
+    } finally {
+        isPlaylistLoading.value = false;
     }
 };
 
@@ -415,13 +392,29 @@ const toggleBookmark = async () => {
 // Initialize
 onMounted(async () => {
     try {
-        // Load user data and playlist data in parallel
-        await Promise.all([
-            store.dispatch('loadUserData'),
-            loadPlaylistData()
-        ]);
+        // Load playlist data immediately
+        loadPlaylistData();
+        
+        // Load user data in parallel if needed
+        if (!store.getters.getUser) {
+            store.dispatch('loadUserData');
+        }
     } catch (err) {
         console.error('Error initializing playlist page:', err);
     }
 });
+
+// Watch for user changes to update bookmark status
+watch(() => store.getters.getUser, (newUser) => {
+    if (newUser && playlist.value) {
+        checkBookmarkStatus();
+    }
+}, { immediate: true });
+
+// Watch for playlist changes to update bookmark status
+watch(() => playlist.value, (newPlaylist) => {
+    if (newPlaylist && store.getters.getUser) {
+        checkBookmarkStatus();
+    }
+}, { immediate: true });
 </script>
