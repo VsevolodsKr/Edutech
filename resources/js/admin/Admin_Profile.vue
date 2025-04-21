@@ -3,7 +3,7 @@
         <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">Admin Profile</h1>
+                <h1 class="text-[1.5rem] text-text_dark">Skolotāja profils</h1>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
                 
                 <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
@@ -11,7 +11,6 @@
                 </div>
                 
                 <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[2rem]">
-                    <!-- Admin Info -->
                     <div class="bg-base rounded-lg p-[2rem]">
                         <div class="text-center mb-6">
                             <img 
@@ -27,26 +26,25 @@
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.playlists }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Playlists</p>
+                                <p class="text-[1.2rem] text-text_light">Kursi</p>
                             </div>
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.contents }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Contents</p>
+                                <p class="text-[1.2rem] text-text_light">Video</p>
                             </div>
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.likes }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Likes</p>
+                                <p class="text-[1.2rem] text-text_light">Favorītvideo</p>
                             </div>
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.comments }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Comments</p>
+                                <p class="text-[1.2rem] text-text_light">Komentāri</p>
     </div>
             </div>
         </div>
                     
-                    <!-- Update Profile Form -->
                     <div class="bg-base rounded-lg p-[2rem]">
-                        <h3 class="text-[1.5rem] text-text_dark mb-4">Update Profile</h3>
+                        <h3 class="text-[1.5rem] text-text_dark mb-4">Rediģēt profilu</h3>
                         
                         <form @submit.prevent="handleSubmit">
                             <div v-if="errorList.length" class="bg-[#fcb6b6] text-[#912020] rounded-xl mb-[1rem] p-2">
@@ -59,7 +57,7 @@
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Profile Picture
+                                    Profila attēls
                                 </label>
                                 <input 
                                     type="file"
@@ -72,64 +70,64 @@
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Full Name <span class="text-button4">*</span>
+                                    Vārds <span class="text-button4">*</span>
                                 </label>
                                 <input 
                                     v-model="formData.name"
                                     type="text"
                                     required
                                     maxlength="50"
-                                    placeholder="Enter your full name..."
+                                    placeholder="Ievadiet savu pilno vārdu..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
                             </div>
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Email Address <span class="text-button4">*</span>
+                                    E-pasts <span class="text-button4">*</span>
                                 </label>
                                 <input 
                                     v-model="formData.email"
                                     type="email"
                                     required
                                     maxlength="50"
-                                    placeholder="Enter your email..."
+                                    placeholder="Ievadiet savu e-pastu..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
                             </div>
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Old Password
+                                    Vecā parole
                                 </label>
                                 <input 
                                     v-model="formData.old_password"
                                     type="password"
-                                    placeholder="Enter old password..."
+                                    placeholder="Ievadiet savu veco paroli..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
                             </div>
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    New Password
+                                    Jauna parole
                                 </label>
                                 <input 
                                     v-model="formData.new_password"
                                     type="password"
-                                    placeholder="Enter new password..."
+                                    placeholder="Ievadiet jauno paroli..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
             </div>
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
-                                    Confirm Password
+                                    Apstiprināt paroli
                                 </label>
                                 <input 
                                     v-model="formData.confirm_password"
                                     type="password"
-                                    placeholder="Confirm new password..."
+                                    placeholder="Apstipriniet jauno paroli..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
         </div>
@@ -139,7 +137,7 @@
                                 :disabled="isSubmitting"
                                 class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                             >
-                                {{ isSubmitting ? 'Updating...' : 'Update Profile' }}
+                                {{ isSubmitting ? 'Rediģēšana...' : 'Rediģēt profilu' }}
                             </button>
                         </form>
             </div>
@@ -162,10 +160,8 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// Constants
 const defaultAvatar = '/images/default-avatar.png';
 
-// State
 const adminData = ref({
     name: '',
     email: '',
@@ -191,7 +187,6 @@ const isLoading = ref(true);
 const isSubmitting = ref(false);
 const fileInput = ref(null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -199,7 +194,6 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const loadAdminData = async () => {
     try {
         isLoading.value = true;
@@ -214,20 +208,17 @@ const loadAdminData = async () => {
             'Accept': 'application/json'
         };
 
-        // Fetch user data and statistics in parallel
         const [profileResponse, statsResponse] = await Promise.all([
             axios.get('/api/user', { headers }),
             axios.get('/api/admin/statistics', { headers })
         ]);
 
-        // Handle user data
         if (!profileResponse.data.profession) {
             throw new Error('Unauthorized access');
         }
 
         console.log('API Response Image:', profileResponse.data.image);
 
-        // Clean up the image path before storing
         let imagePath = profileResponse.data.image;
         if (imagePath && imagePath.includes('/storage/app/public/')) {
             imagePath = imagePath.replace('/storage/app/public/', '');
@@ -240,7 +231,6 @@ const loadAdminData = async () => {
 
         console.log('Stored Image URL:', adminData.value.image);
 
-        // Handle statistics
         statistics.value = {
             playlists: await fetchPlaylistCount(profileResponse.data.id),
             contents: await fetchContentCount(profileResponse.data.id),
@@ -248,7 +238,6 @@ const loadAdminData = async () => {
             comments: statsResponse.data.comments || 0
         };
 
-        // Initialize form data
         formData.value.name = adminData.value.name;
         formData.value.email = adminData.value.email;
     } catch (error) {
@@ -257,7 +246,7 @@ const loadAdminData = async () => {
             localStorage.removeItem('token');
             router.push('/');
         } else {
-            errorList.value = ['Failed to load admin data'];
+            errorList.value = ['Neizdevās ielādēt skolotāja datus'];
         }
     } finally {
         isLoading.value = false;
@@ -299,14 +288,14 @@ const fetchContentCount = async (userId) => {
 const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        if (file.size > 2 * 1024 * 1024) { // 2MB limit
-            errorList.value = ['Image size should not exceed 2MB'];
+        if (file.size > 2 * 1024 * 1024) {
+            errorList.value = ['Attēla izmērs nedrīkst pārsniegt 2MB'];
             event.target.value = '';
             return;
         }
 
         if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-            errorList.value = ['Please select a valid image file (JPEG, PNG, or GIF)'];
+            errorList.value = ['Lūdzu, izvēlieties derīgu attēla failu (JPG, PNG, GIF)'];
             event.target.value = '';
             return;
         }
@@ -325,29 +314,23 @@ const handleSubmit = async () => {
         isSubmitting.value = true;
         errorList.value = [];
 
-        // Password validation
         const hasOldPassword = !!formData.value.old_password;
         const hasNewPassword = !!formData.value.new_password;
         const hasConfirmPassword = !!formData.value.confirm_password;
 
-        // Check if any password field is filled
         if (hasOldPassword || hasNewPassword || hasConfirmPassword) {
-            // If any password field is filled, all password fields must be filled
             if (!hasOldPassword || !hasNewPassword || !hasConfirmPassword) {
-                errorList.value = ['All password fields must be filled to change password'];
+                errorList.value = ['Visas paroles jābūt aizpildītām, lai mainītu paroli'];
                 return;
             }
-            // Check if new passwords match
             if (formData.value.new_password !== formData.value.confirm_password) {
-                errorList.value = ['New password and confirmation do not match'];
+                errorList.value = ['Jauna parole un apstiprinātā parole nesakrīt'];
                 return;
             }
         }
 
-        // Create FormData object
         const data = new FormData();
 
-        // Add basic fields if they have changed
         if (formData.value.name !== adminData.value.name) {
             data.append('name', formData.value.name);
         }
@@ -355,21 +338,18 @@ const handleSubmit = async () => {
             data.append('email', formData.value.email);
         }
 
-        // Add password fields only if all password fields are filled
         if (hasOldPassword && hasNewPassword && hasConfirmPassword) {
             data.append('old_password', formData.value.old_password);
             data.append('new_password', formData.value.new_password);
             data.append('confirm_password', formData.value.confirm_password);
         }
 
-        // Add image only if a new one is selected
         if (formData.value.image instanceof File) {
             data.append('image', formData.value.image);
         }
 
-        // Only proceed with the update if there are changes
         if ([...data.entries()].length === 0) {
-            errorList.value = ['No changes to update'];
+            errorList.value = ['Nav jāmaina'];
             return;
         }
 
@@ -382,10 +362,8 @@ const handleSubmit = async () => {
             }
         });
 
-        // Update the store with new user data
         store.commit('setUser', response.data.user);
 
-        // Reset form fields
         formData.value.old_password = '';
         formData.value.new_password = '';
         formData.value.confirm_password = '';
@@ -394,15 +372,13 @@ const handleSubmit = async () => {
         }
         formData.value.image = null;
 
-        // Update local admin data
         await loadAdminData();
 
-        // Emit an event to update the sidebar
         store.commit('setReloadSidebar', true);
 
         await Swal.fire({
-            title: 'Success!',
-            text: 'Your profile has been updated successfully',
+            title: 'Veiksmīgi!',
+            text: 'Jūsu profils ir veiksmīgi rediģēts',
             icon: 'success'
         });
     } catch (error) {
@@ -412,7 +388,7 @@ const handleSubmit = async () => {
                 ? error.response.data.message 
                 : [error.response.data.message];
         } else {
-            errorList.value = ['An error occurred while updating your profile'];
+            errorList.value = ['Radās kļūda, rediģējot profilu'];
         }
     } finally {
         isSubmitting.value = false;
@@ -420,23 +396,18 @@ const handleSubmit = async () => {
 };
 
 const getImageUrl = (image) => {
-    console.log('Input Image:', image);
     if (!image) {
-        console.log('No image, using default:', defaultAvatar);
         return defaultAvatar;
     }
     
     if (image.startsWith('data:')) {
-        console.log('Data URL detected');
         return image;
     }
     
     if (image.startsWith('http')) {
-        console.log('Absolute URL detected');
         return image;
     }
 
-    // Clean up the storage path
     let cleanPath = image;
     if (cleanPath.includes('/storage/app/public/')) {
         cleanPath = cleanPath.replace('/storage/app/public/', '');
@@ -444,18 +415,14 @@ const getImageUrl = (image) => {
         cleanPath = cleanPath.replace('storage/app/public/', '');
     }
 
-    // Construct the proper storage URL
     const url = `${window.location.origin}/storage/${cleanPath}`;
-    console.log('Final URL:', url);
     return url;
 };
 
 const handleImageError = (event) => {
-    console.log('Image failed to load, using default avatar');
     event.target.src = defaultAvatar;
 };
 
-// Lifecycle
 onMounted(() => {
     loadAdminData();
 });

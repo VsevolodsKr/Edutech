@@ -1,18 +1,13 @@
 <template>
     <Transition name="slide">
-        <div 
-            v-if="showSidebar" 
-            class="fixed top-0 left-0 w-[20rem] bg-base h-[100vh] border-r-2 border-[#ccc] z-120 [@media(max-width:550px)]:w-[15rem]"
-        >
-            <!-- Loading State -->
+        <div v-if="showSidebar" class="fixed top-0 left-0 w-[20rem] bg-base h-[100vh] border-r-2 border-[#ccc] z-120 [@media(max-width:550px)]:w-[15rem]">
             <div v-if="isLoading" class="py-[3rem] px-[2rem] text-center">
                 <div class="flex justify-center mb-4">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                 </div>
-                <p class="text-text_light">Loading...</p>
+                <p class="text-text_light">Ielādē...</p>
             </div>
 
-            <!-- Close Button (Mobile) -->
             <div v-else class="text-right p-[2rem] hidden [@media(max-width:1180px)]:block">
                 <div class="flex justify-end">
                     <button 
@@ -24,7 +19,6 @@
                 </div>
             </div>
 
-            <!-- Admin Profile Section -->
             <template v-if="!isLoading && adminData">
                 <div class="py-[3rem] px-[2rem] text-center">
                     <div class="flex justify-center">
@@ -38,35 +32,33 @@
                         {{ adminData.name }}
                     </h3>
                     <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">
-                        {{ adminData.profession || 'Administrator' }}
+                        {{ adminData.profession }}
                     </p>
                     <router-link 
                         to="/admin_profile"
                         class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        View Profile
+                        Skatīt profilu
                     </router-link>
                 </div>
             </template>
 
-            <!-- Guest Section -->
             <template v-if="!isLoading && !adminData">
                 <div class="py-[2rem] px-[2rem]">
                     <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">
-                        Please login to access admin panel
+                        Lūdzu, ielogojieties, lai piekļūtu vadības panelim
                     </h3>
                     <div class="w-full pt-[.5rem] mb-[2rem]">
                         <router-link 
                             to="/login"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Login
+                            Ielogoties
                         </router-link>
                     </div>
                 </div>
             </template>
 
-            <!-- Navigation Menu -->
             <nav v-if="!isLoading" class="mt-[1rem]">
                 <router-link 
                     v-for="(item, index) in navigationItems" 
@@ -91,9 +83,9 @@
                         <i class="fa-solid fa-right-from-bracket mr-[1.5rem]"></i>
                         <span v-if="isLoggingOut" class="flex items-center gap-2">
                             <div class="animate-spin rounded-full h-4 w-4 border-2 border-button"></div>
-                            Logging out...
+                            Izlogošana...
                         </span>
-                        <span v-else>Logout</span>
+                        <span v-else>Izlogoties</span>
                     </span>
                 </button>
             </nav>
@@ -111,16 +103,13 @@ import Swal from 'sweetalert2';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const isLoading = ref(false);
 const isLoggingOut = ref(false);
 
-// Computed properties
 const adminData = computed(() => {
     const storedUser = store.getters.getUser;
     if (!storedUser) return null;
 
-    // Ensure image URL is properly formatted
     const imageUrl = storedUser.image ? 
         (storedUser.image.startsWith('http') ? 
             storedUser.image : 
@@ -133,15 +122,13 @@ const adminData = computed(() => {
     };
 });
 
-// Navigation items
 const navigationItems = [
-    { path: '/dashboard', icon: 'fa fa-home', label: 'Dashboard' },
-    { path: '/admin_playlists', icon: 'fa-solid fa-bars-staggered', label: 'Playlists' },
-    { path: '/admin_contents', icon: 'fa fa-graduation-cap', label: 'Contents' },
-    { path: '/admin_comments', icon: 'fas fa-comment', label: 'Comments' }
+    { path: '/dashboard', icon: 'fa fa-home', label: 'Vadības panelis' },
+    { path: '/admin_playlists', icon: 'fa-solid fa-bars-staggered', label: 'Kursi' },
+    { path: '/admin_contents', icon: 'fa fa-graduation-cap', label: 'Video' },
+    { path: '/admin_comments', icon: 'fas fa-comment', label: 'Komentāri' }
 ];
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 const toggleSidebar = () => {
@@ -155,8 +142,8 @@ const handleLogout = async () => {
         store.commit('setUser', null);
         
         await Swal.fire({
-            title: 'Success',
-            text: 'Logged out successfully',
+            title: 'Veiksmīgi',
+            text: 'Izlogojās veiksmīgi',
             icon: 'success',
             timer: 1500,
             showConfirmButton: false
@@ -164,10 +151,9 @@ const handleLogout = async () => {
         
         router.push('/login');
     } catch (err) {
-        console.error('Error during logout:', err);
         await Swal.fire({
-            title: 'Error',
-            text: 'Failed to logout. Please try again.',
+            title: 'Kļūda',
+            text: 'Neizdevās izlogoties. Lūdzu, mēģiniet vēlreiz.',
             icon: 'error'
         });
     } finally {
@@ -175,7 +161,6 @@ const handleLogout = async () => {
     }
 };
 
-// Watchers
 watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });

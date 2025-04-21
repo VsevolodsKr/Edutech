@@ -2,28 +2,25 @@
     <div>
     <Admin_Header />
         <section :class="sectionClasses">
-            <!-- Loading State -->
             <div v-if="isLoading" class="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
                 <div class="animate-spin rounded-full h-16 w-16 border-4 border-button border-t-transparent"></div>
-                <p class="text-text_light">Loading playlists...</p>
+                <p class="text-text_light">Ielādē...</p>
             </div>
 
             <template v-else>
-                <!-- Header -->
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl text-text_dark">Add New Content</h1>
+                    <h1 class="text-2xl text-text_dark">Pievienot jaunu video</h1>
                     <button 
                         @click="router.push('/admin_contents')"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-text_light hover:text-button transition-colors duration-200"
                     >
                         <i class="fas fa-arrow-left"></i>
-                        Back to Contents
+                        Atpakaļ uz video
                     </button>
                 </div>
                 
             <div class="flex items-center justify-center">
                     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="bg-base rounded-lg p-8 w-full max-w-3xl shadow-lg">
-                        <!-- Status Messages -->
                         <TransitionGroup 
                             name="message" 
                             tag="div" 
@@ -44,48 +41,43 @@
                             </div>
                         </TransitionGroup>
 
-                        <!-- Form Grid -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Left Column -->
                             <div class="space-y-6">
-                                <!-- Status Field -->
                                 <div>
                                     <label class="block text-sm font-medium text-text_dark mb-2">
-                                        Video Status <span class="text-button4">*</span>
+                                        Video statuss <span class="text-button4">*</span>
                                     </label>
                                     <select 
                                         v-model="formData.status"
                                         class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
                                         required
                                     >
-                                        <option value="" disabled>Select status...</option>
-                                        <option value="active">Active</option>
-                                        <option value="deactive">Deactive</option>
+                                        <option value="" disabled>Izvēlieties statusu...</option>
+                                        <option value="active">Aktīvs</option>
+                                        <option value="deactive">Neaktīvs</option>
                     </select>
                                 </div>
 
-                                <!-- Title Field -->
                                 <div>
                                     <label class="block text-sm font-medium text-text_dark mb-2">
-                                        Video Title <span class="text-button4">*</span>
+                                        Video nosaukums <span class="text-button4">*</span>
                                     </label>
                                     <input 
                                         v-model="formData.title"
                                         type="text"
-                                        placeholder="Enter content title..."
+                                        placeholder="Ievadiet video nosaukumu..."
                                         required
                                         maxlength="50"
                                         class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200"
                                     >
                                     <span class="text-xs text-text_light mt-1 block">
-                                        {{ formData.title.length }}/50 characters
+                                        {{ formData.title.length }}/50 simboli
                                     </span>
                                 </div>
 
-                                <!-- Playlist Field -->
                                 <div>
                                     <label class="block text-sm font-medium text-text_dark mb-2">
-                                        Video Playlist <span class="text-button4">*</span>
+                                        Video kurss <span class="text-button4">*</span>
                                     </label>
                                     <div class="relative">
                                         <select 
@@ -94,7 +86,7 @@
                                             required
                                             :disabled="isLoadingPlaylists"
                                         >
-                                            <option value="" disabled>{{ isLoadingPlaylists ? 'Loading playlists...' : 'Select playlist...' }}</option>
+                                            <option value="" disabled>{{ isLoadingPlaylists ? 'Ielādē...' : 'Izvēlieties kursu...' }}</option>
                                             <option v-for="playlist in playlists" 
                                                     :key="playlist.id" 
                                                     :value="playlist.id">
@@ -108,32 +100,28 @@
                                 </div>
                             </div>
 
-                            <!-- Right Column -->
                             <div class="space-y-6">
-                                <!-- Description Field -->
                                 <div>
                                     <label class="block text-sm font-medium text-text_dark mb-2">
-                                        Video Description <span class="text-button4">*</span>
+                                        Video apraksts <span class="text-button4">*</span>
                                     </label>
                                     <textarea 
                                         v-model="formData.description"
-                                        placeholder="Enter content description..."
+                                        placeholder="Ievadiet video aprakstu..."
                                         required
                                         maxlength="1000"
                                         rows="4"
                                         class="w-full px-4 py-2 rounded-lg bg-background border border-gray-200 focus:border-button focus:ring-1 focus:ring-button transition-colors duration-200 resize-none"
                                     ></textarea>
                                     <span class="text-xs text-text_light mt-1 block">
-                                        {{ formData.description.length }}/1000 characters
+                                        {{ formData.description.length }}/1000 simboli
                                     </span>
                                 </div>
 
-                                <!-- File Upload Preview Grid -->
                                 <div class="grid grid-cols-1 gap-6">
-                                    <!-- Thumbnail Upload -->
                                     <div v-if="videoSourceType === 'file'">
                                         <label class="block text-sm font-medium text-text_dark mb-2">
-                                            Thumbnail <span class="text-button4">*</span>
+                                            Attēls <span class="text-button4">*</span>
                                         </label>
                                         <div class="relative">
                                             <div v-if="thumbPreview" 
@@ -143,7 +131,7 @@
                                                      class="w-full h-40 object-cover"
                                                      @error="messages = ['Failed to load thumbnail']; errorStatus = 500">
                                                 <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                                                    <span class="text-white text-sm">Selected thumbnail</span>
+                                                    <span class="text-white text-sm">Izvēlētais attēls</span>
                                                 </div>
                                             </div>
                                             <input 
@@ -155,18 +143,16 @@
                                                 required
                                             >
                                             <p class="text-xs text-text_light mt-1">
-                                                Max size: 2MB. Supported formats: JPG, PNG
+                                                Maksimālais izmērs: 2MB. Atļautie formāti: JPG, PNG
                                             </p>
                                         </div>
                                     </div>
 
-                                    <!-- Video Upload or YouTube Link -->
                                     <div>
                                         <label class="block text-sm font-medium text-text_dark mb-2">
-                                            Video Source <span class="text-button4">*</span>
+                                            Video avots <span class="text-button4">*</span>
                                         </label>
                                         <div class="space-y-4">
-                                            <!-- Video Type Selection -->
                                             <div class="flex gap-4">
                                                 <label class="flex items-center">
                                                     <input 
@@ -175,7 +161,7 @@
                                                         value="file"
                                                         class="mr-2"
                                                     >
-                                                    Upload Video File
+                                                    Video fails
                                                 </label>
                                                 <label class="flex items-center">
                                                     <input 
@@ -184,11 +170,10 @@
                                                         value="youtube"
                                                         class="mr-2"
                                                     >
-                                                    YouTube Link
+                                                    YouTube saite
                                                 </label>
                                             </div>
 
-                                            <!-- File Upload -->
                                             <div v-if="videoSourceType === 'file'" class="relative">
                                                 <div v-if="videoPreview" 
                                                      class="relative mb-4 rounded-lg overflow-hidden">
@@ -198,7 +183,7 @@
                                                         @error="handleVideoError"
                                                     >
                                                         <source :src="videoPreview" type="video/mp4">
-                                                        Your browser does not support the video tag.
+                                                        Jūsu pārlūkā nav atļauts video tagu.
                                                     </video>
                                                 </div>
                                                 <input 
@@ -211,11 +196,10 @@
                                                     :required="videoSourceType === 'file'"
                                                 >
                                                 <p class="text-xs text-text_light mt-1">
-                                                    Max size: 10MB. Supported formats: MP4, WebM
+                                                    Maksimālais izmērs: 10MB. Atļautie formāti: MP4, WebM
                                                 </p>
                                             </div>
 
-                                            <!-- YouTube Link -->
                                             <div v-else class="relative">
                                                 <input 
                                                     v-model="youtubeLink"
@@ -225,7 +209,7 @@
                                                     :required="videoSourceType === 'youtube'"
                                                 >
                                                 <p class="text-xs text-text_light mt-1">
-                                                    Enter a valid YouTube video URL
+                                                    Ievadiet derīgu YouTube video URL
                                                 </p>
                                             </div>
                                         </div>
@@ -234,7 +218,6 @@
                             </div>
                         </div>
 
-                        <!-- Submit Button -->
                         <div class="mt-8">
                             <button 
                                 type="submit"
@@ -242,7 +225,7 @@
                                 class="w-full bg-button text-base py-3 border-2 border-button rounded-lg font-medium transition-all duration-200 hover:bg-transparent hover:text-button disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-opacity-100 disabled:hover:shadow-none flex items-center justify-center gap-2"
                             >
                                 <span v-if="isSubmitting" class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
-                                {{ isSubmitting ? 'Adding Content...' : 'Add Content' }}
+                                {{ isSubmitting ? 'Pievienošana...' : 'Pievienot saturu' }}
                             </button>
                         </div>
                 </form>
@@ -267,7 +250,6 @@ const { width } = useWindowSize();
 const thumbInput = ref(null);
 const videoInput = ref(null);
 
-// State
 const isLoading = ref(true);
 const isLoadingPlaylists = ref(false);
 const isSubmitting = ref(false);
@@ -288,15 +270,13 @@ const formData = ref({
     thumb: null
 });
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
-    'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
+    'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const loadPlaylists = async () => {
     try {
         isLoadingPlaylists.value = true;
@@ -306,7 +286,6 @@ const loadPlaylists = async () => {
             return;
         }
 
-        // Get user first to get teacher_id
         const userResponse = await axios.get('/api/user', {
             headers: { 
                 Authorization: `Bearer ${token}`,
@@ -314,7 +293,6 @@ const loadPlaylists = async () => {
             }
         });
 
-        // Get playlists using the existing endpoint
         const playlistsResponse = await axios.get(`/api/playlists/teacher_playlists/${userResponse.data.id}`, {
             headers: { 
                 Authorization: `Bearer ${token}`,
@@ -322,7 +300,6 @@ const loadPlaylists = async () => {
             }
         });
         
-        // Handle different possible response structures
         if (Array.isArray(playlistsResponse.data)) {
             playlists.value = playlistsResponse.data;
         } else if (playlistsResponse.data.playlists && Array.isArray(playlistsResponse.data.playlists)) {
@@ -346,26 +323,23 @@ const loadPlaylists = async () => {
 const handleThumbChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        // Validate file type
         const allowedTypes = ['image/jpeg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
-            messages.value = ['Please select a JPG or PNG image file'];
+            messages.value = ['Lūdzu, izvēlieties JPG vai PNG attēla failu'];
             errorStatus.value = 500;
             thumbInput.value.value = '';
             thumbPreview.value = null;
             return;
         }
         
-        // Validate file size (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
-            messages.value = ['Image size should be less than 2MB'];
+            messages.value = ['Attēla izmērs nedrīkst pārsniegt 2MB'];
             errorStatus.value = 500;
             thumbInput.value.value = '';
             thumbPreview.value = null;
             return;
         }
 
-        // Create preview
         thumbPreview.value = URL.createObjectURL(file);
     }
 };
@@ -373,37 +347,33 @@ const handleThumbChange = (event) => {
 const handleVideoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        // Validate file type
         if (!file.type.startsWith('video/')) {
-            messages.value = ['Please select a video file'];
+            messages.value = ['Lūdzu, izvēlieties video failu'];
             errorStatus.value = 500;
             videoInput.value.value = '';
             videoPreview.value = null;
             return;
         }
         
-        // Validate file size (max 10MB)
-        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
-            messages.value = ['Video size should be less than 10MB'];
+            messages.value = ['Video izmērs nedrīkst pārsniegt 10MB'];
             errorStatus.value = 500;
             videoInput.value.value = '';
             videoPreview.value = null;
             return;
         }
 
-        // Create preview
         videoPreview.value = URL.createObjectURL(file);
     }
 };
 
 const handleVideoError = (event) => {
     console.error('Video loading error:', event);
-    messages.value = ['Failed to load video. Please check the file path.'];
+    messages.value = ['Neizdevās ielādēt video. Lūdzu, pārbaudiet faila ceļu.'];
     errorStatus.value = 500;
 };
 
-// Add new method to get YouTube thumbnail
 const getYouTubeThumbnail = (url) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
@@ -413,7 +383,6 @@ const getYouTubeThumbnail = (url) => {
     return null;
 };
 
-// Update handleSubmit method
 const handleSubmit = async () => {
     try {
         isSubmitting.value = true;
@@ -441,37 +410,33 @@ const handleSubmit = async () => {
         formDataToSend.append('status', formData.value.status);
         formDataToSend.append('video_source_type', videoSourceType.value);
 
-        // Validate required fields
         if (!formData.value.playlist_id || !formData.value.title || !formData.value.description || !formData.value.status) {
-            messages.value = ['Please fill in all required fields'];
+            messages.value = ['Lūdzu, aizpildiet visas obligātās laukus'];
             errorStatus.value = 500;
             return;
         }
 
-        // Handle file uploads
         if (videoSourceType.value === 'file') {
             if (!thumbInput.value?.files[0]) {
-                messages.value = ['Please select a thumbnail image'];
+                messages.value = ['Lūdzu, izvēlieties attēla failu'];
                 errorStatus.value = 500;
                 return;
             }
             if (!videoInput.value?.files[0]) {
-                messages.value = ['Please select a video file'];
+                messages.value = ['Lūdzu, izvēlieties video failu'];
                 errorStatus.value = 500;
                 return;
             }
             formDataToSend.append('thumb', thumbInput.value.files[0]);
             formDataToSend.append('video', videoInput.value.files[0]);
         } else {
-            // Handle YouTube link
             if (!youtubeLink.value) {
-                messages.value = ['Please enter a YouTube video URL'];
+                messages.value = ['Lūdzu, ievadiet YouTube video URL'];
                 errorStatus.value = 500;
                 return;
             }
             formDataToSend.append('youtube_link', youtubeLink.value);
             
-            // Get YouTube thumbnail URL
             const thumbnailUrl = getYouTubeThumbnail(youtubeLink.value);
             if (thumbnailUrl) {
                 formDataToSend.append('youtube_thumb', thumbnailUrl);
@@ -491,12 +456,12 @@ const handleSubmit = async () => {
         );
 
         if (response.data.status === 'success') {
-            messages.value = ['Content added successfully'];
+            messages.value = ['Video pievienots'];
             errorStatus.value = 200;
             
             await Swal.fire({
-                title: 'Success!',
-                text: 'Content added successfully',
+                title: 'Pievienots!',
+                text: 'Video ir pievienots',
                 icon: 'success',
                 confirmButtonText: 'OK'
             });
@@ -510,14 +475,13 @@ const handleSubmit = async () => {
         }
     } catch (error) {
         console.error('Error adding content:', error);
-        messages.value = error.response?.data?.message || ['An error occurred while adding the content'];
+        messages.value = error.response?.data?.message || ['Kļūda, ievadot video'];
         errorStatus.value = error.response?.data?.status || 500;
     } finally {
         isSubmitting.value = false;
     }
 };
 
-// Lifecycle hooks
 onMounted(async () => {
     try {
         await loadPlaylists();

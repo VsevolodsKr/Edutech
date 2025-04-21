@@ -174,7 +174,7 @@ const adminRoutes = [
         component: () => import('../admin/Dashboard.vue'),
         name: 'Dashboard',
         meta: { 
-            title: 'Pārvaldības panelis',
+            title: 'Vadības panelis',
             requiresAuth: true,
             isAdmin: true
         },
@@ -207,7 +207,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Playlists.vue'),
         name: 'Admin_Playlists',
         meta: { 
-            title: 'Atskaņošanas saraksti',
+            title: 'Kursi',
             requiresAuth: true,
             isAdmin: true
         },
@@ -218,7 +218,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Add_Playlist.vue'),
         name: 'Admin_Add_Playlist',
         meta: { 
-            title: 'Pievienot atskaņošanas sarakstu',
+            title: 'Pievienot kursu',
             requiresAuth: true,
             isAdmin: true
         },
@@ -229,7 +229,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Update_Playlist.vue'),
         name: 'Admin_Update_Playlist',
         meta: { 
-            title: 'Rediģēt atskaņošanas sarakstu',
+            title: 'Rediģēt kursu',
             requiresAuth: true,
             isAdmin: true
         }
@@ -239,7 +239,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Contents.vue'),
         name: 'Admin_Contents',
         meta: { 
-            title: 'Saturs',
+            title: 'Video',
             requiresAuth: true,
             isAdmin: true
         },
@@ -261,7 +261,7 @@ const adminRoutes = [
         component: () => import('../admin/Admin_Watch_Playlist.vue'),
         name: 'Admin_Watch_Playlist',
         meta: { 
-            title: 'Atskaņošanas saraksts',
+            title: 'Kurss',
             requiresAuth: true,
             isAdmin: true
         }

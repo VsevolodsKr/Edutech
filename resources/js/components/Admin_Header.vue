@@ -6,16 +6,13 @@
         ]"
     >
         <section class="flex items-center justify-between relative py-[.5rem] px-[1.5rem]">
-            <!-- Logo -->
             <router-link to="/dashboard">
                 <h1 class="text-[2rem] text-text_dark mr-[.7rem] [@media(max-width:970px)]:text-[1.5rem]">
-                    EduTech Admin
+                    EduTech
                 </h1>
             </router-link>
 
-            <!-- Action Buttons -->
             <div class="text-[1.5rem] flex [@media(max-width:970px)]:text-[1rem]">
-                <!-- Sidebar Toggle -->
                 <button 
                     @click="toggleSidebar"
                     class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] ml-[.7rem] hover:bg-text_dark hover:text-base transition-colors duration-200 [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"
@@ -23,7 +20,6 @@
                     <i class="fa fa-bars"></i>
                 </button>
 
-                <!-- User Menu Toggle -->
                 <button 
                     @click="toggleUserMenu"
                     class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] ml-[.7rem] hover:bg-text_dark hover:text-base transition-colors duration-200 [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"
@@ -31,7 +27,6 @@
                     <i class="fa fa-user"></i>
                 </button>
 
-                <!-- Theme Toggle -->
                 <button 
                     @click="toggleTheme"
                     class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] ml-[.7rem] hover:bg-text_dark hover:text-base transition-colors duration-200 [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"
@@ -40,13 +35,11 @@
                 </button>
             </div>
 
-            <!-- User Menu -->
             <Transition name="menu">
                 <div 
                     v-if="showUserMenu && adminData"
                     class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] shadow-lg"
                 >
-                    <!-- Admin Profile -->
                     <div class="flex justify-center">
                         <img 
                             :src="adminData.image" 
@@ -55,17 +48,15 @@
                         >
                     </div>
                     <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ adminData.name }}</h3>
-                    <p class="text-[1.3rem] text-text_light">Administrator</p>
+                    <p class="text-[1.3rem] text-text_light">{{ adminData.profession }}</p>
 
-                    <!-- Profile Link -->
                     <router-link 
                         to="/admin_profile"
                         class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full mt-[1rem] transition-all duration-200 hover:bg-transparent hover:text-button"
                     >
-                        View Profile
+                        Skatīt profilu
                     </router-link>
 
-                    <!-- Logout Button -->
                     <button 
                         @click="handleLogout"
                         :disabled="isLoggingOut"
@@ -76,9 +67,9 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Logging out...
+                            Izlogošana...
                         </span>
-                        <span v-else>Logout</span>
+                        <span v-else>Izlogoties</span>
                     </button>
                 </div>
             </Transition>
@@ -96,16 +87,13 @@ import Swal from 'sweetalert2';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const adminData = ref(null);
 const showUserMenu = ref(false);
 const currentTheme = ref(localStorage.getItem('theme-color') || 'theme-light');
 const isLoggingOut = ref(false);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
-// Theme configurations
 const themes = {
     light: {
         background: '#ddd',
@@ -131,7 +119,6 @@ const themes = {
     }
 };
 
-// Methods
 const loadAdminData = async () => {
     try {
         const token = localStorage.getItem('token');
@@ -149,10 +136,9 @@ const loadAdminData = async () => {
             image: new URL(response.data.image, import.meta.url)
         };
     } catch (err) {
-        console.error('Error loading admin data:', err);
         await Swal.fire({
-            title: 'Error',
-            text: 'Failed to load admin data. Please try again.',
+            title: 'Kļūda',
+            text: 'Neizdevās ielādēt skolotāja datus. Lūdzu, mēģiniet vēlreiz.',
             icon: 'error'
         });
     }
@@ -188,8 +174,8 @@ const handleLogout = async () => {
         showUserMenu.value = false;
         
         await Swal.fire({
-            title: 'Success',
-            text: 'Logged out successfully',
+            title: 'Veiksmīgi',
+            text: 'Izlogojās veiksmīgi',
             icon: 'success',
             timer: 1500,
             showConfirmButton: false
@@ -197,10 +183,9 @@ const handleLogout = async () => {
         
         router.push('/login');
     } catch (err) {
-        console.error('Error during logout:', err);
         await Swal.fire({
-            title: 'Error',
-            text: 'Failed to logout. Please try again.',
+            title: 'Kļūda',
+            text: 'Neizdevās izlogoties. Lūdzu, mēģiniet vēlreiz.',
             icon: 'error'
         });
     } finally {
@@ -214,7 +199,6 @@ const handleClickOutside = (event) => {
     }
 };
 
-// Lifecycle hooks
 onMounted(() => {
     loadAdminData();
     applyTheme(currentTheme.value === 'theme-light' ? themes.light : themes.dark);

@@ -2,35 +2,29 @@
     <div>
         <Admin_Header />
         <section :class="sectionClasses">
-            <h1 class="text-[1.5rem] text-text_dark capitalize">Your playlists</h1>
+            <h1 class="text-[1.5rem] text-text_dark capitalize">Jūsu kursi</h1>
             <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
 
-            <!-- Loading State -->
             <div v-if="loading && !playlists.length && playlists.length != 0" class="flex justify-center items-center min-h-[50vh]">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <!-- Error Message -->
             <div v-else-if="error" class="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
                 {{ error }}
             </div>
-
-            <!-- Playlists Grid -->
             <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
-                <!-- Create Playlist Card -->
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h3 class="text-[2rem] text-text_dark text-center capitalize pb-[.5rem] [@media(max-width:550px)]:text-[1.5rem]">
-                        Create new playlist
+                        Izveidot jaunu kursu
                     </h3>
                     <router-link 
                         to="/admin_add_playlist" 
                         class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        Add Playlist
+                        Pievienot jaunu kursu
                     </router-link>
                 </div>
 
-                <!-- Playlist Cards -->
                 <div v-for="playlist in playlists" 
                      :key="playlist.id" 
                      class="bg-base rounded-lg p-[2rem] w-full">
@@ -44,13 +38,13 @@
                                 playlist.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
                                 'text-[1.2rem]'
                             ]">
-                                {{ playlist.status === 'active' ? 'Active' : 'Deactive' }}
+                                {{ playlist.status === 'active' ? 'Aktīvs' : 'Neaktīvs' }}
                             </span>
                         </div>
                         <div>
                             <i class="fas fa-calendar text-button text-[1.2rem]"></i>
                             <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                {{ playlist.formatted_date || playlist.date || 'Date not available' }}
+                                {{ playlist.formatted_date || playlist.date || 'Nav pieejams' }}
                             </span>
                         </div>
                     </div>
@@ -77,13 +71,13 @@
                             @click="router.push(`/admin_playlists/update/${playlist.id}`)"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Update
+                            Rediģēt
                         </button>
                         <button 
                             @click="handleDelete(playlist.id)"
                             class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Delete
+                            Dzēst
                         </button>
                     </div>
 
@@ -91,7 +85,7 @@
                         @click="router.push(`/admin_playlists/${playlist.id}`)"
                         class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
-                        View Playlist
+                        Skatīt kursu
                     </button>
                 </div>
             </div>
@@ -112,11 +106,9 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const error = ref(null);
 const isLoading = ref(true);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const playlists = computed(() => store.getters.getPlaylists);
 const storeIsLoading = computed(() => store.getters.getIsLoading);
@@ -124,10 +116,9 @@ const loading = computed(() => isLoading.value || storeIsLoading.value);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
-    'pt-[2rem] pr-[1rem] bg-background [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
+    'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Methods
 const defaultThumb = '/storage/default-thumb.png';
 
 const getImageUrl = (image) => {
@@ -135,7 +126,6 @@ const getImageUrl = (image) => {
     if (image.startsWith('data:')) return image;
     if (image.startsWith('http')) return image;
 
-    // Clean up the storage path
     let cleanPath = image;
     cleanPath = cleanPath.replace(/^(storage\/)+/, '');
     cleanPath = cleanPath.replace(/(\/storage\/)+/, '/');
@@ -157,15 +147,16 @@ const handleDelete = async (id) => {
 
     try {
         const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Playlist will be deleted permanently!',
+            title: 'Vai esat pārliecināts?',
+            text: 'Šis kurss tiks dzēsts!',
             icon: 'warning',
             color: text_dark,
             background: background,
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: button4,
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Jā, dzēst!',
+            cancelButtonText: 'Atcelt'
         });
 
         if (result.isConfirmed) {
@@ -183,30 +174,28 @@ const handleDelete = async (id) => {
             });
 
             if (response.data.status === 200) {
-                // Update store instead of local state
                 const updatedPlaylists = playlists.value.filter(playlist => playlist.id !== id);
                 store.commit('setPlaylists', updatedPlaylists);
                 
                 await Swal.fire({
-                    title: 'Deleted!',
-                    text: 'Your playlist has been deleted.',
+                    title: 'Dzēsts!',
+                    text: 'Jūsu kurss ir dzēsts.',
                     icon: 'success'
                 });
             } else {
-                throw new Error(response.data.message || 'Failed to delete playlist');
+                throw new Error(response.data.message || 'Neizdevās dzēst kursu');
             }
         }
     } catch (error) {
         console.error('Error deleting playlist:', error);
         Swal.fire({
-            title: 'Error!',
-            text: error.message || 'Failed to delete playlist',
+            title: 'Kļūda!',
+            text: error.message || 'Neizdevās dzēst kursu',
             icon: 'error'
         });
     }
 };
 
-// Lifecycle
 onMounted(async () => {
     try {
         const user = store.getters.getUser;
@@ -220,7 +209,6 @@ onMounted(async () => {
     }
 });
 
-// Watch for store loading state changes
 watch(storeIsLoading, (newValue) => {
     if (!newValue && playlists.value.length === 0) {
         isLoading.value = false;
