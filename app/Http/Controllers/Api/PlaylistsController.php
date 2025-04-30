@@ -334,9 +334,30 @@ class PlaylistsController extends Controller
         }
     }
 
-    public function active_teacher_playlists($id)
+    public function active_teacher_playlists($encryptedId)
     {
         try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                \Log::error('Invalid teacher ID decryption for encrypted ID: ' . $encryptedId);
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Invalid teacher ID',
+                    'data' => []
+                ], 404);
+            }
+
+            $teacher = Teachers::find($id);
+            if (!$teacher) {
+                \Log::error('Teacher not found for ID: ' . $id);
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Teacher not found',
+                    'data' => []
+                ], 404);
+            }
+
+            \Log::info('Fetching playlists for teacher ID: ' . $id);
             $playlists = Playlists::where('teacher_id', $id)
                 ->where('status', 'active')
                 ->orderBy('date', 'desc')
@@ -344,24 +365,28 @@ class PlaylistsController extends Controller
                 ->map(function ($playlist) {
                     return [
                         'id' => $playlist->id,
+                        'encrypted_id' => $this->encryptId($playlist->id),
                         'title' => $playlist->title,
                         'description' => $playlist->description,
-                        'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,
+                        'thumb' => $playlist->thumb,
                         'date' => $playlist->date,
-                        'status' => $playlist->status,
+                        'teacher_id' => $playlist->teacher_id,
                         'content_count' => $playlist->contents()->count()
                     ];
                 });
 
+            \Log::info('Successfully retrieved ' . count($playlists) . ' playlists for teacher ID: ' . $id);
             return response()->json([
                 'status' => 200,
                 'message' => 'Playlists retrieved successfully',
                 'data' => $playlists
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error getting teacher playlists: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to retrieve playlists',
+                'message' => 'Failed to get teacher playlists',
                 'data' => []
             ], 500);
         }

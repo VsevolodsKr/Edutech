@@ -296,16 +296,19 @@ export default createStore({
             try {
                 commit('setLatestPlaylistsLoading', true);
                 commit('setLatestPlaylistsError', null);
-                
+
                 const response = await axios.get('/api/playlists/latest');
-                
                 if (!Array.isArray(response.data)) {
                     throw new Error('Invalid response format');
                 }
 
                 const processedPlaylists = await Promise.all(
                     response.data.map(async (playlist) => {
-                        const processed = { ...playlist, timestamp: Date.now() };
+                        const processed = { 
+                            ...playlist, 
+                            timestamp: Date.now(),
+                            encrypted_id: playlist.encrypted_id || playlist.id
+                        };
 
                         // Handle thumbnail
                         if (processed.thumb) {
@@ -320,11 +323,11 @@ export default createStore({
                         // Fetch teacher data if we have teacher_id
                         if (processed.teacher_id) {
                             try {
-                                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
+                                const teacherResponse = await axios.get(`/api/teachers/find_teacher/${processed.teacher_id}`);
                                 
-                                if (teacherResponse.data.data) {
+                                if (teacherResponse.data?.data) {
                                     const teacherData = teacherResponse.data.data;
-                                    let teacherImage = teacherData.image;
+                                    let teacherImage = teacherData.formatted_image || teacherData.image;
                                     if (teacherImage) {
                                         const cleanTeacherPath = teacherImage
                                             .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -354,7 +357,7 @@ export default createStore({
 
                         // Get content count
                         try {
-                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
+                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
                             processed.content_count = contentResponse.data || 0;
                         } catch (contentError) {
                             console.error('Error fetching content count:', contentError);
@@ -367,8 +370,8 @@ export default createStore({
 
                 commit('setLatestPlaylists', processedPlaylists.filter(Boolean));
             } catch (err) {
-                console.error('Error loading playlists:', err);
-                commit('setLatestPlaylistsError', 'Failed to load latest courses. Please try again.');
+                console.error('Error loading latest playlists:', err);
+                commit('setLatestPlaylistsError', 'Failed to load latest playlists. Please try again.');
             } finally {
                 commit('setLatestPlaylistsLoading', false);
             }
@@ -411,11 +414,11 @@ export default createStore({
                         // Fetch teacher data if we have teacher_id
                         if (processed.teacher_id) {
                             try {
-                                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
+                                const teacherResponse = await axios.get(`/api/teachers/find_teacher/${processed.teacher_id}`);
                                 
                                 if (teacherResponse.data?.data) {
                                     const teacherData = teacherResponse.data.data;
-                                    let teacherImage = teacherData.image;
+                                    let teacherImage = teacherData.formatted_image || teacherData.image;
                                     if (teacherImage) {
                                         const cleanTeacherPath = teacherImage
                                             .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -445,7 +448,7 @@ export default createStore({
 
                         // Get content count
                         try {
-                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
+                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
                             processed.content_count = contentResponse.data || 0;
                         } catch (contentError) {
                             console.error('Error fetching content count:', contentError);
@@ -483,30 +486,32 @@ export default createStore({
 
                 const processedTeachers = await Promise.all(
                     response.data.map(async (teacher) => {
-                        const processed = { ...teacher, timestamp: Date.now() };
+                        const processed = { 
+                            ...teacher, 
+                            timestamp: Date.now(),
+                            encrypted_id: teacher.encrypted_id || teacher.id
+                        };
 
                         // Handle teacher image
-                        if (processed.image) {
-                            const cleanPath = processed.image
+                        console.log('Original teacher image:', processed.image);
+                        console.log('Formatted teacher image:', processed.formatted_image);
+                        if (processed.formatted_image) {
+                            const cleanPath = processed.formatted_image
                                 .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                                 .replace(/^\//, '');
                             processed.image = `/storage/${cleanPath}`;
+                            console.log('Cleaned and processed image path:', processed.image);
                         } else {
                             processed.image = '/storage/default-avatar.png';
+                            console.log('Using default image path:', processed.image);
                         }
 
-                        // Get playlist and content counts in parallel
+                        // Get content count
                         try {
-                            const [playlistCount, contentCount] = await Promise.all([
-                                axios.get(`/api/playlists/amount/${processed.id}`),
-                                axios.get(`/api/contents/amount/${processed.id}`)
-                            ]);
-                            
-                            processed.playlist_count = playlistCount.data.data || 0;
-                            processed.content_count = contentCount.data || 0;
-                        } catch (err) {
-                            console.error(`Error fetching counts for teacher ${processed.id}:`, err);
-                            processed.playlist_count = 0;
+                            const contentResponse = await axios.get(`/api/contents/teacher/${processed.encrypted_id}/amount`);
+                            processed.content_count = contentResponse.data || 0;
+                        } catch (contentError) {
+                            console.error('Error fetching content count:', contentError);
                             processed.content_count = 0;
                         }
 
@@ -515,6 +520,7 @@ export default createStore({
                 );
 
                 commit('setTeachers', processedTeachers);
+                return processedTeachers;
             } catch (err) {
                 console.error('Error loading teachers:', err);
                 commit('setTeachersError', 'Failed to load teachers. Please try again.');
@@ -553,11 +559,11 @@ export default createStore({
                         // Fetch teacher data if we have teacher_id
                         if (processed.teacher_id) {
                             try {
-                                const teacherResponse = await axios.get(`/api/teachers/find/${processed.teacher_id}`);
+                                const teacherResponse = await axios.get(`/api/teachers/find_teacher/${processed.teacher_id}`);
                                 
                                 if (teacherResponse.data?.data) {
                                     const teacherData = teacherResponse.data.data;
-                                    let teacherImage = teacherData.image;
+                                    let teacherImage = teacherData.formatted_image || teacherData.image;
                                     if (teacherImage) {
                                         const cleanTeacherPath = teacherImage
                                             .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -587,7 +593,7 @@ export default createStore({
 
                         // Get content count
                         try {
-                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.id}/amount`);
+                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
                             processed.content_count = contentResponse.data || 0;
                         } catch (contentError) {
                             console.error('Error fetching content count:', contentError);
@@ -625,8 +631,8 @@ export default createStore({
                         const processed = { ...teacher, timestamp: Date.now() };
 
                         // Handle teacher image
-                        if (processed.image) {
-                            const cleanPath = processed.image
+                        if (processed.formatted_image) {
+                            const cleanPath = processed.formatted_image
                                 .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                                 .replace(/^\//, '');
                             processed.image = `/storage/${cleanPath}`;

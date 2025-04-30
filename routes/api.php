@@ -32,6 +32,7 @@ Route::get('comments/video/{id}', [CommentsController::class, 'get_video_comment
 Route::get('playlists/find/{id}', [PlaylistsController::class, 'find']);
 Route::get('playlists/teacher_playlists/{id}', [PlaylistsController::class, 'teacher_playlists']);
 Route::get('playlists/teacher_active_playlists/{id}', [PlaylistsController::class, 'active_teacher_playlists']);
+Route::get('teachers/{id}/playlists', [TeacherController::class, 'get_teacher_playlists']);
 
 // Engagement routes
 Route::get('engagement/teacher/{id}', [EngagementController::class, 'get_teacher_engagement']);

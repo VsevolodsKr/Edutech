@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Traits\Encryptable;
 
 class Teachers extends Authenticatable
 {
-    use HasFactory, HasApiTokens;
+    use HasFactory, HasApiTokens, Encryptable;
     protected $guard = 'teacher';
     protected $fillable = [
         'name',
@@ -20,12 +21,12 @@ class Teachers extends Authenticatable
     ];
     public $timestamps = false;
 
-    protected $appends = ['formatted_image'];
+    protected $appends = ['formatted_image', 'encrypted_id'];
 
     public function getFormattedImageAttribute()
     {
         if (!$this->image) {
-            return '/storage/default.png';
+            return '/storage/default-avatar.png';
         }
 
         if (str_starts_with($this->image, 'http')) {
@@ -38,12 +39,13 @@ class Teachers extends Authenticatable
             'storage/', 
             '/app/public/', 
             'app/public/',
-            'uploads/uploads/'
+            'uploads/uploads/',
+            'uploads/'
         ], '', $this->image);
 
-        // Ensure the path starts with uploads/ if it doesn't already
-        if (!str_starts_with($path, 'uploads/')) {
-            $path = 'uploads/' . $path;
+        // If the path is empty after cleaning, return default image
+        if (empty($path)) {
+            return '/storage/default-avatar.png';
         }
 
         return '/storage/' . $path;

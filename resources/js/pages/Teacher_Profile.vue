@@ -63,7 +63,7 @@
                                     >
                                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
                                         <router-link 
-                                            :to="'/playlist/' + playlist.id"
+                                            :to="'/playlist/' + playlist.encrypted_id"
                                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                         >
                                             Skatīt kursu
@@ -82,7 +82,7 @@
                                         {{ playlist.description }}
                                     </p>
                                     <router-link 
-                                        :to="'/playlist/' + playlist.id"
+                                        :to="'/playlist/' + playlist.encrypted_id"
                                         class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                                     >
                                         Sākt mācīties
@@ -150,11 +150,11 @@ const processPlaylist = (playlist) => {
 const loadTeacherData = async () => {
     try {
         isLoading.value = true;
-        const teacherId = route.params.id;
+        const encryptedTeacherId = route.params.id;
         
         const [teacherResponse, playlistsResponse] = await Promise.all([
-            axios.get(`/api/teachers/find/${teacherId}`),
-            axios.get(`/api/playlists/teacher_active_playlists/${teacherId}`)
+            axios.get(`/api/teachers/find/${encryptedTeacherId}`),
+            axios.get(`/api/playlists/teacher_active_playlists/${encryptedTeacherId}`)
         ]);
         
         if (!teacherResponse.data.data) {
@@ -175,9 +175,9 @@ const loadTeacherData = async () => {
             const processedPlaylists = playlistsResponse.data.data.map(processPlaylist).filter(Boolean);
             
             const contentCountPromises = processedPlaylists.map(playlist => 
-                axios.get(`/api/contents/playlist/${playlist.id}/amount`)
-                    .then(response => ({ id: playlist.id, count: response.data || 0 }))
-                    .catch(() => ({ id: playlist.id, count: 0 }))
+                axios.get(`/api/contents/playlist/${playlist.encrypted_id}/amount`)
+                    .then(response => ({ id: playlist.id, encrypted_id: playlist.encrypted_id, count: response.data || 0 }))
+                    .catch(() => ({ id: playlist.id, encrypted_id: playlist.encrypted_id, count: 0 }))
             );
             
             const contentCounts = await Promise.all(contentCountPromises);

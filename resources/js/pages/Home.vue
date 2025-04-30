@@ -112,13 +112,13 @@
                             <!-- Teacher Info -->
                             <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                 <img 
-                                    :src="playlist.teacher?.image" 
+                                    :src="playlist.teacher?.image || '/storage/default-avatar.png'" 
                                     :alt="playlist.teacher?.name"
                                     class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                                 >
                                 <div>
                                     <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem]">
-                                        {{ playlist.teacher?.name }}
+                                        {{ playlist.teacher?.name || 'Unknown Teacher' }}
                                     </h3>
                                     <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                         {{ formatDate(playlist.date) }}
@@ -135,7 +135,7 @@
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
                                     <router-link 
-                                        :to="'/playlist/' + playlist.id"
+                                        :to="'/playlist/' + playlist.encrypted_id"
                                         class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                     >
                                         Skatīt kursu
@@ -155,7 +155,7 @@
                                     {{ playlist.description }}
                                 </p>
                                 <router-link 
-                                    :to="'/playlist/' + playlist.id"
+                                    :to="'/playlist/' + playlist.encrypted_id"
                                     class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                                 >
                                     Sākt mācīties

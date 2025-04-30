@@ -67,7 +67,7 @@
                     </div>
 
                     <router-link 
-                        :to="'/teacher_profile/' + teacher.id"
+                        :to="'/teacher_profile/' + teacher.encrypted_id"
                         class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                     >
                         Skatīt profilu
@@ -138,16 +138,31 @@ const debouncedSearch = debounce(() => {
 }, 500);
 
 onMounted(async () => {
-    await store.dispatch('loadTeachers');
+    try {
+        const response = await store.dispatch('loadTeachers');
+        console.log('Teachers loaded:', response);
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+    }
 });
 
 watch(() => router.currentRoute.value, async () => {
-    await store.dispatch('loadTeachers');
+    try {
+        const response = await store.dispatch('loadTeachers');
+        console.log('Teachers loaded on route change:', response);
+    } catch (error) {
+        console.error('Error loading teachers on route change:', error);
+    }
 });
 
-watch(searchQuery, (newValue) => {
+watch(searchQuery, async (newValue) => {
     if (!newValue.trim()) {
-        store.dispatch('loadTeachers');
+        try {
+            const response = await store.dispatch('loadTeachers');
+            console.log('Teachers loaded on search clear:', response);
+        } catch (error) {
+            console.error('Error loading teachers on search clear:', error);
+        }
     }
 });
 </script>

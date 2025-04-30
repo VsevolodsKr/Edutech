@@ -225,11 +225,9 @@ const loadPlaylistData = async () => {
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        // Get teacher data
-        const teacherResponse = await axios.get(`/api/teachers/find/${playlist.value.teacher_id}`);
-        
-        if (teacherResponse.data?.data) {
-            const teacherData = teacherResponse.data.data;
+        // Get teacher data from the playlist response
+        if (playlistResponse.data?.teacher) {
+            const teacherData = playlistResponse.data.teacher;
             const cleanTeacherImagePath = teacherData.image
                 ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 ?.replace(/^\//, '');

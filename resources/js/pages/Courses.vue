@@ -48,13 +48,13 @@
                          class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                         <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                             <img 
-                                :src="playlist.teacher?.image" 
+                                :src="playlist.teacher?.image || '/storage/default-avatar.png'" 
                                 :alt="playlist.teacher?.name"
                                 class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                             >
                             <div>
                                 <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem]">
-                                    {{ playlist.teacher?.name }}
+                                    {{ playlist.teacher?.name || 'Unknown Teacher' }}
                                 </h3>
                                 <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                     {{ formatDate(playlist.date) }}
