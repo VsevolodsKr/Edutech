@@ -14,7 +14,7 @@
             </div>
             <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                 <div class="bg-base rounded-lg p-[2rem] w-full">
-                    <h3 class="text-[2rem] text-text_dark text-center capitalize pb-[.5rem] [@media(max-width:550px)]:text-[1.5rem]">
+                    <h3 class="text-[2rem] text-text_dark text-center pb-[.5rem] [@media(max-width:550px)]:text-[1.5rem]">
                         Izveidot jaunu kursu
                     </h3>
                     <router-link 

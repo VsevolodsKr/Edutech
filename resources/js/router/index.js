@@ -33,7 +33,7 @@ const publicRoutes = [
         component: () => import('../pages/Teachers.vue'),
         name: 'Teachers',
         meta: { 
-            title: 'Mācītāji',
+            title: 'Pasniedzēji',
             requiresAuth: false
         }
     },
@@ -95,7 +95,7 @@ const userRoutes = [
         component: () => import('../pages/Playlist.vue'),
         name: 'Playlist',
         meta: { 
-            title: 'Atskaņošanas saraksts',
+            title: 'Kurss',
             requiresAuth: false
         }
     },
@@ -131,7 +131,7 @@ const userRoutes = [
         component: () => import('../pages/Bookmarks.vue'),
         name: 'Bookmarks',
         meta: { 
-            title: 'Jūsu gramātiezīmētie saraksti',
+            title: 'Jūsu gramātiezīmētie kursi',
             requiresAuth: true
         }
     },
@@ -186,17 +186,6 @@ const adminRoutes = [
         name: 'Admin_Profile',
         meta: { 
             title: 'Profils',
-            requiresAuth: true,
-            isAdmin: true
-        },
-        beforeEnter: requireAdminAuth
-    },
-    {
-        path: '/admin_update',
-        component: () => import('../admin/Admin_Update.vue'),
-        name: 'Admin_Update',
-        meta: { 
-            title: 'Rediģēt profilu',
             requiresAuth: true,
             isAdmin: true
         },

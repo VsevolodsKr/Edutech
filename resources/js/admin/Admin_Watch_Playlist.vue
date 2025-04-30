@@ -14,12 +14,6 @@
 
                 <div v-if="playlist" class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
                     <div class="flex-[1_1_20rem]">
-                        <form @submit.prevent="savePlaylist" class="mb-[1rem]">
-                            <button type="submit" class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-base hover:bg-text_light [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]">
-                                <i class="far fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]"></i>
-                                <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">Saglabāt kursu</span>
-                            </button>
-                        </form>
                         <div class="relative">
                             <img :src="getImageUrl(playlist.thumb)" 
                                  :alt="playlist.title"

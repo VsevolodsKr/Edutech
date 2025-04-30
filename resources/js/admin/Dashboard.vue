@@ -53,7 +53,7 @@
                             <div class="flex-1">
                                 <h3 class="text-text_dark font-medium">{{ content.title }}</h3>
                                 <div class="flex gap-4 text-sm text-text_light">
-                                    <span>{{ content.likes }} favorītvideo</span>
+                                    <span>{{ content.likes }} patīk</span>
                                     <span>{{ content.comments }} komentāri</span>
                                 </div>
                             </div>
@@ -84,6 +84,10 @@ const teacherData = computed(() => store.getters.getUser);
 const statistics = computed(() => store.getters.getDashboardStats);
 const playlists = computed(() => store.getters.getPlaylists);
 const contents = computed(() => store.getters.getContents);
+const popularContents = computed(() => {
+    console.log('Popular contents:', statistics.value?.popularContents);
+    return statistics.value?.popularContents || [];
+});
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',

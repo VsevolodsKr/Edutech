@@ -63,7 +63,7 @@
                             :to="'/playlist/' + content.playlist_id"
                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                         >
-                            Skatīt atskaņošanas sarakstu
+                            Skatīt kursu
                         </router-link>
                         
                         <button 
@@ -166,14 +166,14 @@
                                 :to="'/edit_comment/' + comment.id"
                                 class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem]"
                             >
-                                Rediģēt komentāru
+                                Rediģēt
                             </router-link>
                             <button 
                                 @click="handleDeleteComment(comment.id)"
                                 :disabled="isDeletingComment === comment.id"
                                 class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem]"
                             >
-                                {{ isDeletingComment === comment.id ? 'Dzēšana...' : 'Dzēst komentāru' }}
+                                {{ isDeletingComment === comment.id ? 'Dzēšana...' : 'Dzēst' }}
                             </button>
             </div>
         </div>

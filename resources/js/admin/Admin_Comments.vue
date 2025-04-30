@@ -176,4 +176,24 @@ const deleteComment = async (commentId) => {
         isDeleting.value = null;
     }
 };
+
+const loadComments = async () => {
+    try {
+        const user = store.getters.getUser;
+        console.log('Loading comments for user:', user);
+        if (user) {
+            await store.dispatch('loadComments', user.id);
+            console.log('Comments loaded:', store.getters.getComments);
+        } else {
+            console.log('No user found');
+        }
+    } catch (err) {
+        console.error('Error loading comments:', err);
+        error.value = 'Neizdevās ielādēt komentārus. Lūdzu, mēģiniet vēlreiz.';
+    }
+};
+
+onMounted(() => {
+    loadComments();
+});
 </script> 

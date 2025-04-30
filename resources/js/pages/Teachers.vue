@@ -59,7 +59,7 @@
 
                     <div class="space-y-2 mb-4">
                         <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                            Atskaņošanas saraksti: <span class="text-button">{{ teacher.playlist_count }}</span>
+                            Kursi: <span class="text-button">{{ teacher.playlist_count }}</span>
                         </p>
                         <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                             Video: <span class="text-button">{{ teacher.content_count }}</span>

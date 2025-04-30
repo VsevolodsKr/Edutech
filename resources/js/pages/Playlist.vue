@@ -3,7 +3,7 @@
 <Header />
         <section :class="sectionClasses">
             <h1 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
-                Atskaņošanas saraksta informācija
+                Kursa informācija
             </h1>
     <hr class="border-[#ccc] mb-[2rem]">
 
@@ -84,7 +84,7 @@
 
                 <div class="pt-[2rem] bg-background [@media(max-width:550px)]:px-[.5rem]">
                     <h1 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.2rem]">
-                        Atskaņošanas saraksta video
+                        Kursa video
                     </h1>
     <hr class="border-[#ccc] mb-[2rem]">
 

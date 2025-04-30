@@ -31,7 +31,7 @@
                         <div class="grid grid-cols-2 gap-4 mb-6 bg-background rounded-lg p-4">
                             <div class="text-center">
                                 <h3 class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.25rem]">{{ totalPlaylists }}</h3>
-                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Atskaņošanas saraksti</p>
+                                <p class="text-[0.9rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">Kursi</p>
                             </div>
                             <div class="text-center">
                                 <h3 class="text-[1.5rem] text-button [@media(max-width:550px)]:text-[1.25rem]">{{ totalContents }}</h3>
@@ -42,12 +42,12 @@
                     
                     <div class="space-y-4">
                         <h3 class="text-[1.25rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.1rem]">
-                            {{ teacher.name }} atskaņošanas saraksti
+                            {{ teacher.name }} kursi
                         </h3>
                         
                         <div v-if="playlists.length === 0" 
                              class="text-center text-text_light text-[1rem] bg-base rounded-lg p-8 [@media(max-width:550px)]:text-[0.9rem]">
-                            Atskaņošanas saraksti nav pieejami
+                            Kursi nav pieejami
                         </div>
                         
                         <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -66,7 +66,7 @@
                                             :to="'/playlist/' + playlist.id"
                                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                         >
-                                            Skatīt atskaņošanas sarakstu
+                                            Skatīt kursu
                                         </router-link>
                                     </div>
                                     <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">

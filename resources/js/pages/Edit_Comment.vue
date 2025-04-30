@@ -57,9 +57,9 @@
                     <div v-if="canEdit" class="flex justify-between mt-4">
                         <router-link 
                             :to="'/watch_video/' + content.id"
-                            class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:px-[1.5rem]"
+                            class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:px-[1.5rem]"
                         >
-                            Atcelt rediģēšanu
+                            Atcelt
                         </router-link>
                         <button 
                             type="submit"

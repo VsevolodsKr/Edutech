@@ -57,7 +57,7 @@
                             to="/login"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Ielogojies
+                            Ielogoties
                         </router-link>
                         <router-link 
                             to="/register"
