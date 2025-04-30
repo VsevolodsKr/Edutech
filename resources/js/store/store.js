@@ -392,7 +392,11 @@ export default createStore({
 
                 const processedPlaylists = await Promise.all(
                     response.data.map(async (playlist) => {
-                        const processed = { ...playlist, timestamp: Date.now() };
+                        const processed = { 
+                            ...playlist, 
+                            timestamp: Date.now(),
+                            encrypted_id: playlist.encrypted_id || playlist.id
+                        };
 
                         // Handle thumbnail
                         if (processed.thumb) {

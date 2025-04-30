@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Encryptable;
 
 class Contents extends Model
 {
     use HasFactory;
+    use Encryptable;
     
     protected $table = 'Contents';
     
@@ -20,9 +22,18 @@ class Contents extends Model
         'thumb',
         'date',
         'status',
-        'video_source_type'
+        'video_source_type',
+        'encrypted_id'
     ];
+
+    protected $appends = ['encrypted_id'];
+
     public $timestamps = false;
+
+    public function getEncryptedIdAttribute()
+    {
+        return $this->encryptId($this->id);
+    }
 
     public function user() {
         return $this->hasOne('App\Models\Users', 'id', 'user_id');

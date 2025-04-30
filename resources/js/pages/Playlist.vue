@@ -208,6 +208,7 @@ const loadPlaylistData = async () => {
         isPlaylistLoading.value = true;
         error.value = null;
 
+        // Get playlist data
         const playlistResponse = await axios.get(`/api/playlists/find/${route.params.id}`);
         
         if (!playlistResponse.data?.playlist) {
@@ -224,12 +225,9 @@ const loadPlaylistData = async () => {
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        const [teacherResponse, countResponse, contentsResponse] = await Promise.all([
-            axios.get(`/api/teachers/find/${playlist.value.teacher_id}`),
-            axios.get(`/api/contents/playlist/${playlist.value.id}/amount`),
-            axios.get(`/api/playlists/${playlist.value.id}/contents`)
-        ]);
-
+        // Get teacher data
+        const teacherResponse = await axios.get(`/api/teachers/find/${playlist.value.teacher_id}`);
+        
         if (teacherResponse.data?.data) {
             const teacherData = teacherResponse.data.data;
             const cleanTeacherImagePath = teacherData.image
@@ -246,6 +244,12 @@ const loadPlaylistData = async () => {
                 image: '/storage/default-avatar.png'
             };
         }
+
+        // Get content count and contents
+        const [countResponse, contentsResponse] = await Promise.all([
+            axios.get(`/api/contents/playlist/${route.params.id}/amount`),
+            axios.get(`/api/playlists/${route.params.id}/contents`)
+        ]);
 
         contentCount.value = countResponse.data;
         if (contentsResponse.data) {

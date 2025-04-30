@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Traits\Encryptable;
 use Illuminate\Http\Request;
 use App\Models\Playlists;
 use App\Models\Teachers;
@@ -14,6 +15,8 @@ use App\Models\Contents;
 
 class PlaylistsController extends Controller
 {
+    use Encryptable;
+
     private const PLAYLIST_THUMBS_PATH = 'playlist_thumbs';
 
     /**
@@ -21,12 +24,59 @@ class PlaylistsController extends Controller
      */
     public function all()
     {
-        return Playlists::orderBy('date', 'desc')->get();
+        try {
+            $playlists = Playlists::with('teacher')
+                ->orderBy('date', 'desc')
+                ->get()
+                ->map(function ($playlist) {
+                    return [
+                        'id' => $playlist->id,
+                        'encrypted_id' => $this->encryptId($playlist->id),
+                        'title' => $playlist->title,
+                        'description' => $playlist->description,
+                        'thumb' => $playlist->thumb,
+                        'date' => $playlist->date,
+                        'teacher_id' => $playlist->teacher_id,
+                        'teacher' => $playlist->teacher ? [
+                            'id' => $playlist->teacher->id,
+                            'name' => $playlist->teacher->name,
+                            'image' => $playlist->teacher->image,
+                        ] : null,
+                        'content_count' => $playlist->contents()->count()
+                    ];
+                });
+
+            return response()->json($playlists);
+        } catch (\Exception $e) {
+            \Log::error('Error getting all playlists: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to get playlists',
+                'status' => 500
+            ], 500);
+        }
     }
 
     public function active()
     {
-        return Playlists::orderBy('date', 'desc')->where('status', 'active')->get();
+        return Playlists::orderBy('date', 'desc')
+            ->where('status', 'active')
+            ->get()
+            ->map(function ($playlist) {
+                return [
+                    'id' => $playlist->id,
+                    'encrypted_id' => $this->encryptId($playlist->id),
+                    'title' => $playlist->title,
+                    'description' => $playlist->description,
+                    'thumb' => $playlist->thumb,
+                    'date' => $playlist->date,
+                    'teacher_id' => $playlist->teacher_id,
+                    'teacher' => $playlist->teacher ? [
+                        'id' => $playlist->teacher->id,
+                        'name' => $playlist->teacher->name,
+                        'image' => $playlist->teacher->image,
+                    ] : null
+                ];
+            });
     }
 
     /**
@@ -43,6 +93,7 @@ class PlaylistsController extends Controller
                 ->map(function ($playlist) {
                     return [
                         'id' => $playlist->id,
+                        'encrypted_id' => $this->encryptId($playlist->id),
                         'title' => $playlist->title,
                         'description' => $playlist->description,
                         'thumb' => $playlist->thumb,
@@ -68,15 +119,49 @@ class PlaylistsController extends Controller
     /**
      * Find playlist by ID
      */
-    public function find($id)
+    public function find($encryptedId)
     {
-        $playlist = Playlists::findOrFail($id);
-        $teacher = Teachers::findOrFail($playlist->teacher_id);
-        
-        return response()->json([
-            'playlist' => $playlist,
-            'teacher' => $teacher
-        ]);
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Invalid playlist ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $playlist = Playlists::with('teacher')->find($id);
+            if (!$playlist) {
+                return response()->json([
+                    'message' => 'Playlist not found',
+                    'status' => 404
+                ], 404);
+            }
+
+            return response()->json([
+                'playlist' => [
+                    'id' => $playlist->id,
+                    'encrypted_id' => $this->encryptId($playlist->id),
+                    'title' => $playlist->title,
+                    'description' => $playlist->description,
+                    'thumb' => $playlist->thumb,
+                    'date' => $playlist->date,
+                    'teacher_id' => $playlist->teacher_id,
+                    'content_count' => $playlist->contents()->count()
+                ],
+                'teacher' => $playlist->teacher ? [
+                    'id' => $playlist->teacher->id,
+                    'name' => $playlist->teacher->name,
+                    'image' => $playlist->teacher->image,
+                ] : null
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error finding playlist: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to find playlist',
+                'status' => 500
+            ], 500);
+        }
     }
 
     /**
@@ -392,5 +477,33 @@ class PlaylistsController extends Controller
             'message' => [$message],
             'status' => $status
         ], $data), $status);
+    }
+
+    public function get_playlist_contents($encryptedId)
+    {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid playlist ID',
+                'status' => 404
+            ], 404);
+        }
+
+        return Contents::where('playlist_id', $id)
+            ->orderBy('date', 'asc')
+            ->get();
+    }
+
+    public function get_playlist_contents_amount($encryptedId)
+    {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid playlist ID',
+                'status' => 404
+            ], 404);
+        }
+
+        return Contents::where('playlist_id', $id)->count();
     }
 } 

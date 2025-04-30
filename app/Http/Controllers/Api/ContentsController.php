@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Traits\Encryptable;
 use Illuminate\Http\Request;
 use App\Models\Contents;
 use Illuminate\Support\Facades\Validator;
@@ -17,6 +18,8 @@ use App\Models\Likes;
 
 class ContentsController extends Controller
 {
+    use Encryptable;
+
     private const CONTENT_THUMBS_PATH = 'content_thumbs';
     private const CONTENT_VIDEOS_PATH = 'content_videos';
 
@@ -33,11 +36,36 @@ class ContentsController extends Controller
     /**
      * Get playlist contents
      */
-    public function get_playlist_contents(string $id)
+    public function get_playlist_contents($encryptedId)
     {
-        return Contents::where('playlist_id', $id)
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid playlist ID',
+                'status' => 404
+            ], 404);
+        }
+
+        $contents = Contents::where('playlist_id', $id)
             ->orderBy('date', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($content) {
+                return [
+                    'id' => $content->id,
+                    'encrypted_id' => $content->encrypted_id,
+                    'title' => $content->title,
+                    'description' => $content->description,
+                    'video' => $content->video,
+                    'thumb' => $content->thumb,
+                    'date' => $content->date,
+                    'status' => $content->status,
+                    'video_source_type' => $content->video_source_type,
+                    'teacher_id' => $content->teacher_id,
+                    'playlist_id' => $content->playlist_id
+                ];
+            });
+
+        return response()->json($contents);
     }
 
     /**
@@ -46,6 +74,18 @@ class ContentsController extends Controller
     public function get_single(string $id)
     {
         $content = Contents::with(['teacher', 'playlist'])->find($id);
+        
+        if (!$content) {
+            return response()->json([
+                'message' => 'Content not found',
+                'status' => 404
+            ], 404);
+        }
+
+        // The encrypted_id is automatically added by the accessor in the model
+        // Add the encrypted_playlist_id from the playlist relationship
+        $content->encrypted_playlist_id = $content->playlist->encrypted_id;
+
         return response()->json([
             'content' => $content,
             'teacher' => $content->teacher,
@@ -64,8 +104,16 @@ class ContentsController extends Controller
     /**
      * Get playlist's content amount
      */
-    public function get_playlist_contents_amount(string $id)
+    public function get_playlist_contents_amount($encryptedId)
     {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid playlist ID',
+                'status' => 404
+            ], 404);
+        }
+
         return Contents::where('playlist_id', $id)->count();
     }
 
