@@ -92,7 +92,7 @@
                         <router-link 
                             v-for="content in contents" 
                             :key="content.id"
-                            :to="'/watch_video/' + content.id"
+                            :to="'/watch_video/' + content.encrypted_id"
                             class="block bg-base rounded-lg p-[1rem] hover:shadow-lg transition-shadow duration-300"
                         >
                             <div class="relative group">

@@ -22,8 +22,7 @@ class Contents extends Model
         'thumb',
         'date',
         'status',
-        'video_source_type',
-        'encrypted_id'
+        'video_source_type'
     ];
 
     protected $appends = ['encrypted_id'];

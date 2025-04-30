@@ -71,8 +71,16 @@ class ContentsController extends Controller
     /**
      * Get single content
      */
-    public function get_single(string $id)
+    public function get_single($encryptedId)
     {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid content ID',
+                'status' => 404
+            ], 404);
+        }
+
         $content = Contents::with(['teacher', 'playlist'])->find($id);
         
         if (!$content) {

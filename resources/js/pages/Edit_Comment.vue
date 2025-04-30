@@ -56,7 +56,7 @@
 
                     <div v-if="canEdit" class="flex justify-between mt-4">
                         <router-link 
-                            :to="'/watch_video/' + content.id"
+                            :to="'/watch_video/' + content.encrypted_id"
                             class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:px-[1.5rem]"
                         >
                             Atcelt
@@ -217,7 +217,7 @@ const loadComment = async () => {
         commentText.value = comment.value.comment;
 
         if (userData.id !== comment.value.user_id) {
-            router.push(`/watch_video/${content.value.id}`);
+            router.push(`/watch_video/${content.value.encrypted_id}`);
         }
     } catch (err) {
         console.error('Error loading comment:', err);
@@ -270,7 +270,7 @@ const handleSubmit = async () => {
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
         });
 
-        router.push(`/watch_video/${content.value.id}`);
+        router.push(`/watch_video/${content.value.encrypted_id}`);
     } catch (err) {
         console.error('Error updating comment:', err);
         

@@ -8,9 +8,12 @@ use App\Models\Comments;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use App\Traits\Encryptable;
 
 class CommentsController extends Controller
 {
+    use Encryptable;
+
     public function add_comment(Request $request){
         $rules = array(
             'content_id' => 'required',
@@ -44,32 +47,116 @@ class CommentsController extends Controller
             }
     }
 
-    public function count_comments(string $id) {
+    public function count_comments(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid content ID',
+                'status' => 404
+            ], 404);
+        }
         return Comments::where('content_id', $id)->count();
     }
 
-    public function get_video_comments(string $id) {
-        $comments = Comments::where('content_id', $id)->get();
-        $users = array();
-        foreach($comments as $comment) {
-            array_push($users, $comment->user);
+    public function get_video_comments($encryptedId) {
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Invalid content ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $comments = Comments::with(['user' => function($query) {
+                $query->select('id', 'name', 'image');
+            }])
+            ->where('content_id', $id)
+            ->orderBy('date', 'desc')
+            ->get();
+
+            if ($comments->isEmpty()) {
+                return response()->json([
+                    'comments' => [],
+                    'status' => 200
+                ]);
+            }
+
+            $formattedComments = $comments->map(function($comment) {
+                return [
+                    'id' => $comment->id,
+                    'encrypted_id' => $comment->encrypted_id,
+                    'comment' => $comment->comment,
+                    'date' => $comment->date,
+                    'user' => $comment->user ? [
+                        'id' => $comment->user->id,
+                        'name' => $comment->user->name,
+                        'image' => $comment->user->image
+                    ] : null
+                ];
+            });
+
+            return response()->json([
+                'comments' => $formattedComments,
+                'status' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting video comments: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json([
+                'message' => 'Error loading comments',
+                'status' => 500
+            ], 500);
         }
-        return response()->json(['comments' => $comments, 'users' => $users]);
     }
 
-    public function delete_comment(string $id) {
+    public function delete_comment(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid comment ID',
+                'status' => 404
+            ], 404);
+        }
         $comment = Comments::find($id);
+        if (!$comment) {
+            return response()->json([
+                'message' => 'Comment not found',
+                'status' => 404
+            ], 404);
+        }
         $comment->delete();
+        return response()->json(['message' => 'Comment deleted successfully', 'status' => 200], 200);
     }
 
-    public function find(string $id) {
+    public function find(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid comment ID',
+                'status' => 404
+            ], 404);
+        }
         $comment = Comments::find($id);
+        if (!$comment) {
+            return response()->json([
+                'message' => 'Comment not found',
+                'status' => 404
+            ], 404);
+        }
         $content = $comment->content;
         $playlist = $content->playlist;
         return response()->json(['comment' => $comment, 'content' => $content, 'playlist' => $playlist]);
     }
 
-    public function edit_comment(string $id, Request $request) {
+    public function edit_comment(string $encryptedId, Request $request) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid comment ID',
+                'status' => 404
+            ], 404);
+        }
         $rules = array(
             'comment' => 'required',
         );
@@ -82,6 +169,12 @@ class CommentsController extends Controller
             return response()->json(['message' => $errors, 'status' => 500], 500);
         }
         $comment = Comments::find($id);
+        if (!$comment) {
+            return response()->json([
+                'message' => 'Comment not found',
+                'status' => 404
+            ], 404);
+        }
         $comment->update(['comment' => $request->comment]);
         $save = $comment->save();
         if(!$save){
@@ -91,28 +184,64 @@ class CommentsController extends Controller
         }
     }
 
-    public function count_user(string $id) {
+    public function count_user(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid user ID',
+                'status' => 404
+            ], 404);
+        }
         return response()->json([
             'data' => Comments::where('user_id', $id)->count()
         ]);
     }
 
-    public function count_teacher(string $id) {
+    public function count_teacher(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid teacher ID',
+                'status' => 404
+            ], 404);
+        }
         return response()->json([
             'data' => Comments::where('teacher_id', $id)->count()
         ]);
     }
 
-    public function get_user_comments(string $id) {
+    public function get_user_comments(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid user ID',
+                'status' => 404
+            ], 404);
+        }
         $comments = Comments::where('user_id', $id)->get();
         $contents = array();
         foreach($comments as $comment){
             array_push($contents, $comment->content);
         }
-        return response()->json(['comments' => $comments, 'contents' => $contents]);
+        return response()->json([
+            'comments' => $comments->map(function($comment) {
+                return [
+                    ...$comment->toArray(),
+                    'encrypted_id' => $comment->encrypted_id
+                ];
+            }),
+            'contents' => $contents
+        ]);
     }
 
-    public function get_teacher_comments(string $id) {
+    public function get_teacher_comments(string $encryptedId) {
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid teacher ID',
+                'status' => 404
+            ], 404);
+        }
         $comments = Comments::where('teacher_id', $id)
             ->orderBy('date', 'desc')
             ->get();
@@ -125,7 +254,12 @@ class CommentsController extends Controller
         }
         
         return response()->json([
-            'comments' => $comments,
+            'comments' => $comments->map(function($comment) {
+                return [
+                    ...$comment->toArray(),
+                    'encrypted_id' => $comment->encrypted_id
+                ];
+            }),
             'users' => $users,
             'contents' => $contents
         ]);

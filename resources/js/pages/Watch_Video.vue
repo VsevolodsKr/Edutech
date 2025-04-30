@@ -60,7 +60,7 @@
 
                     <div class="flex items-center justify-between gap-[1rem]">
                         <router-link 
-                            :to="'/playlist/' + content.playlist_id"
+                            :to="'/playlist/' + content.encrypted_playlist_id"
                             class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                         >
                             Skatīt kursu
@@ -163,7 +163,7 @@
 
                         <div v-if="user?.id === comment.user.id" class="flex gap-[1rem] mt-[.5rem]">
                             <router-link 
-                                :to="'/edit_comment/' + comment.id"
+                                :to="'/edit_comment/' + comment.encrypted_id"
                                 class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem]"
                             >
                                 Rediģēt
@@ -251,66 +251,106 @@ const getYoutubeEmbedUrl = (url) => {
 
 const loadContent = async () => {
     try {
-        isLoading.value = true;
-        error.value = null;
-
         const response = await axios.get(`/api/contents/find/${route.params.id}`);
-        if (!response.data?.content) {
-            throw new Error('Content not found');
+        if (response.data.status === 404) {
+            router.push('/404');
+            return;
         }
 
+        // Extract content and teacher data from response
         const contentData = response.data.content;
-        
-        const cleanThumbPath = contentData.thumb
-            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-            ?.replace(/^\//, '');
-            
-        const cleanVideoPath = contentData.video
-            ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-            ?.replace(/^\//, '');
+        const teacherData = response.data.teacher;
 
+        // Set content data
         content.value = {
             ...contentData,
-            thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
-            video: cleanVideoPath ? `/storage/${cleanVideoPath}` : null
+            thumb: contentData.thumb ? contentData.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '') : null,
+            video: contentData.video ? contentData.video.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '') : null,
+            encrypted_playlist_id: contentData.encrypted_playlist_id,
+            encrypted_id: contentData.encrypted_id
         };
 
-        if (response.data?.teacher) {
-            const teacherData = response.data.teacher;
-            const cleanTeacherImagePath = teacherData.image
+        // Set teacher data
+        if (teacherData) {
+            const cleanImagePath = teacherData.image
                 ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                 ?.replace(/^\//, '');
 
             teacher.value = {
                 ...teacherData,
-                image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
-            };
-        } else {
-            teacher.value = {
-                name: 'Nezināms pasniedzējs',
-                image: '/storage/default-avatar.png'
+                image: cleanImagePath ? `/storage/${cleanImagePath}` : '/storage/default-avatar.png'
             };
         }
 
+        // Load comments and counts
+        await loadComments();
         await Promise.all([
             loadLikesCount(),
             loadCommentsCount()
-        ]);
+        ]).catch(console.error);
+    } catch (error) {
+        console.error('Error loading content:', error);
+        router.push('/404');
+    }
+};
 
-        if (user.value) {
-            await Promise.all([
-                checkLikeStatus(),
-                loadComments()
-            ]);
+const loadComments = async () => {
+    try {
+        if (!content.value?.encrypted_id) {
+            console.error('Content not loaded yet');
+            return;
         }
 
-    } catch (err) {
-        console.error('Error loading content:', err);
-        error.value = 'Failed to load content. Please try again.';
-        content.value = null;
-        teacher.value = null;
-    } finally {
-        isLoading.value = false;
+        console.log('Loading comments for content:', content.value.encrypted_id);
+        
+        const [commentsResponse, countResponse] = await Promise.all([
+            axios.get(`/api/comments/video/${content.value.encrypted_id}`),
+            axios.get(`/api/comments/content_amount/${content.value.encrypted_id}`)
+        ]);
+
+        console.log('Comments response:', commentsResponse.data);
+        console.log('Count response:', countResponse.data);
+
+        if (commentsResponse.data.status === 200 && Array.isArray(commentsResponse.data.comments)) {
+            comments.value = commentsResponse.data.comments.map(comment => {
+                if (!comment.user) {
+                    console.warn('Comment without user:', comment);
+                    return {
+                        ...comment,
+                        user: {
+                            id: 0,
+                            name: 'Unknown User',
+                            image: '/storage/default-avatar.png'
+                        }
+                    };
+                }
+
+                const cleanImagePath = comment.user.image
+                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                    ?.replace(/^\//, '');
+
+                return {
+                    ...comment,
+                    user: {
+                        ...comment.user,
+                        image: cleanImagePath ? `/storage/${cleanImagePath}` : '/storage/default-avatar.png'
+                    }
+                };
+            });
+        } else {
+            console.warn('Invalid comments response:', commentsResponse.data);
+            comments.value = [];
+        }
+
+        commentsCount.value = typeof countResponse.data === 'number' ? countResponse.data : 0;
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+        }
+        comments.value = [];
+        commentsCount.value = 0;
     }
 };
 
@@ -370,28 +410,6 @@ const loadLikesCount = async () => {
     } catch (err) {
         console.error('Error loading likes count:', err);
         likesCount.value = 0;
-    }
-};
-
-const loadComments = async () => {
-    try {
-        const response = await axios.get(`/api/comments/video/${route.params.id}`);
-        comments.value = response.data.comments.map((comment, index) => {
-            const cleanUserImagePath = response.data.users[index].image
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
-
-            return {
-                ...comment,
-                user: {
-                    ...response.data.users[index],
-                    image: cleanUserImagePath ? `/storage/${cleanUserImagePath}` : '/storage/default-avatar.png'
-                }
-            };
-        });
-    } catch (err) {
-        console.error('Error loading comments:', err);
-        comments.value = [];
     }
 };
 

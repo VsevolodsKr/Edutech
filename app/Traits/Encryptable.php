@@ -24,4 +24,4 @@ trait Encryptable
     {
         return $this->encryptId($this->id);
     }
-} 
+}
