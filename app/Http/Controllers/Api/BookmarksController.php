@@ -12,38 +12,84 @@ class BookmarksController extends Controller
     use Encryptable;
 
     public function check_bookmark(Request $request){
-        $check = Bookmarks::where([['user_id', '=', $request->user_id], ['playlist_id', '=', $request->playlist_id]])->first();
-        if($check){
-            return response()->json(['status' => true, 'id' => $check->id]);
-        }else{
-            return response()->json(['status' => false]);
+        try {
+            $playlistId = $this->decryptId($request->playlist_id);
+            if (!$playlistId) {
+                return response()->json([
+                    'message' => 'Invalid playlist ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $check = Bookmarks::where([
+                ['user_id', '=', $request->user_id],
+                ['playlist_id', '=', $playlistId]
+            ])->first();
+
+            if($check){
+                return response()->json(['status' => true, 'id' => $check->id]);
+            }else{
+                return response()->json(['status' => false]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to check bookmark status',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
         }
     }
 
     public function add_bookmark(Request $request){
-        $bookmark = new Bookmarks;
-        $bookmark->user_id = $request->user_id;
-        $bookmark->playlist_id = $request->playlist_id;
-        $bookmark->save();
+        try {
+            $playlistId = $this->decryptId($request->playlist_id);
+            if (!$playlistId) {
+                return response()->json([
+                    'message' => 'Invalid playlist ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $bookmark = new Bookmarks;
+            $bookmark->user_id = $request->user_id;
+            $bookmark->playlist_id = $playlistId;
+            $bookmark->save();
+
+            return response()->json([
+                'message' => 'Bookmark added successfully',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to add bookmark',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
     }
 
-    public function delete_bookmark(string $encryptedId){
-        $id = $this->decryptId($encryptedId);
-        if (!$id) {
+    public function delete_bookmark(string $id){
+        try {
+            $bookmark = Bookmarks::find($id);
+            if (!$bookmark) {
+                return response()->json([
+                    'message' => 'Bookmark not found',
+                    'status' => 404
+                ], 404);
+            }
+
+            $bookmark->delete();
             return response()->json([
-                'message' => 'Invalid bookmark ID',
-                'status' => 404
-            ], 404);
-        }
-        $check = Bookmarks::find($id);
-        if (!$check) {
+                'message' => 'Bookmark deleted successfully',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Bookmark not found',
-                'status' => 404
-            ], 404);
+                'message' => 'Failed to delete bookmark',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
         }
-        $check->delete();
-        return response()->json(['message' => 'Bookmark deleted successfully', 'status' => 200], 200);
     }
 
     public function count_user_bookmarks(string $encryptedId){

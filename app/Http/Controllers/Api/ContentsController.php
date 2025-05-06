@@ -104,9 +104,23 @@ class ContentsController extends Controller
     /**
      * Get teacher's content amount
      */
-    public function get_amount(string $id)
+    public function get_amount($encryptedId)
     {
-        return Contents::where('teacher_id', $id)->count();
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'data' => 0
+                ]);
+            }
+            return response()->json([
+                'data' => Contents::where('teacher_id', $id)->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => 0
+            ]);
+        }
     }
 
     /**

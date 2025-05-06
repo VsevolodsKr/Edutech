@@ -4,15 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Encryptable;
 
 class Likes extends Model
 {
     use HasFactory;
+    use Encryptable;
+    
     protected $fillable = [
         'user_id',
         'teacher_id',
         'content_id',
     ];
+
+    protected $appends = ['encrypted_id'];
 
     public $timestamps = true;
 

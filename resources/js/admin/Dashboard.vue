@@ -94,6 +94,18 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
+const engagementData = computed(() => {
+    const stats = statistics.value;
+    if (!stats || !stats.engagement) {
+        return {
+            labels: [],
+            likes: [],
+            comments: []
+        };
+    }
+    return stats.engagement;
+});
+
 const updateEngagementChart = (data) => {
     if (!engagementChart.value) return;
     
@@ -164,22 +176,33 @@ const updateEngagementChart = (data) => {
 };
 
 onMounted(async () => {
-    const user = store.getters.getUser;
-    if (user) {
-        await store.dispatch('loadDashboardStats', user.id);
+    try {
+        const user = store.state.user;
+        if (user && user.encrypted_id) {
+            await store.dispatch('loadDashboardStats', user.encrypted_id);
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
     }
 });
 
-watch(() => statistics.value?.engagement, (newData) => {
+watch(() => engagementData, (newData) => {
     if (newData && engagementChart.value) {
         updateEngagementChart(newData);
     }
-}, { immediate: true });
+}, { deep: true });
 
-watch([playlists, contents], async () => {
-    const user = store.getters.getUser;
-    if (user) {
-        await store.dispatch('loadDashboardStats', user.id);
+watch(() => store.state.playlists, async () => {
+    const user = store.state.user;
+    if (user && user.encrypted_id) {
+        await store.dispatch('loadDashboardStats', user.encrypted_id);
+    }
+}, { deep: true });
+
+watch(() => store.state.contents, async () => {
+    const user = store.state.user;
+    if (user && user.encrypted_id) {
+        await store.dispatch('loadDashboardStats', user.encrypted_id);
     }
 }, { deep: true });
 </script>

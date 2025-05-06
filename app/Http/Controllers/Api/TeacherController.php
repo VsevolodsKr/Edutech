@@ -125,7 +125,7 @@ class TeacherController extends Controller
 
             return [
                 'id' => $teacher->id,
-                'encrypted_id' => $teacher->encrypted_id,
+                'encrypted_id' => $this->encryptId($teacher->id),
                 'name' => $teacher->name,
                 'profession' => $teacher->profession,
                 'email' => $teacher->email,

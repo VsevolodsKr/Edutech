@@ -396,10 +396,18 @@ const checkLikeStatus = async () => {
                 'Accept': 'application/json'
             }
         });
-        isLiked.value = response.data.status;
-        likeId.value = response.data.id;
+        
+        if (response.data.status === true && response.data.id) {
+            isLiked.value = true;
+            likeId.value = response.data.id;
+        } else {
+            isLiked.value = false;
+            likeId.value = null;
+        }
     } catch (err) {
         console.error('Error checking like status:', err);
+        isLiked.value = false;
+        likeId.value = null;
     }
 };
 
@@ -541,15 +549,27 @@ const toggleLike = async () => {
         isLikeLoading.value = true;
         const token = localStorage.getItem('token');
 
-        if (isLiked.value) {
-            await axios.delete(`/api/likes/delete/${likeId.value}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
+        if (isLiked.value && likeId.value) {
+            try {
+                await axios.delete(`/api/likes/delete/${likeId.value}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                isLiked.value = false;
+                likeId.value = null;
+                likesCount.value--;
+            } catch (error) {
+                console.error('Error deleting like:', error);
+                if (error.response?.status === 404) {
+                    // If the like wasn't found, reset the state
+                    isLiked.value = false;
+                    likeId.value = null;
+                } else {
+                    throw error; // Re-throw other errors
                 }
-            });
-            isLiked.value = false;
-            likesCount.value--;
+            }
         } else {
             const formData = new FormData();
             formData.append('user_id', user.value.id);
@@ -562,9 +582,8 @@ const toggleLike = async () => {
                     'Accept': 'application/json'
                 }
             });
-            isLiked.value = true;
+            await checkLikeStatus(); // This will set isLiked and likeId
             likesCount.value++;
-            await checkLikeStatus();
         }
     } catch (err) {
         console.error('Error toggling like:', err);
@@ -580,6 +599,9 @@ onMounted(async () => {
     try {
         await loadUser();
         await loadContent();
+        if (user.value) {
+            await checkLikeStatus();
+        }
     } catch (err) {
         console.error('Error in onMounted:', err);
         error.value = 'Failed to load content. Please try again.';

@@ -13,20 +13,62 @@ class LikesController extends Controller
     use Encryptable;
 
     public function check_like(Request $request){
-        $check = Likes::where([['user_id', '=', $request->user_id], ['teacher_id', '=', $request->teacher_id], ['content_id', '=', $request->content_id]])->first();
-        if($check){
-            return response()->json(['status' => true, 'id' => $check->id]);
-        }else{
-            return response()->json(['status' => false]);
+        try {
+            $contentId = $this->decryptId($request->content_id);
+            if (!$contentId) {
+                return response()->json([
+                    'message' => 'Invalid content ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $check = Likes::where([
+                ['user_id', '=', $request->user_id],
+                ['teacher_id', '=', $request->teacher_id],
+                ['content_id', '=', $contentId]
+            ])->first();
+
+            if($check){
+                return response()->json(['status' => true, 'id' => $this->encryptId($check->id)]);
+            }else{
+                return response()->json(['status' => false]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to check like status',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
         }
     }
 
     public function add_like(Request $request){
-        $like = new Likes;
-        $like->user_id = $request->user_id;
-        $like->teacher_id = $request->teacher_id;
-        $like->content_id = $request->content_id;
-        $like->save();
+        try {
+            $contentId = $this->decryptId($request->content_id);
+            if (!$contentId) {
+                return response()->json([
+                    'message' => 'Invalid content ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $like = new Likes;
+            $like->user_id = $request->user_id;
+            $like->teacher_id = $request->teacher_id;
+            $like->content_id = $contentId;
+            $like->save();
+
+            return response()->json([
+                'message' => 'Like added successfully',
+                'status' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to add like',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
     }
 
     public function delete_like(string $encryptedId){

@@ -283,7 +283,7 @@ const checkBookmarkStatus = async () => {
 
         const formData = new FormData();
         formData.append('user_id', user.value.id);
-        formData.append('playlist_id', playlist.value.id);
+        formData.append('playlist_id', route.params.id);
 
         const response = await axios.post('/api/bookmarks/check', formData, { headers });
         isBookmarked.value = response.data.status;
@@ -310,14 +310,25 @@ const toggleBookmark = async () => {
             'Accept': 'application/json'
         };
 
-        if (isBookmarked.value) {
+        if (isBookmarked.value && bookmarkId.value) {
+            try {
                 await axios.delete(`/api/bookmarks/delete/${bookmarkId.value}`, { headers });
                 isBookmarked.value = false;
                 bookmarkId.value = null;
+            } catch (error) {
+                console.error('Error deleting bookmark:', error);
+                if (error.response?.status === 404) {
+                    // If the bookmark wasn't found, reset the state
+                    isBookmarked.value = false;
+                    bookmarkId.value = null;
+                } else {
+                    throw error; // Re-throw other errors
+                }
+            }
         } else {
             const formData = new FormData();
             formData.append('user_id', user.value.id);
-            formData.append('playlist_id', playlist.value.id);
+            formData.append('playlist_id', route.params.id);
 
             await axios.post('/api/bookmarks/add', formData, { headers });
             await checkBookmarkStatus();

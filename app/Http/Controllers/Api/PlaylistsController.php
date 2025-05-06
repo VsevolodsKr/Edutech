@@ -404,14 +404,22 @@ class PlaylistsController extends Controller
     /**
      * Get teacher's playlist amount
      */
-    public function get_amount($id)
+    public function get_amount($encryptedId)
     {
         try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'data' => 0
+                ]);
+            }
             return response()->json([
                 'data' => Playlists::where('teacher_id', $id)->count()
             ]);
         } catch (\Exception $e) {
-            return response()->json(0);
+            return response()->json([
+                'data' => 0
+            ]);
         }
     }
 

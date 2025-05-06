@@ -194,28 +194,46 @@ export default createStore({
             }
         },
 
-        async loadDashboardStats({ commit }, userId) {
+        async loadDashboardStats({ commit }, teacherId) {
             try {
-                const [playlists, contents, likes, comments, engagement, popular] = await Promise.all([
-                    axios.get(`/api/playlists/amount/${userId}`),
-                    axios.get(`/api/contents/amount/${userId}`),
-                    axios.get(`/api/likes/count_teacher/${userId}`),
-                    axios.get(`/api/comments/count_teacher/${userId}`),
-                    axios.get(`/api/engagement/teacher/${userId}`),
-                    axios.get(`/api/contents/popular/${userId}`)
+                commit('setLoading', true);
+                const [playlists, contents, likes, comments, popular, engagement] = await Promise.all([
+                    axios.get(`/api/playlists/amount/${teacherId}`),
+                    axios.get(`/api/contents/amount/${teacherId}`),
+                    axios.get(`/api/likes/count_content/${teacherId}`),
+                    axios.get(`/api/comments/content_amount/${teacherId}`),
+                    axios.get(`/api/contents/popular/${teacherId}`),
+                    axios.get(`/api/engagement/teacher/${teacherId}`)
                 ]);
 
                 commit('setDashboardStats', {
-                    playlists: playlists.data.data || 0,
-                    contents: contents.data || 0,
-                    likes: likes.data.data || 0,
-                    comments: comments.data.data || 0,
-                    engagement: engagement.data,
-                    popularContents: popular.data
+                    playlists: playlists.data?.data || 0,
+                    contents: contents.data?.data || 0,
+                    likes: likes.data?.data || 0,
+                    comments: comments.data?.data || 0,
+                    popularContents: popular.data || [],
+                    engagement: engagement.data || {
+                        labels: [],
+                        likes: [],
+                        comments: []
+                    }
                 });
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
-                throw error;
+                commit('setDashboardStats', {
+                    playlists: 0,
+                    contents: 0,
+                    likes: 0,
+                    comments: 0,
+                    popularContents: [],
+                    engagement: {
+                        labels: [],
+                        likes: [],
+                        comments: []
+                    }
+                });
+            } finally {
+                commit('setLoading', false);
             }
         },
 
