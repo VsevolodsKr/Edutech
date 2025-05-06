@@ -113,20 +113,28 @@ class TeacherController extends Controller
         }
     }
 
-    public function get_all()
+    public function all()
     {
         $teachers = Teachers::all()->map(function ($teacher) {
+            // Get playlist and content counts
+            $playlistCount = $teacher->playlists()->count();
+            $contentCount = $teacher->contents()->count();
+
+            // Get the formatted image
+            $formattedImage = $teacher->formatted_image;
+
             return [
                 'id' => $teacher->id,
                 'encrypted_id' => $teacher->encrypted_id,
                 'name' => $teacher->name,
                 'profession' => $teacher->profession,
                 'email' => $teacher->email,
-                'image' => $teacher->formatted_image,
-                'formatted_image' => $teacher->formatted_image
+                'image' => $formattedImage,
+                'formatted_image' => $formattedImage,
+                'playlist_count' => (int)$playlistCount,
+                'content_count' => (int)$contentCount
             ];
         });
-        $teachers = Teachers::all();
         return response()->json($teachers);
     }
 

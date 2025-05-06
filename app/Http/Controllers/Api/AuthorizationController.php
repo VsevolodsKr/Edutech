@@ -259,6 +259,7 @@ class AuthorizationController extends Controller
             return $this->successResponse('Profile retrieved successfully', [
                 'data' => [
                     'id' => $user->id,
+                    'encrypted_id' => $user->encrypted_id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'image' => $user->image

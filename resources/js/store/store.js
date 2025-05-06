@@ -154,9 +154,9 @@ export default createStore({
                 // Always load fresh stats, even if user data is already loaded
                 try {
                     const [likes, bookmarks, comments] = await Promise.all([
-                        axios.get(`/api/likes/count_user/${response.data.id}`),
-                        axios.get(`/api/bookmarks/count_user/${response.data.id}`),
-                        axios.get(`/api/comments/count_user/${response.data.id}`)
+                        axios.get(`/api/likes/count_user/${userData.encrypted_id}`),
+                        axios.get(`/api/bookmarks/count_user/${userData.encrypted_id}`),
+                        axios.get(`/api/comments/count_user/${userData.encrypted_id}`)
                     ]);
 
                     commit('setDashboardStats', {
@@ -177,9 +177,9 @@ export default createStore({
                 // Only load admin-specific data if user is an admin
                 if (response.data.profession) {
                     await Promise.all([
-                        this.dispatch('loadPlaylists', response.data.id),
-                        this.dispatch('loadContents', response.data.id),
-                        this.dispatch('loadComments', response.data.id)
+                        this.dispatch('loadPlaylists', userData.encrypted_id),
+                        this.dispatch('loadContents', userData.encrypted_id),
+                        this.dispatch('loadComments', userData.encrypted_id)
                     ]);
                 }
             } catch (error) {
@@ -219,12 +219,18 @@ export default createStore({
             }
         },
 
-        async loadUserStats({ commit }, userId) {
+        async loadUserStats({ commit, state }, userId) {
             try {
+                const user = state.user;
+                if (!user || !user.encrypted_id) {
+                    console.error('No user data available');
+                    return;
+                }
+
                 const [likes, bookmarks, comments] = await Promise.all([
-                    axios.get(`/api/likes/count_user/${userId}`),
-                    axios.get(`/api/bookmarks/count_user/${userId}`),
-                    axios.get(`/api/comments/count_user/${userId}`)
+                    axios.get(`/api/likes/count_user/${user.encrypted_id}`),
+                    axios.get(`/api/bookmarks/count_user/${user.encrypted_id}`),
+                    axios.get(`/api/comments/count_user/${user.encrypted_id}`)
                 ]);
 
                 commit('setDashboardStats', {
@@ -484,43 +490,26 @@ export default createStore({
                     throw new Error('Invalid response format');
                 }
 
-                const processedTeachers = await Promise.all(
-                    response.data.map(async (teacher) => {
-                        const processed = { 
-                            ...teacher, 
-                            timestamp: Date.now(),
-                            encrypted_id: teacher.encrypted_id || teacher.id
-                        };
+                const processedTeachers = response.data.map(teacher => {
+                    // Handle the image path
+                    let imagePath = teacher.formatted_image || teacher.image;
+                    if (imagePath) {
+                        // Remove any storage/app/public prefixes
+                        imagePath = imagePath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                        // Ensure it starts with /storage/
+                        imagePath = '/storage/' + imagePath;
+                    } else {
+                        imagePath = '/storage/default-avatar.png';
+                    }
 
-                        // Handle teacher image
-                        console.log('Original teacher image:', processed.image);
-                        console.log('Formatted teacher image:', processed.formatted_image);
-                        if (processed.formatted_image) {
-                            const cleanPath = processed.formatted_image
-                                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                .replace(/^\//, '');
-                            processed.image = `/storage/${cleanPath}`;
-                            console.log('Cleaned and processed image path:', processed.image);
-                        } else {
-                            processed.image = '/storage/default-avatar.png';
-                            console.log('Using default image path:', processed.image);
-                        }
-
-                        // Get content count
-                        try {
-                            const contentResponse = await axios.get(`/api/contents/teacher/${processed.encrypted_id}/amount`);
-                            processed.content_count = contentResponse.data || 0;
-                        } catch (contentError) {
-                            console.error('Error fetching content count:', contentError);
-                            processed.content_count = 0;
-                        }
-
-                        return processed;
-                    })
-                );
+                    return { 
+                        ...teacher, 
+                        timestamp: Date.now(),
+                        image: imagePath
+                    };
+                });
 
                 commit('setTeachers', processedTeachers);
-                return processedTeachers;
             } catch (err) {
                 console.error('Error loading teachers:', err);
                 commit('setTeachersError', 'Failed to load teachers. Please try again.');
@@ -618,51 +607,35 @@ export default createStore({
                 commit('setTeachersLoading', true);
                 commit('setTeachersError', null);
 
-                const formData = new FormData();
-                formData.append('name', searchQuery.trim());
-
-                const response = await axios.post('/api/teachers/search', formData);
+                const response = await axios.get(`/api/teachers/search?query=${encodeURIComponent(searchQuery)}`);
                 if (!Array.isArray(response.data)) {
-                    throw new Error('Invalid response format');
+                    commit('setTeachers', []);
+                    return;
                 }
 
-                const processedTeachers = await Promise.all(
-                    response.data.map(async (teacher) => {
-                        const processed = { ...teacher, timestamp: Date.now() };
+                const processedTeachers = response.data.map(teacher => {
+                    // Handle the image path
+                    let imagePath = teacher.formatted_image || teacher.image;
+                    if (imagePath) {
+                        // Remove any storage/app/public prefixes
+                        imagePath = imagePath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                        // Ensure it starts with /storage/
+                        imagePath = '/storage/' + imagePath;
+                    } else {
+                        imagePath = '/storage/default-avatar.png';
+                    }
 
-                        // Handle teacher image
-                        if (processed.formatted_image) {
-                            const cleanPath = processed.formatted_image
-                                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                .replace(/^\//, '');
-                            processed.image = `/storage/${cleanPath}`;
-                        } else {
-                            processed.image = '/storage/default-avatar.png';
-                        }
-
-                        // Get playlist and content counts in parallel
-                        try {
-                            const [playlistCount, contentCount] = await Promise.all([
-                                axios.get(`/api/playlists/amount/${processed.id}`),
-                                axios.get(`/api/contents/amount/${processed.id}`)
-                            ]);
-                            
-                            processed.playlist_count = playlistCount.data.data || 0;
-                            processed.content_count = contentCount.data || 0;
-                        } catch (err) {
-                            console.error(`Error fetching counts for teacher ${processed.id}:`, err);
-                            processed.playlist_count = 0;
-                            processed.content_count = 0;
-                        }
-
-                        return processed;
-                    })
-                );
+                    return { 
+                        ...teacher, 
+                        timestamp: Date.now(),
+                        image: imagePath
+                    };
+                });
 
                 commit('setTeachers', processedTeachers);
             } catch (err) {
                 console.error('Error searching teachers:', err);
-                commit('setTeachersError', 'Failed to search teachers. Please try again.');
+                commit('setTeachers', []);
             } finally {
                 commit('setTeachersLoading', false);
             }

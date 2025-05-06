@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Bookmarks;
+use App\Traits\Encryptable;
 
 class BookmarksController extends Controller
 {
+    use Encryptable;
 
     public function check_bookmark(Request $request){
         $check = Bookmarks::where([['user_id', '=', $request->user_id], ['playlist_id', '=', $request->playlist_id]])->first();
@@ -25,18 +27,46 @@ class BookmarksController extends Controller
         $bookmark->save();
     }
 
-    public function delete_bookmark(string $id){
+    public function delete_bookmark(string $encryptedId){
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid bookmark ID',
+                'status' => 404
+            ], 404);
+        }
         $check = Bookmarks::find($id);
+        if (!$check) {
+            return response()->json([
+                'message' => 'Bookmark not found',
+                'status' => 404
+            ], 404);
+        }
         $check->delete();
+        return response()->json(['message' => 'Bookmark deleted successfully', 'status' => 200], 200);
     }
 
-    public function count_user_bookmarks(string $id){
+    public function count_user_bookmarks(string $encryptedId){
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid user ID',
+                'status' => 404
+            ], 404);
+        }
         return response()->json([
             'data' => Bookmarks::where('user_id', $id)->count()
         ]);
     }
 
-    public function get_user_bookmarks(string $id){
+    public function get_user_bookmarks(string $encryptedId){
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Invalid user ID',
+                'status' => 404
+            ], 404);
+        }
         $bookmarks = Bookmarks::where('user_id', $id)->get();
         $playlists = array();
         $teachers = array();

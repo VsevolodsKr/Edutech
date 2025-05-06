@@ -63,7 +63,7 @@
                     </h3>
                     <div class="flex justify-center gap-[1rem]">
                         <router-link 
-                            :to="'/playlist/' + playlist.id"
+                            :to="'/playlist/' + playlist.encrypted_id"
                             class="flex-1 bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
                             Skatīt kursu
@@ -158,7 +158,7 @@ const loadBookmarks = async () => {
             Accept: 'application/json'
         };
 
-        const response = await axios.get(`/api/bookmarks/user/${userData.id}`, { headers });
+        const response = await axios.get(`/api/bookmarks/user/${userData.encrypted_id}`, { headers });
 
         playlists.value = response.data.playlists.map((playlist, index) => {
             const cleanThumbPath = playlist.thumb
@@ -218,9 +218,11 @@ const deleteBookmark = async (bookmarkId) => {
 
             playlists.value = playlists.value.filter(playlist => playlist.bookmark_id !== bookmarkId);
 
+            await store.dispatch('loadUserStats', user.value.encrypted_id);
+
             await Swal.fire({
                 title: 'Dzēsts!',
-                text: 'Gramātiezīmēts kurss ir dzēsts.',
+                text: 'Kurss ir dzēsts no jūsu grāmatzīmētajiem.',
                 icon: 'success',
                 color: text_dark,
                 background: background,
@@ -230,7 +232,7 @@ const deleteBookmark = async (bookmarkId) => {
         console.error('Error deleting bookmark:', err);
         Swal.fire({
             title: 'Kļūda!',
-            text: 'Neizdevās dzēst grāmatzīmēto kursu. Lūdzu, mēģiniet vēlreiz.',
+            text: 'Neizdevās dzēst kursu no grāmatzīmētajiem. Mēģiniet vēlreiz.',
             icon: 'error',
             color: text_dark,
             background: background,

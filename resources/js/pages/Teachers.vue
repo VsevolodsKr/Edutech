@@ -37,6 +37,10 @@
                 </button>
             </div>
 
+            <div v-else-if="teachers.length === 0" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
+                {{ searchQuery ? 'Nav pasniedzēju, kas atbilst jūsu meklēšanas kritērijiem' : 'Nav pieejami pasniedzēji' }}
+            </div>
+
             <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] mt-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                 <div v-for="teacher in teachers" 
                      :key="teacher.id" 
@@ -46,6 +50,7 @@
                             :src="teacher.image" 
                             :alt="teacher.name"
                             class="h-[5rem] w-[5rem] object-cover rounded-full [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
+                            @error="$event.target.src = '/storage/default-avatar.png'"
                         >
                         <div>
                             <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
@@ -55,6 +60,7 @@
                                 {{ teacher.profession }}
                             </span>
                         </div>
+
                     </div>
 
                     <div class="space-y-2 mb-4">
@@ -95,7 +101,15 @@ const searchQuery = ref('');
 const isSearching = ref(false);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
-const teachers = computed(() => store.getters.getTeachers);
+const teachers = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return store.getters.getTeachers;
+    }
+    return store.getters.getTeachers.filter(teacher => 
+        teacher.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        teacher.profession.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
 const isLoading = computed(() => store.getters.getTeachersLoading);
 const error = computed(() => store.getters.getTeachersError);
 const sectionClasses = computed(() => [
@@ -116,10 +130,8 @@ const handleSearch = async () => {
                 teacher.profession.toLowerCase().includes(searchQuery.value.toLowerCase())
             );
 
-            if (filteredTeachers.length > 0) {
-                store.commit('setTeachers', filteredTeachers);
-            } else {
-                await store.dispatch('searchTeachers', searchQuery.value);
+            if (filteredTeachers.length === 0) {
+                store.commit('setTeachers', []);
             }
         }
     } catch (err) {
@@ -130,39 +142,22 @@ const handleSearch = async () => {
 };
 
 const debouncedSearch = debounce(() => {
-    if (searchQuery.value.trim()) {
-        handleSearch();
-    } else {
-        store.dispatch('loadTeachers');
-    }
+    handleSearch();
 }, 500);
 
 onMounted(async () => {
-    try {
-        const response = await store.dispatch('loadTeachers');
-        console.log('Teachers loaded:', response);
-    } catch (error) {
-        console.error('Error loading teachers:', error);
+    await store.dispatch('loadTeachers');
+});
+
+watch(() => router.currentRoute.value, async (newRoute, oldRoute) => {
+    if (newRoute.name === 'teachers' && oldRoute.name !== 'teachers') {
+        await store.dispatch('loadTeachers');
     }
 });
 
-watch(() => router.currentRoute.value, async () => {
-    try {
-        const response = await store.dispatch('loadTeachers');
-        console.log('Teachers loaded on route change:', response);
-    } catch (error) {
-        console.error('Error loading teachers on route change:', error);
-    }
-});
-
-watch(searchQuery, async (newValue) => {
-    if (!newValue.trim()) {
-        try {
-            const response = await store.dispatch('loadTeachers');
-            console.log('Teachers loaded on search clear:', response);
-        } catch (error) {
-            console.error('Error loading teachers on search clear:', error);
-        }
+watch(searchQuery, async (newValue, oldValue) => {
+    if (oldValue && !newValue.trim()) {
+        await store.dispatch('loadTeachers');
     }
 });
 </script>

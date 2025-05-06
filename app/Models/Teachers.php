@@ -33,11 +33,16 @@ class Teachers extends Authenticatable
             return $this->image;
         }
 
+        // If the path already starts with /storage/, return it as is
+        if (str_starts_with($this->image, '/storage/')) {
+            return $this->image;
+        }
+
         // Clean the path from any storage/public prefixes and normalize it
         $path = str_replace([
-            '/storage/', 
-            'storage/', 
-            '/app/public/', 
+            'storage/app/public/',
+            'storage/',
+            '/app/public/',
             'app/public/',
             'uploads/uploads/',
             'uploads/'
@@ -48,6 +53,21 @@ class Teachers extends Authenticatable
             return '/storage/default-avatar.png';
         }
 
+        // If the path is in uploads directory, keep it
+        if (str_starts_with($path, 'uploads/')) {
+            return '/storage/' . $path;
+        }
+
         return '/storage/' . $path;
+    }
+
+    public function playlists()
+    {
+        return $this->hasMany('App\Models\Playlists', 'teacher_id', 'id');
+    }
+
+    public function contents()
+    {
+        return $this->hasMany('App\Models\Contents', 'teacher_id', 'id');
     }
 }

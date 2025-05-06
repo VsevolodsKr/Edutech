@@ -46,34 +46,32 @@
                             </span>
                         </div>
                     </div>
-
-                    <div class="relative group">
+                    <div class="flex justify-center mb-[2rem]">
                         <img 
                             :src="content.thumb" 
                             :alt="content.title"
-                            class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[12rem]"
+                            class="w-full h-[20rem] object-cover rounded-lg"
                         >
-                        <div class="absolute inset-0 bg-black bg-opacity-30 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <i class="fas fa-play text-[3rem] text-white"></i>
-                        </div>
                     </div>
-
-                    <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
+                    <h2 class="text-[1.5rem] text-text_dark mb-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
                         {{ content.title }}
-                    </h3>
+                    </h2>
+                    <p class="text-[1rem] text-text_light mb-[2rem] [@media(max-width:550px)]:text-[.8rem]">
+                        {{ content.description }}
+                    </p>
                     <div class="flex justify-center gap-[1rem]">
                         <router-link 
-                            :to="'/watch_video/' + content.id"
+                            :to="'/watch_video/' + content.encrypted_id"
                             class="flex-1 bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
                             Skatīt video
                         </router-link>
                         <button 
-                            @click="() => deleteLike(content.id)"
-                            :disabled="isDeleting === content.id"
+                            @click="() => deleteLike(content.like_id)"
+                            :disabled="isDeleting === content.like_id"
                             class="flex-1 bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            {{ isDeleting === content.id ? 'Dzēšana...' : 'Dzēst' }}
+                            {{ isDeleting === content.like_id ? 'Dzēšana...' : 'Dzēst' }}
                         </button>
                     </div>
                 </div>
@@ -177,16 +175,15 @@ const loadLikedContent = async () => {
         };
 
         const [likesResponse, teachersResponse] = await Promise.all([
-            axios.get(`/api/likes/user/${user.value.id}`, { headers }),
+            axios.get(`/api/likes/user/${user.value.encrypted_id}`, { headers }),
             axios.get(`/api/teachers/all`, { headers })
         ]);
 
-        console.log('Likes Response:', likesResponse.data);
-        console.log('Teachers Response:', teachersResponse.data);
+        console.log('Raw Likes Response:', likesResponse.data);
+        console.log('Raw Teachers Response:', teachersResponse.data);
 
         const teachersMap = new Map();
         teachersResponse.data.forEach(teacher => {
-            console.log('Processing teacher:', teacher);
             if (teacher.id) {
                 const cleanTeacherImagePath = teacher.image
                     ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -201,39 +198,53 @@ const loadLikedContent = async () => {
 
         contents.value = likesResponse.data.contents.map(content => {
             console.log('Processing content:', content);
-            const teacher = teachersMap.get(Number(content.teacher_id));
-            console.log('Found teacher for content:', teacher);
             
-            return {
-                ...content,
-                thumb: getThumbnailUrl(content),
-                teacher: teacher ? {
-                    ...teacher,
-                    name: teacher.name || 'Unknown Teacher',
-                    image: teacher.image || '/storage/default-avatar.png'
-                } : {
-                    id: content.teacher_id,
-                    name: 'Unknown Teacher',
-                    image: '/storage/default-avatar.png'
+            // Get the like ID from the likes array
+            const like = likesResponse.data.likes.find(l => l.content_id === content.id);
+            console.log('Found like:', like);
+
+            let thumbPath = content.thumb;
+            console.log('Original thumb path:', thumbPath);
+            
+            // Handle YouTube thumbnails
+            if (content.video_source_type === 'youtube' && content.video) {
+                try {
+                    let videoId = '';
+                    if (content.video.includes('youtu.be/')) {
+                        videoId = content.video.split('youtu.be/')[1].split('?')[0];
+                    } else if (content.video.includes('youtube.com')) {
+                        const urlObj = new URL(content.video);
+                        videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
+                    }
+                    if (videoId) {
+                        thumbPath = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                        console.log('Using YouTube thumbnail:', thumbPath);
+                    }
+                } catch (err) {
+                    console.error('Error processing YouTube URL:', err);
                 }
+            }
+
+            // Only process local thumbnails if we don't have a YouTube thumbnail
+            if (!thumbPath || (!thumbPath.includes('youtube.com') && !thumbPath.includes('youtu.be'))) {
+                const cleanThumbPath = content.thumb
+                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                    ?.replace(/^\//, '');
+                thumbPath = cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png';
+                console.log('Using local thumbnail:', thumbPath);
+            }
+
+            const processedContent = {
+                ...content,
+                thumb: thumbPath,
+                teacher: teachersMap.get(Number(content.teacher_id)) || null,
+                like_id: like?.id
             };
+            console.log('Processed content:', processedContent);
+            return processedContent;
         });
 
-        const likePromises = contents.value.map(content => 
-            axios.post('/api/likes/check', {
-                user_id: user.value.id,
-                teacher_id: content.teacher.id,
-                content_id: content.id
-            }, { headers })
-        );
-
-        const likeResponses = await Promise.all(likePromises);
-            
-        contents.value = contents.value.map((content, index) => ({
-            ...content,
-            like_id: likeResponses[index].data.id
-        }));
-
+        console.log('Final contents array:', contents.value);
     } catch (err) {
         console.error('Error loading liked content:', err);
         error.value = 'Failed to load liked content. Please try again.';
@@ -246,21 +257,16 @@ const deleteLike = async (contentId) => {
         const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
         const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
 
-        const content = contents.value.find(c => c.id === contentId);
-        if (!content?.like_id) {
-            console.error('Like ID not found for content:', contentId);
-            return;
-        }
-
         const result = await Swal.fire({
             title: 'Vai esat pārliecināts?',
+            text: 'Šis video tiks dzēsts no jūsu favorītiem.',
             icon: 'warning',
             color: text_dark,
             background: background,
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: button4,
-            confirmButtonText: 'Jā, dzēst',
+            confirmButtonText: 'Jā, dzēst!',
             cancelButtonText: 'Atcelt'
         });
 
@@ -272,15 +278,15 @@ const deleteLike = async (contentId) => {
                 Accept: 'application/json'
             };
 
-            await axios.delete(`/api/likes/delete/${content.like_id}`, { headers });
+            await axios.delete(`/api/likes/delete/${contentId}`, { headers });
 
-            contents.value = contents.value.filter(c => c.id !== contentId);
+            contents.value = contents.value.filter(content => content.id !== contentId);
 
-            await store.dispatch('loadUserStats', user.value.id);
+            await store.dispatch('loadUserStats', user.value.encrypted_id);
 
             await Swal.fire({
                 title: 'Dzēsts!',
-                text: 'Favorītvideo ir dzēsts.',
+                text: 'Video ir dzēsts no jūsu favorītiem.',
                 icon: 'success',
                 color: text_dark,
                 background: background,
@@ -290,7 +296,7 @@ const deleteLike = async (contentId) => {
         console.error('Error deleting like:', err);
         Swal.fire({
             title: 'Kļūda!',
-            text: 'Neizdevās dzēst favorītvideo. Mēģiniet vēlreiz.',
+            text: 'Neizdevās dzēst video no favorītiem. Mēģiniet vēlreiz.',
             icon: 'error',
             color: text_dark,
             background: background,

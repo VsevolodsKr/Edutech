@@ -48,7 +48,7 @@
                          class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                         <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                             <img 
-                                :src="playlist.teacher?.image || '/storage/default-avatar.png'" 
+                                :src="formatTeacherImage(playlist.teacher?.image)" 
                                 :alt="playlist.teacher?.name"
                                 class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                             >
@@ -145,6 +145,14 @@ const formatDate = (dateString) => {
     const year = date.getFullYear();
 
     return `${day}.${month}.${year}`;
+};
+
+const formatTeacherImage = (image) => {
+    if (!image) return `${window.location.origin}/storage/default-avatar.png`;
+    
+    return image.startsWith('http') ? 
+        image : 
+        `${window.location.origin}/storage/${image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`;
 };
 
 const handleSearch = async () => {

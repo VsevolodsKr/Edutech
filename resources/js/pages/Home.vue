@@ -112,7 +112,7 @@
                             <!-- Teacher Info -->
                             <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                 <img 
-                                    :src="playlist.teacher?.image || '/storage/default-avatar.png'" 
+                                    :src="formatTeacherImage(playlist.teacher?.image)" 
                                     :alt="playlist.teacher?.name"
                                     class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
                                 >
@@ -232,6 +232,14 @@ const formatDate = (dateString) => {
     return `${day}.${month}.${year}`;
 };
 
+const formatTeacherImage = (image) => {
+    if (!image) return `${window.location.origin}/storage/default-avatar.png`;
+    
+    return image.startsWith('http') ? 
+        image : 
+        `${window.location.origin}/storage/${image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`;
+};
+
 const handleLogout = async () => {
     try {
         isLoggingOut.value = true;
@@ -250,7 +258,7 @@ watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
 
-watch(() => user.value?.id, async (newId) => {
+watch(() => user.value?.encrypted_id, async (newId) => {
     if (newId) {
         await store.dispatch('loadUserStats', newId);
     }
@@ -267,8 +275,8 @@ onMounted(async () => {
             if (!user.value?.id) {
                 await store.dispatch('loadUserData');
             }
-            if (user.value?.id) {
-                await store.dispatch('loadUserStats', user.value.id);
+            if (user.value?.encrypted_id) {
+                await store.dispatch('loadUserStats', user.value.encrypted_id);
             }
         }
     } catch (err) {

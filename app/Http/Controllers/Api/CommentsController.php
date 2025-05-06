@@ -218,19 +218,33 @@ class CommentsController extends Controller
                 'status' => 404
             ], 404);
         }
-        $comments = Comments::where('user_id', $id)->get();
-        $contents = array();
-        foreach($comments as $comment){
-            array_push($contents, $comment->content);
-        }
+        $comments = Comments::with('content')->where('user_id', $id)->get();
+        
         return response()->json([
             'comments' => $comments->map(function($comment) {
                 return [
-                    ...$comment->toArray(),
-                    'encrypted_id' => $comment->encrypted_id
+                    'id' => $comment->id,
+                    'encrypted_id' => $comment->encrypted_id,
+                    'content_id' => $comment->content_id,
+                    'user_id' => $comment->user_id,
+                    'teacher_id' => $comment->teacher_id,
+                    'comment' => $comment->comment,
+                    'date' => $comment->date,
+                    'content' => $comment->content ? [
+                        'id' => $comment->content->id,
+                        'encrypted_id' => $comment->content->encrypted_id,
+                        'title' => $comment->content->title,
+                        'description' => $comment->content->description,
+                        'video' => $comment->content->video,
+                        'thumb' => $comment->content->thumb,
+                        'date' => $comment->content->date,
+                        'status' => $comment->content->status,
+                        'video_source_type' => $comment->content->video_source_type,
+                        'teacher_id' => $comment->content->teacher_id,
+                        'playlist_id' => $comment->content->playlist_id
+                    ] : null
                 ];
-            }),
-            'contents' => $contents
+            })
         ]);
     }
 

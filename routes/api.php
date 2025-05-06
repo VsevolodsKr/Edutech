@@ -19,7 +19,7 @@ Route::get('contents/playlist/{id}/amount', [ContentsController::class, 'get_pla
 Route::get('playlists/all', [PlaylistsController::class, 'all']);
 Route::get('playlists/active', [PlaylistsController::class, 'active']);
 Route::get('playlists/{id}/teacher', [PlaylistsController::class, 'playlist_teacher']);
-Route::get('teachers/all', [TeacherController::class, 'get_all']);
+Route::get('teachers/all', [TeacherController::class, 'all']);
 Route::post('playlists/search', [PlaylistsController::class, 'search']);
 Route::post('teachers/search', [TeacherController::class, 'search_teachers']);
 Route::get('playlists/amount/{id}', [PlaylistsController::class, 'get_amount']);

@@ -37,7 +37,7 @@
                             <span class="text-text_dark">{{ comment.content?.title }}</span>
                         </div>
                         <router-link 
-                            :to="'/watch_video/' + comment.content?.id"
+                            :to="'/watch_video/' + comment.content?.encrypted_id"
                             class="text-button hover:text-button1 transition-colors duration-200"
                         >
                             Skatīt saturu
@@ -53,7 +53,7 @@
 
                     <div class="flex justify-start gap-[1rem] mt-[1rem]">
                         <router-link 
-                            :to="'/edit_comment/' + comment.id"
+                            :to="'/edit_comment/' + comment.encrypted_id"
                             class="flex-1 max-w-[10rem] bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
                         >
                             Rediģēt komentāru
@@ -88,10 +88,24 @@ const { width } = useWindowSize();
 const comments = ref([]);
 const isDeleting = ref(null);
 const error = ref(null);
+const isLoading = ref(true);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
-const user = computed(() => store.getters.getUser);
-const isLoading = computed(() => store.getters.getIsLoading);
+const user = computed(() => {
+    const storedUser = store.getters.getUser;
+    if (!storedUser) return null;
+
+    const imageUrl = storedUser.image ? 
+        (storedUser.image.startsWith('http') ? 
+            storedUser.image : 
+            `${window.location.origin}/storage/${storedUser.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`) :
+        `${window.location.origin}/storage/default-avatar.png`;
+
+    return {
+        ...storedUser,
+        image: imageUrl
+    };
+});
 
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -112,10 +126,13 @@ const formatDate = (dateString) => {
 
 const loadComments = async () => {
     try {
+        isLoading.value = true;
         error.value = null;
 
+        // First ensure we have user data
         if (!user.value?.id) {
             await store.dispatch('loadUserData');
+            // Check again after loading
             if (!user.value?.id) {
                 router.push('/');
                 return;
@@ -123,22 +140,35 @@ const loadComments = async () => {
         }
 
         const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
         const headers = { 
             Authorization: `Bearer ${token}`,
             Accept: 'application/json'
         };
 
-        const [commentsResponse, contentsResponse] = await Promise.all([
-            axios.get(`/api/comments/user/${user.value.id}`, { headers }),
-            axios.get(`/api/contents/all`, { headers })
-        ]);
+        // Make sure we have the encrypted_id before making the API call
+        if (!user.value.encrypted_id) {
+            console.error('No encrypted ID available');
+            error.value = 'Failed to load user data. Please try again.';
+            return;
+        }
 
-        const contentsMap = new Map(contentsResponse.data.map(content => [content.id, content]));
+        console.log('Loading comments for user:', user.value.encrypted_id);
+        const response = await axios.get(`/api/comments/user/${user.value.encrypted_id}`, { headers });
+        console.log('Comments response:', response.data);
 
-        comments.value = commentsResponse.data.comments.map(comment => {
-            const content = contentsMap.get(comment.content_id);
-            
-            let cleanThumbPath = content?.thumb;
+        if (!response.data.comments) {
+            console.error('No comments data in response');
+            error.value = 'Failed to load comments. Please try again.';
+            return;
+        }
+
+        comments.value = response.data.comments.map(comment => {
+            let cleanThumbPath = comment.content?.thumb;
             if (cleanThumbPath) {
                 cleanThumbPath = cleanThumbPath
                     .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -148,15 +178,19 @@ const loadComments = async () => {
 
             return {
                 ...comment,
-                content: {
-                    ...content,
+                content: comment.content ? {
+                    ...comment.content,
                     thumb: cleanThumbPath || '/storage/default-thumbnail.png'
-                }
+                } : null
             };
         });
+
+        console.log('Processed comments:', comments.value);
     } catch (err) {
         console.error('Error loading comments:', err);
         error.value = 'Failed to load comments. Please try again.';
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -215,13 +249,10 @@ const deleteComment = async (commentId) => {
     }
 };
 
-watch(() => user.value?.id, (newId) => {
+// Update the watch to handle user data loading
+watch(() => user.value?.id, async (newId) => {
     if (newId) {
-        loadComments();
+        await loadComments();
     }
-});
-
-onMounted(() => {
-    loadComments();
-});
+}, { immediate: true });
 </script>
