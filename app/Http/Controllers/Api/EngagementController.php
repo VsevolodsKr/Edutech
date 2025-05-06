@@ -10,12 +10,23 @@ use App\Models\Contents;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Traits\Encryptable;
 
 class EngagementController extends Controller
 {
+    use Encryptable;
+
     public function get_teacher_engagement(string $id)
     {
         try {
+            $teacherId = $this->decryptId($id);
+            if (!$teacherId) {
+                return response()->json([
+                    'error' => 'Invalid teacher ID',
+                    'message' => 'Could not decrypt teacher ID'
+                ], 400);
+            }
+
             // Get the last 7 days
             $dates = collect(range(6, 0))->map(function ($days) {
                 return Carbon::now()->subDays($days)->format('Y-m-d');
@@ -26,18 +37,20 @@ class EngagementController extends Controller
             });
 
             // Get likes for each day
-            $likes = $dates->map(function ($date) use ($id) {
+            $likes = $dates->map(function ($date) use ($teacherId) {
                 return DB::table('Likes')
-                    ->where('teacher_id', $id)
-                    ->whereDate('created_at', $date)
+                    ->join('Contents', 'Likes.content_id', '=', 'Contents.id')
+                    ->where('Contents.teacher_id', $teacherId)
+                    ->whereDate('Likes.created_at', $date)
                     ->count();
             })->values();
 
             // Get comments for each day
-            $comments = $dates->map(function ($date) use ($id) {
+            $comments = $dates->map(function ($date) use ($teacherId) {
                 return DB::table('Comments')
-                    ->where('teacher_id', $id)
-                    ->whereDate('date', $date)
+                    ->join('Contents', 'Comments.content_id', '=', 'Contents.id')
+                    ->where('Contents.teacher_id', $teacherId)
+                    ->whereDate('Comments.date', $date)
                     ->count();
             })->values();
 
@@ -58,11 +71,19 @@ class EngagementController extends Controller
     public function get_popular_contents(string $id)
     {
         try {
+            $teacherId = $this->decryptId($id);
+            if (!$teacherId) {
+                return response()->json([
+                    'error' => 'Invalid teacher ID',
+                    'message' => 'Could not decrypt teacher ID'
+                ], 400);
+            }
+
             $contents = DB::table('Contents')
                 ->select('Contents.*')
                 ->selectRaw('(SELECT COUNT(*) FROM Likes WHERE Contents.id = Likes.content_id) as likes_count')
                 ->selectRaw('(SELECT COUNT(*) FROM Comments WHERE Contents.id = Comments.content_id) as comments_count')
-                ->where('teacher_id', $id)
+                ->where('teacher_id', $teacherId)
                 ->orderByDesc('likes_count')
                 ->orderByDesc('comments_count')
                 ->limit(5)

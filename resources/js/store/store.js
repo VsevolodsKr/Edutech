@@ -80,6 +80,9 @@ export default createStore({
         setIsLoading: function (state, value){
             state.isLoading = value
         },
+        setLoading: function (state, value){
+            state.isLoading = value
+        },
         setDashboardStats: function (state, stats){
             state.dashboardStats = stats
         },
@@ -196,7 +199,7 @@ export default createStore({
 
         async loadDashboardStats({ commit }, teacherId) {
             try {
-                commit('setLoading', true);
+                commit('setIsLoading', true);
                 const [playlists, contents, likes, comments, popular, engagement] = await Promise.all([
                     axios.get(`/api/playlists/amount/${teacherId}`),
                     axios.get(`/api/contents/amount/${teacherId}`),
@@ -233,7 +236,7 @@ export default createStore({
                     }
                 });
             } finally {
-                commit('setLoading', false);
+                commit('setIsLoading', false);
             }
         },
 

@@ -53,10 +53,14 @@
                             <div class="flex-1">
                                 <h3 class="text-text_dark font-medium">{{ content.title }}</h3>
                                 <div class="flex gap-4 text-sm text-text_light">
-                                    <span>{{ content.likes }} patīk</span>
-                                    <span>{{ content.comments }} komentāri</span>
+                                    <span>{{ content.likes || 0 }} patīk</span>
+                                    <span>{{ content.comments || 0 }} komentāri</span>
+                                    <span class="text-button">{{ content.teacher_name }}</span>
                                 </div>
                             </div>
+                        </div>
+                        <div v-if="popularContents.length === 0" class="text-center text-text_light py-4">
+                            Nav pieejamu video
                         </div>
                     </div>
                 </div>
@@ -103,6 +107,7 @@ const engagementData = computed(() => {
             comments: []
         };
     }
+    console.log('Engagement data:', stats.engagement);
     return stats.engagement;
 });
 
@@ -112,6 +117,8 @@ const updateEngagementChart = (data) => {
     if (chartInstance.value) {
         chartInstance.value.destroy();
     }
+
+    console.log('Updating chart with data:', data);
 
     const ctx = engagementChart.value.getContext('2d');
     chartInstance.value = new Chart(ctx, {
@@ -125,6 +132,7 @@ const updateEngagementChart = (data) => {
                     borderColor: getComputedStyle(document.documentElement).getPropertyValue('--button2'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button2'),
                     tension: 0.4,
+                    fill: false
                 },
                 {
                     label: 'Komentāri',
@@ -132,6 +140,7 @@ const updateEngagementChart = (data) => {
                     borderColor: getComputedStyle(document.documentElement).getPropertyValue('--button3'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button3'),
                     tension: 0.4,
+                    fill: false
                 }
             ]
         },
@@ -156,7 +165,8 @@ const updateEngagementChart = (data) => {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light')
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light'),
+                        stepSize: 1
                     },
                     grid: {
                         color: 'rgba(0, 0, 0, 0.1)'
@@ -186,7 +196,7 @@ onMounted(async () => {
     }
 });
 
-watch(() => engagementData, (newData) => {
+watch(() => engagementData.value, (newData) => {
     if (newData && engagementChart.value) {
         updateEngagementChart(newData);
     }
