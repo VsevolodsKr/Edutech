@@ -22,10 +22,10 @@ class CommentsController extends Controller
             'comment' => 'required'
         );
         $messages = array(
-            'content_id.required' => 'System error, try again later',
-            'user_id.required' => 'You need to login, to write comments',
-            'teacher_id.required' => 'System error, try again later',
-            'comment.required' => 'Please, enter your comment'
+            'content_id.required' => 'Sistēmas kļūda, mēģiniet vēlreiz',
+            'user_id.required' => 'Jums ir jāpiesakās, lai rakstītu komentārus',
+            'teacher_id.required' => 'Kļūda, mēģiniet vēlreiz',
+            'comment.required' => 'Lūdzu, ievadiet savu komentāru'
         );
         $validator = Validator::make($request->input(), $rules, $messages);
        if($validator->fails()){
@@ -41,9 +41,9 @@ class CommentsController extends Controller
             $comment->date = $dt->toDateString();
             $save = $comment->save();
             if(!$save) {
-                return response()->json(['message' => array('Something went wrong, try again later!'), 'status' => 500], 500);
+                return response()->json(['message' => array('Kaut kas nogāja greizi, mēģiniet vēlreiz!'), 'status' => 500], 500);
             } else {
-                return response()->json(['message' => array('Your comment is successfully added!'), 'status' => 200], 200);
+                return response()->json(['message' => array('Jūsu komentārs ir veiksmīgi pievienots!'), 'status' => 200], 200);
             }
     }
 
@@ -51,7 +51,7 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid content ID',
+                'message' => 'Nepareizs saturs ID',
                 'status' => 404
             ], 404);
         }
@@ -63,7 +63,7 @@ class CommentsController extends Controller
             $id = $this->decryptId($encryptedId);
             if (!$id) {
                 return response()->json([
-                    'message' => 'Invalid content ID',
+                    'message' => 'Nepareizs saturs ID',
                     'status' => 404
                 ], 404);
             }
@@ -104,7 +104,7 @@ class CommentsController extends Controller
             \Log::error('Error getting video comments: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
             return response()->json([
-                'message' => 'Error loading comments',
+                'message' => 'Komentāru ielādei ir radusies kļūda',
                 'status' => 500
             ], 500);
         }
@@ -114,33 +114,33 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid comment ID',
+                'message' => 'Nepareizs komentāra ID',
                 'status' => 404
             ], 404);
         }
         $comment = Comments::find($id);
         if (!$comment) {
             return response()->json([
-                'message' => 'Comment not found',
+                'message' => 'Komentārs nav atrasts',
                 'status' => 404
             ], 404);
         }
         $comment->delete();
-        return response()->json(['message' => 'Comment deleted successfully', 'status' => 200], 200);
+        return response()->json(['message' => 'Komentārs veiksmīgi dzēsts', 'status' => 200], 200);
     }
 
     public function find(string $encryptedId) {
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid comment ID',
+                'message' => 'Nepareizs komentāra ID',
                 'status' => 404
             ], 404);
         }
         $comment = Comments::find($id);
         if (!$comment) {
             return response()->json([
-                'message' => 'Comment not found',
+                'message' => 'Komentārs nav atrasts',
                 'status' => 404
             ], 404);
         }
@@ -153,7 +153,7 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid comment ID',
+                'message' => 'Nepareizs komentāra ID',
                 'status' => 404
             ], 404);
         }
@@ -161,7 +161,7 @@ class CommentsController extends Controller
             'comment' => 'required',
         );
         $messages = array(
-            'comment.required' => 'Please, enter your comment'
+            'comment.required' => 'Lūdzu, ievadiet savu komentāru'
         );
         $validator = Validator::make($request->input(), $rules, $messages);
        if($validator->fails()){
@@ -171,16 +171,16 @@ class CommentsController extends Controller
         $comment = Comments::find($id);
         if (!$comment) {
             return response()->json([
-                'message' => 'Comment not found',
+                'message' => 'Komentārs nav atrasts',
                 'status' => 404
             ], 404);
         }
         $comment->update(['comment' => $request->comment]);
         $save = $comment->save();
         if(!$save){
-            return response()->json(['message' => 'Something went wrong! Try again later!', 'status' => 500], 500);
+            return response()->json(['message' => 'Kaut kas nogāja greizi, mēģiniet vēlreiz!', 'status' => 500], 500);
         } else {
-            return response()->json(['message' => 'Comment has been corrected!', 'status' => 200], 200);
+            return response()->json(['message' => 'Komentārs ir veiksmīgi rediģēts!', 'status' => 200], 200);
         }
     }
 
@@ -188,7 +188,7 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid user ID',
+                'message' => 'Nepareizs lietotāja ID',
                 'status' => 404
             ], 404);
         }
@@ -201,7 +201,7 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid teacher ID',
+                'message' => 'Nepareizs pasniedzēja ID',
                 'status' => 404
             ], 404);
         }
@@ -214,7 +214,7 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid user ID',
+                'message' => 'Nepareizs lietotāja ID',
                 'status' => 404
             ], 404);
         }
@@ -252,7 +252,7 @@ class CommentsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid teacher ID',
+                'message' => 'Nepareizs pasniedzēja ID',
                 'status' => 404
             ], 404);
         }

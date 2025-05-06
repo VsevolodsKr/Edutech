@@ -222,13 +222,11 @@ const loadContent = async () => {
                 const likesResponse = await axios.get(`/api/likes/count_content/${route.params.id}`);
                 processedContent.likes = likesResponse.data;
             } catch (error) {
-                console.error('Error loading likes count:', error);
                 processedContent.likes = 0;
             }
 
             try {
                 const commentsResponse = await axios.get(`/api/comments/video/${route.params.id}`);
-                console.log('Comments response:', commentsResponse.data);
                 
                 if (commentsResponse.data.comments) {
                     processedContent.comments = commentsResponse.data.comments.map(comment => ({
@@ -244,7 +242,6 @@ const loadContent = async () => {
                     processedContent.commentsCount = 0;
                 }
             } catch (error) {
-                console.error('Error loading comments:', error);
                 processedContent.comments = [];
                 processedContent.commentsCount = 0;
             }
@@ -252,7 +249,6 @@ const loadContent = async () => {
             content.value = processedContent;
         }
     } catch (error) {
-        console.error('Error loading content:', error);
         if (error.response?.status === 401) {
             router.push('/');
         } else {
@@ -309,7 +305,6 @@ const handleDelete = async (contentId) => {
             router.push('/admin_contents');
         }
     } catch (error) {
-        console.error('Error deleting content:', error);
         Swal.fire({
             title: 'Kļūda!',
             text: 'Neizdevās dzēst video',
@@ -357,7 +352,6 @@ const handleDeleteComment = async (commentId) => {
             await loadContent();
         }
     } catch (error) {
-        console.error('Error deleting comment:', error);
         Swal.fire({
             title: 'Kļūda!',
             text: 'Neizdevās dzēst komentāru',

@@ -26,22 +26,34 @@
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.playlists }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Kursi</p>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fa-solid fa-bars-staggered text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Kursi</p>
+                                </div>
                             </div>
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.contents }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Video</p>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fas fa-graduation-cap text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Video</p>
+                                </div>
                             </div>
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.likes }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Favorītvideo</p>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fas fa-heart text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Favorītvideo</p>
+                                </div>
                             </div>
                             <div class="text-center p-4 bg-background rounded-lg">
                                 <h3 class="text-[1.8rem] text-button">{{ statistics.comments }}</h3>
-                                <p class="text-[1.2rem] text-text_light">Komentāri</p>
-    </div>
-            </div>
-        </div>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fas fa-comment text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Komentāri</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="bg-base rounded-lg p-[2rem]">
                         <h3 class="text-[1.5rem] text-text_dark mb-4">Rediģēt profilu</h3>
@@ -118,7 +130,7 @@
                                     placeholder="Ievadiet jauno paroli..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
-            </div>
+                            </div>
 
                             <div class="mb-4">
                                 <label class="text-[1.2rem] text-text_dark [@media(max-width:550px)]:text-[.9rem]">
@@ -130,7 +142,7 @@
                                     placeholder="Apstipriniet jauno paroli..."
                                     class="mt-2 text-[1rem] text-text_light rounded-lg p-[.5rem] bg-background w-full outline-none focus:outline-none [@media(max-width:550px)]:text-[.7rem]"
                                 >
-        </div>
+                            </div>
 
                             <button 
                                 type="submit"
@@ -140,8 +152,8 @@
                                 {{ isSubmitting ? 'Rediģēšana...' : 'Rediģēt profilu' }}
                             </button>
                         </form>
-            </div>
-        </div>
+                    </div>
+                </div>
             </section>
         </div>
         <Admin_Sidebar />
@@ -208,16 +220,24 @@ const loadAdminData = async () => {
             'Accept': 'application/json'
         };
 
-        const [profileResponse, statsResponse] = await Promise.all([
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            errorList.value = ['Nav pieejama lietotāja informācija'];
+            return;
+        }
+
+        const [profileResponse, playlistsResponse, contentsResponse, likesResponse, commentsResponse] = await Promise.all([
             axios.get('/api/user', { headers }),
-            axios.get('/api/admin/statistics', { headers })
+            axios.get(`/api/playlists/amount/${user.encrypted_id}`, { headers }),
+            axios.get(`/api/contents/amount/${user.encrypted_id}`, { headers }),
+            axios.get(`/api/likes/count_teacher/${user.encrypted_id}`, { headers }),
+            axios.get(`/api/comments/count_teacher/${user.encrypted_id}`, { headers })
         ]);
 
         if (!profileResponse.data.profession) {
             throw new Error('Unauthorized access');
         }
-
-        console.log('API Response Image:', profileResponse.data.image);
 
         let imagePath = profileResponse.data.image;
         if (imagePath && imagePath.includes('/storage/app/public/')) {
@@ -229,13 +249,11 @@ const loadAdminData = async () => {
             image: imagePath
         };
 
-        console.log('Stored Image URL:', adminData.value.image);
-
         statistics.value = {
-            playlists: await fetchPlaylistCount(profileResponse.data.id),
-            contents: await fetchContentCount(profileResponse.data.id),
-            likes: statsResponse.data.likes || 0,
-            comments: statsResponse.data.comments || 0
+            playlists: playlistsResponse.data.data || 0,
+            contents: contentsResponse.data.data || 0,
+            likes: likesResponse.data.data || 0,
+            comments: commentsResponse.data.data || 0
         };
 
         formData.value.name = adminData.value.name;
@@ -250,38 +268,6 @@ const loadAdminData = async () => {
         }
     } finally {
         isLoading.value = false;
-    }
-};
-
-const fetchPlaylistCount = async (userId) => {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/playlists/amount/${userId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-        return response.data.data || 0;
-    } catch (error) {
-        console.error('Error fetching playlist count:', error);
-        return 0;
-    }
-};
-
-const fetchContentCount = async (userId) => {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/contents/amount/${userId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-        return response.data || 0;
-    } catch (error) {
-        console.error('Error fetching content count:', error);
-        return 0;
     }
 };
 
@@ -382,7 +368,6 @@ const handleSubmit = async () => {
             icon: 'success'
         });
     } catch (error) {
-        console.error('Error updating profile:', error);
         if (error.response?.data?.message) {
             errorList.value = Array.isArray(error.response.data.message) 
                 ? error.response.data.message 

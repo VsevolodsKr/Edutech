@@ -18,9 +18,6 @@ class AuthorizationController extends Controller
     private const DEFAULT_IMAGE = '/storage/app/public/default.png';
     private const UPLOAD_PATH = 'uploads';
 
-    /**
-     * Register a new user
-     */
     public function registration_store(Request $request)
     {
         try {
@@ -48,17 +45,14 @@ class AuthorizationController extends Controller
             $user->save();
 
             return $this->successResponse(
-                'You have successfully registered to Edutech',
+                'Jūs veiksmīgi esat reģistrējusies Edutech platformā!',
                 ['data' => $user]
             );
         } catch (\Exception $e) {
-            return $this->errorResponse(['Registration failed. Please try again later.']);
+            return $this->errorResponse(['Reģistrācija neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Handle user login
-     */
     public function login_store(Request $request)
     {
         try {
@@ -71,12 +65,12 @@ class AuthorizationController extends Controller
         $teacher = Teachers::where('email', $request->email)->first();
 
             if (!$user && !$teacher) {
-                return $this->errorResponse(['Email not found. Please register first.']);
+                return $this->errorResponse(['Nepareizs e-pasts vai parole!']);
         }
 
             if (Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $user->createToken('MyApp')->plainTextToken;
-                return $this->successResponse('Login successful', [
+                return $this->successResponse('Autentifikācija veiksmīga!', [
                     'data' => $user,
                     'token' => $token,
                     'is_teacher' => false
@@ -85,22 +79,19 @@ class AuthorizationController extends Controller
 
             if (Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $teacher->createToken('MyApp')->plainTextToken;
-                return $this->successResponse('Login successful', [
+                return $this->successResponse('Autentifikācija veiksmīga!', [
                     'data' => $teacher,
                     'token' => $token,
                     'is_teacher' => true
                 ]);
             }
 
-            return $this->errorResponse(['Invalid credentials']);
+            return $this->errorResponse(['Nepareizs e-pasts vai parole!']);
         } catch (\Exception $e) {
-            return $this->errorResponse(['Login failed. Please try again later.']);
+            return $this->errorResponse(['Autentifikācija neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Update user profile
-     */
     public function update_store(Request $request)
     {
         try {
@@ -118,18 +109,18 @@ class AuthorizationController extends Controller
                 }
 
                 if (!Hash::check($request->p_password, $user->password)) {
-                    return $this->errorResponse(['Previous password is incorrect']);
+                    return $this->errorResponse(['Iepriekšējā parole nav pareiza!']);
                 }
 
                 if ($request->n_password !== $request->c_password) {
-                    return $this->errorResponse(['New passwords do not match']);
+                    return $this->errorResponse(['Jaunas paroles nesakrīt!']);
                 }
 
                 $user->password = Hash::make($request->n_password);
             }
 
             if ($request->email !== $request->old_email && Users::where('email', $request->email)->exists()) {
-                return $this->errorResponse(['Email already exists']);
+                return $this->errorResponse(['E-pasts jau eksistē!']);
             }
 
             $user->fill([
@@ -141,17 +132,14 @@ class AuthorizationController extends Controller
             $user->save();
 
             return $this->successResponse(
-                'Profile updated successfully',
+                'Profils veiksmīgi rediģēts!',
                 ['data' => $user]
             );
         } catch (\Exception $e) {
-            return $this->errorResponse(['Update failed. Please try again later.']);
+            return $this->errorResponse(['Rediģēšana neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Update teacher profile
-     */
     public function admin_update_store(Request $request)
     {
         try {
@@ -169,41 +157,38 @@ class AuthorizationController extends Controller
                 }
 
                 if (!Hash::check($request->p_password, $teacher->password)) {
-                    return $this->errorResponse(['Previous password is incorrect']);
+                    return $this->errorResponse(['Iepriekšējā parole nav pareiza!']);
                 }
 
                 if ($request->n_password !== $request->c_password) {
-                    return $this->errorResponse(['New passwords do not match']);
+                    return $this->errorResponse(['Jaunas paroles nesakrīt!']);
                 }
 
                 $teacher->password = Hash::make($request->n_password);
             }
 
             if ($request->email !== $request->old_email && Teachers::where('email', $request->email)->exists()) {
-                return $this->errorResponse(['Email already exists']);
+                return $this->errorResponse(['E-pasts jau eksistē!']);
             }
 
             $teacher->fill([
                 'name' => $request->name,
                 'email' => $request->email,
-                'profession' => $request->profession . ' teacher',
+                'profession' => $request->profession,
                 'image' => $request->hasFile('image') ? $this->handleImageUpload($request->image) : $teacher->image
             ]);
 
             $teacher->save();
 
             return $this->successResponse(
-                'Profile updated successfully',
+                'Profils veiksmīgi rediģēts!',
                 ['data' => $teacher]
             );
         } catch (\Exception $e) {
-            return $this->errorResponse(['Update failed. Please try again later.']);
+            return $this->errorResponse(['Rediģēšana neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Register a new teacher
-     */
     public function admin_registration_store(Request $request)
     {
         try {
@@ -213,22 +198,22 @@ class AuthorizationController extends Controller
             }
 
             if ($request->password !== $request->conf_password) {
-                return $this->errorResponse(['Passwords do not match']);
+                return $this->errorResponse(['Paroles nesakrīt!']);
             }
 
             if (Teachers::where('email', $request->email)->exists()) {
-                return $this->errorResponse(['Email already exists. Try to login!']);
+                return $this->errorResponse(['E-pasts jau eksistē!']);
             }
 
             if (Users::where('email', $request->email)->exists()) {
-                return $this->errorResponse(['Email already exists in User database']);
+                return $this->errorResponse(['E-pasts jau eksistē lietotāja datubāzē!']);
             }
 
             $teacher = new Teachers();
             $teacher->fill([
                 'name' => $request->name,
                 'email' => $request->email,
-                'profession' => $request->profession . ' teacher',
+                'profession' => $request->profession,
                 'password' => Hash::make($request->password),
                 'image' => $this->handleImageUpload($request->image)
             ]);
@@ -236,27 +221,24 @@ class AuthorizationController extends Controller
             $teacher->save();
 
             return $this->successResponse(
-                'Teacher registered successfully',
+                'Pasniedzējs veiksmīgi reģistrēts!',
                 ['data' => $teacher]
             );
         } catch (\Exception $e) {
-            return $this->errorResponse(['Registration failed. Please try again later.']);
+            return $this->errorResponse(['Reģistrācija neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Get user profile
-     */
     public function getProfile(Request $request)
     {
         try {
             $user = $request->user();
             
             if (!$user) {
-                return $this->errorResponse(['User not found'], 404);
+                return $this->errorResponse(['Lietotājs nav atrasts!'], 404);
             }
 
-            return $this->successResponse('Profile retrieved successfully', [
+            return $this->successResponse('Profils veiksmīgi atgriezts!', [
                 'data' => [
                     'id' => $user->id,
                     'encrypted_id' => $user->encrypted_id,
@@ -266,21 +248,17 @@ class AuthorizationController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            \Log::error('Profile retrieval error: ' . $e->getMessage());
-            return $this->errorResponse(['Failed to retrieve profile: ' . $e->getMessage()], 500);
+            return $this->errorResponse(['Profils atgriešana neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Update user profile
-     */
     public function updateProfile(Request $request)
     {
         try {
             $user = $request->user();
             
             if (!$user) {
-                return $this->errorResponse(['User not found'], 404);
+                return $this->errorResponse(['Lietotājs nav atrasts!'], 404);
             }
 
             $validator = Validator::make($request->all(), [
@@ -296,10 +274,9 @@ class AuthorizationController extends Controller
                 return $this->errorResponse($validator->errors()->all(), 422);
             }
 
-            // Check old password if trying to change password
             if ($request->filled('old_password')) {
                 if (!Hash::check($request->old_password, $user->password)) {
-                    return $this->errorResponse(['Current password is incorrect'], 422);
+                    return $this->errorResponse(['Pašreizējā parole nav pareiza!'], 422);
                 }
                 $user->password = Hash::make($request->new_password);
             }
@@ -307,9 +284,7 @@ class AuthorizationController extends Controller
             $user->name = $request->name;
             $user->email = $request->email;
 
-            // Handle image upload if provided
             if ($request->hasFile('image')) {
-                // Delete old image if it exists and is not the default image
                 if ($user->image && $user->image !== self::DEFAULT_IMAGE) {
                     Storage::delete(str_replace('/storage/', '', $user->image));
                 }
@@ -318,16 +293,12 @@ class AuthorizationController extends Controller
 
             $user->save();
 
-            return $this->successResponse('Profile updated successfully', ['data' => $user]);
+            return $this->successResponse('Profils veiksmīgi rediģēts!', ['data' => $user]);
         } catch (\Exception $e) {
-            \Log::error('Profile update error: ' . $e->getMessage());
-            return $this->errorResponse(['Failed to update profile: ' . $e->getMessage()], 500);
+            return $this->errorResponse(['Rediģēšana neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
-    /**
-     * Handle image upload
-     */
     private function handleImageUpload($image)
     {
         if (!$image) {
@@ -339,17 +310,11 @@ class AuthorizationController extends Controller
         return '/storage/app/public/' . $imagePath;
     }
 
-    /**
-     * Check if password should be changed
-     */
     private function shouldChangePassword(Request $request)
     {
         return $request->filled(['p_password', 'n_password', 'c_password']);
     }
 
-    /**
-     * Validate registration request
-     */
     private function validateRegistration(Request $request)
     {
         return Validator::make($request->all(), [
@@ -358,44 +323,35 @@ class AuthorizationController extends Controller
             'password' => 'required|max:50',
             'conf_password' => 'required|max:50'
         ], [
-            'name.required' => 'Please enter your name',
-            'email.required' => 'Please enter your email',
-            'password.required' => 'Please enter your password',
-            'conf_password.required' => 'Please confirm your password'
+            'name.required' => 'Ievadiet savu vārdu',
+            'email.required' => 'Ievadiet savu e-pastu',
+            'password.required' => 'Ievadiet savu paroli',
+            'conf_password.required' => 'Apstipriniet savu paroli'
         ]);
     }
 
-    /**
-     * Validate login request
-     */
     private function validateLogin(Request $request)
     {
         return Validator::make($request->all(), [
             'email' => 'required|email|max:50',
             'password' => 'required|max:50'
         ], [
-            'email.required' => 'Please enter your email',
-            'password.required' => 'Please enter your password'
+            'email.required' => 'Ievadiet savu e-pastu',
+            'password.required' => 'Ievadiet savu paroli'
         ]);
     }
 
-    /**
-     * Validate update request
-     */
     private function validateUpdate(Request $request)
     {
         return Validator::make($request->all(), [
             'name' => 'required|max:50',
             'email' => 'required|email|max:50'
         ], [
-            'name.required' => 'Please enter your name',
-            'email.required' => 'Please enter your email'
+            'name.required' => 'Ievadiet savu vārdu',
+            'email.required' => 'Ievadiet savu e-pastu'
         ]);
     }
 
-    /**
-     * Validate admin update request
-     */
     private function validateAdminUpdate(Request $request)
     {
         return Validator::make($request->all(), [
@@ -403,15 +359,12 @@ class AuthorizationController extends Controller
             'profession' => 'required',
             'email' => 'required|email|max:50'
         ], [
-            'name.required' => 'Please enter your name',
-            'profession.required' => 'Please select your profession',
-            'email.required' => 'Please enter your email'
+            'name.required' => 'Ievadiet savu vārdu',
+            'profession.required' => 'Izvēlieties savu profesiju',
+            'email.required' => 'Ievadiet savu e-pastu'
         ]);
     }
 
-    /**
-     * Validate admin registration request
-     */
     private function validateAdminRegistration(Request $request)
     {
         return Validator::make($request->all(), [
@@ -421,17 +374,14 @@ class AuthorizationController extends Controller
             'password' => 'required|max:50',
             'conf_password' => 'required|max:50'
         ], [
-            'name.required' => 'Please enter your name',
-            'profession.required' => 'Please select your profession',
-            'email.required' => 'Please enter your email',
-            'password.required' => 'Please enter your password',
-            'conf_password.required' => 'Please confirm your password'
+            'name.required' => 'Ievadiet savu vārdu',
+            'profession.required' => 'Izvēlieties savu profesiju',
+            'email.required' => 'Ievadiet savu e-pastu',
+            'password.required' => 'Ievadiet savu paroli',
+            'conf_password.required' => 'Apstipriniet savu paroli'
         ]);
     }
 
-    /**
-     * Validate password change request
-     */
     private function validatePasswordChange(Request $request)
     {
         return Validator::make($request->all(), [
@@ -439,15 +389,12 @@ class AuthorizationController extends Controller
             'n_password' => 'required|max:50',
             'c_password' => 'required|max:50'
         ], [
-            'p_password.required' => 'Please enter your previous password',
-            'n_password.required' => 'Please enter your new password',
-            'c_password.required' => 'Please confirm your password'
+            'p_password.required' => 'Ievadiet savu iepriekšējo paroli',
+            'n_password.required' => 'Ievadiet savu jauno paroli',
+            'c_password.required' => 'Apstipriniet savu jauno paroli'
         ]);
     }
 
-    /**
-     * Format error response
-     */
     private function errorResponse(array $messages, int $status = 500)
     {
         return response()->json([
@@ -456,9 +403,6 @@ class AuthorizationController extends Controller
         ], $status);
     }
 
-    /**
-     * Format success response
-     */
     private function successResponse(string $message, array $data = [], int $status = 200)
     {
         return response()->json(array_merge([

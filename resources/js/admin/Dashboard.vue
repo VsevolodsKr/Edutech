@@ -86,10 +86,7 @@ const chartInstance = ref(null);
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const teacherData = computed(() => store.getters.getUser);
 const statistics = computed(() => store.getters.getDashboardStats);
-const playlists = computed(() => store.getters.getPlaylists);
-const contents = computed(() => store.getters.getContents);
 const popularContents = computed(() => {
-    console.log('Popular contents:', statistics.value?.popularContents);
     return statistics.value?.popularContents || [];
 });
 const sectionClasses = computed(() => [
@@ -107,7 +104,6 @@ const engagementData = computed(() => {
             comments: []
         };
     }
-    console.log('Engagement data:', stats.engagement);
     return stats.engagement;
 });
 
@@ -117,8 +113,6 @@ const updateEngagementChart = (data) => {
     if (chartInstance.value) {
         chartInstance.value.destroy();
     }
-
-    console.log('Updating chart with data:', data);
 
     const ctx = engagementChart.value.getContext('2d');
     chartInstance.value = new Chart(ctx, {

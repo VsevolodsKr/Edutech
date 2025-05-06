@@ -213,7 +213,6 @@ const loadPlaylist = async () => {
             };
         }
     } catch (error) {
-        console.error('Error loading playlist:', error);
         messages.value = ['Neizdevās ielādēt kursu'];
         errorStatus.value = 500;
     }
@@ -278,8 +277,6 @@ const handleSubmit = async () => {
             }
         }
     } catch (error) {
-        console.error('Error updating playlist:', error);
-        console.error('Error response:', error.response?.data);
         messages.value = Array.isArray(error.response?.data?.message)
             ? error.response.data.message
             : [error.response?.data?.message || 'An error occurred while updating the playlist'];

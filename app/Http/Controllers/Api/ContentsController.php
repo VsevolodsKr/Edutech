@@ -23,9 +23,6 @@ class ContentsController extends Controller
     private const CONTENT_THUMBS_PATH = 'content_thumbs';
     private const CONTENT_VIDEOS_PATH = 'content_videos';
 
-    /**
-     * Get teacher's contents
-     */
     public function get_teacher_contents(string $id)
     {
         return Contents::where('teacher_id', $id)
@@ -33,16 +30,13 @@ class ContentsController extends Controller
             ->get();
     }
 
-    /**
-     * Get playlist contents
-     */
     public function get_playlist_contents($encryptedId)
     {
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
                 return response()->json([
-                    'message' => 'Invalid playlist ID',
+                    'message' => 'Nepareizs kursa ID',
                     'status' => 404
                 ], 404);
             }
@@ -68,23 +62,19 @@ class ContentsController extends Controller
 
             return response()->json($contents);
         } catch (\Exception $e) {
-            \Log::error('Error getting playlist contents: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to get playlist contents',
+                'message' => 'Neizdevās iegūt kursa saturus',
                 'status' => 500
             ], 500);
         }
     }
 
-    /**
-     * Get single content
-     */
     public function get_single($encryptedId)
     {
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid content ID',
+                'message' => 'Nepareizs video ID',
                 'status' => 404
             ], 404);
         }
@@ -93,13 +83,11 @@ class ContentsController extends Controller
         
         if (!$content) {
             return response()->json([
-                'message' => 'Content not found',
+                'message' => 'Video nav atrasts',
                 'status' => 404
             ], 404);
         }
 
-        // The encrypted_id is automatically added by the accessor in the model
-        // Add the encrypted_playlist_id from the playlist relationship
         $content->encrypted_playlist_id = $content->playlist->encrypted_id;
 
         return response()->json([
@@ -109,9 +97,6 @@ class ContentsController extends Controller
         ]);
     }
 
-    /**
-     * Get teacher's content amount
-     */
     public function get_amount($encryptedId)
     {
         try {
@@ -131,9 +116,6 @@ class ContentsController extends Controller
         }
     }
 
-    /**
-     * Get playlist's content amount
-     */
     public function get_playlist_contents_amount($encryptedId)
     {
         $id = $this->decryptId($encryptedId);
@@ -147,9 +129,6 @@ class ContentsController extends Controller
         return Contents::where('playlist_id', $id)->count();
     }
 
-    /**
-     * Add new content
-     */
     public function add_content(Request $request)
     {
         try {
@@ -159,7 +138,7 @@ class ContentsController extends Controller
             }
 
             if (empty($request->status)) {
-                return $this->errorResponse(['Please select content status']);
+                return $this->errorResponse(['Izvēlējiet video statusu']);
             }
 
             $content = new Contents();
@@ -173,12 +152,10 @@ class ContentsController extends Controller
                 'video_source_type' => $request->video_source_type
             ];
 
-            // Handle thumbnail upload
             if ($request->hasFile('thumb')) {
                 $contentData['thumb'] = $this->handleFileUpload($request->thumb, self::CONTENT_THUMBS_PATH);
             }
 
-            // Handle video source based on type
             if ($request->video_source_type === 'file') {
                 if (!$request->hasFile('video')) {
                     return $this->errorResponse(['Please upload a video file']);
@@ -190,7 +167,6 @@ class ContentsController extends Controller
                 }
                 $contentData['video'] = $request->youtube_link;
                 
-                // Handle YouTube thumbnail
                 if ($request->has('youtube_thumb')) {
                     $contentData['thumb'] = $request->youtube_thumb;
                 }
@@ -207,31 +183,16 @@ class ContentsController extends Controller
         }
     }
 
-    /**
-     * Update content
-     */
     public function store(Request $request, string $id)
     {
         try {
-            \Log::info('Content update request received', [
-                'content_id' => $id,
-                'playlist_id' => $request->playlist_id,
-                'all_data' => $request->all()
-            ]);
-
             $validator = $this->validateContent($request);
             if ($validator->fails()) {
-                \Log::error('Content update validation failed', [
-                    'errors' => $validator->messages()->all()
-                ]);
                 return $this->errorResponse($validator->messages()->all());
             }
 
             $content = Contents::findOrFail($id);
-            \Log::info('Current content state', [
-                'content_id' => $id,
-                'old_playlist_id' => $content->playlist_id
-            ]);
+            
             
             $updateData = [
                 'status' => $request->status,
@@ -240,59 +201,31 @@ class ContentsController extends Controller
                 'playlist_id' => $request->playlist_id
             ];
 
-            \Log::info('Updating content with data', [
-                'content_id' => $id,
-                'update_data' => $updateData
-            ]);
-
             $content->update($updateData);
 
-            \Log::info('Content updated successfully', [
-                'content_id' => $id,
-                'new_playlist_id' => $content->fresh()->playlist_id
-            ]);
-
-            return $this->successResponse('Content updated successfully');
+            return $this->successResponse('Video veiksmīgi rediģēts');
         } catch (\Exception $e) {
-            \Log::error('Failed to update content', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return $this->errorResponse(['Failed to update content: ' . $e->getMessage()]);
+            return $this->errorResponse(['Neizdevās rediģēt video: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Delete content
-     */
     public function delete($id)
     {
         try {
             $content = Contents::findOrFail($id);
             
-            // Delete associated comments
             Comments::where('content_id', $id)->delete();
             
-            // Delete associated likes
             Likes::where('content_id', $id)->delete();
             
-            // Delete the content
             $content->delete();
             
-            return $this->successResponse('Content deleted successfully');
+            return $this->successResponse('Video veiksmīgi dzēsts');
         } catch (\Exception $e) {
-            \Log::error('Failed to delete content', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return $this->errorResponse(['Failed to delete content: ' . $e->getMessage()]);
+            return $this->errorResponse(['Neizdevās dzēst video: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Handle file upload
-     */
     private function handleFileUpload($file, string $path)
     {
         if (!$file) {
@@ -304,9 +237,6 @@ class ContentsController extends Controller
         return '/storage/app/public/' . $filePath;
     }
 
-    /**
-     * Validate content request
-     */
     private function validateContent(Request $request)
     {
         return Validator::make($request->all(), [
@@ -315,16 +245,13 @@ class ContentsController extends Controller
             'description' => 'required',
             'status' => 'required'
         ], [
-            'playlist_id.required' => 'Please select playlist',
-            'title.required' => 'Please enter content title',
-            'description.required' => 'Please enter content description',
-            'status.required' => 'Please select content status'
+            'playlist_id.required' => 'Izvēlēties kursu',
+            'title.required' => 'Ievadiet video nosaukumu',
+            'description.required' => 'Ievadiet video aprakstu',
+            'status.required' => 'Izvēlēties video statusu'
         ]);
     }
 
-    /**
-     * Format error response
-     */
     private function errorResponse(array $messages, int $status = 500)
     {
         return response()->json([
@@ -333,9 +260,6 @@ class ContentsController extends Controller
         ], $status);
     }
 
-    /**
-     * Format success response
-     */
     private function successResponse(string $message, array $data = [], int $status = 200)
     {
         return response()->json(array_merge([

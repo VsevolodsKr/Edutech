@@ -194,8 +194,6 @@ const loadPlaylist = async () => {
             encrypted_id: response.data.playlist.encrypted_id
         };
 
-        console.log('Playlist loaded:', playlist.value);
-
         try {
             const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.encrypted_id}/amount`, {
                 headers: {
@@ -203,13 +201,10 @@ const loadPlaylist = async () => {
                 }
             });
             contentCount.value = countResponse.data;
-            console.log('Content count:', contentCount.value);
         } catch (countError) {
-            console.error('Error loading content count:', countError);
             contentCount.value = 0;
         }
     } catch (error) {
-        console.error('Error loading playlist:', error);
         Swal.fire({
             title: 'Kļūda!',
             text: 'Neizdevās ielādēt kursu',
@@ -227,11 +222,9 @@ const loadContents = async () => {
     try {
         const user = store.state.user;
         if (!user || !user.encrypted_id) {
-            console.error('No user data available');
             return;
         }
 
-        console.log('Loading contents for playlist:', playlist.value.encrypted_id);
         const response = await axios.get(`/api/playlists/${playlist.value.encrypted_id}/contents`, {
             headers: {
                 'X-Encrypted-ID': user.encrypted_id
@@ -242,13 +235,11 @@ const loadContents = async () => {
             throw new Error('No data received from server');
         }
 
-        console.log('Contents loaded:', response.data);
         contents.value = response.data.map(content => ({
             ...content,
             thumb: content.thumb
         }));
     } catch (error) {
-        console.error('Error loading contents:', error);
         if (error.response?.status !== 200 || error.response?.data?.length === 0) {
             Swal.fire({
                 title: 'Kļūda!',
@@ -278,7 +269,6 @@ const handleDeletePlaylist = async (playlistId) => {
     try {
         const user = store.state.user;
         if (!user || !user.encrypted_id) {
-            console.error('No user data available');
             return;
         }
 
@@ -328,7 +318,6 @@ const handleDeleteContent = async (contentId) => {
     try {
         const user = store.state.user;
         if (!user || !user.encrypted_id) {
-            console.error('No user data available');
             return;
         }
 
@@ -380,7 +369,6 @@ const savePlaylist = async () => {
     try {
         const user = store.state.user;
         if (!user || !user.encrypted_id) {
-            console.error('No user data available');
             return;
         }
 

@@ -20,7 +20,7 @@ class TeacherController extends Controller
             if (!$id) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Invalid teacher ID',
+                    'message' => 'Nepareizs pasniedzēja ID',
                     'data' => null
                 ], 404);
             }
@@ -29,15 +29,13 @@ class TeacherController extends Controller
             if (!$teacher) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Teacher not found',
+                    'message' => 'Pasniedzējs nav atrasts',
                     'data' => null
                 ], 404);
             }
 
-            // Get the formatted image
             $formattedImage = $teacher->formatted_image;
             
-            // Prepare the response data
             $teacherData = [
                 'id' => $teacher->id,
                 'encrypted_id' => $teacher->encrypted_id,
@@ -50,13 +48,13 @@ class TeacherController extends Controller
             
             return response()->json([
                 'status' => 200,
-                'message' => 'Teacher found successfully',
+                'message' => 'Pasniedzējs ir atrasts',
                 'data' => $teacherData
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to get teacher',
+                'message' => 'Neizdevās iegūt pasniedzēja datus',
                 'data' => null
             ], 500);
         }
@@ -69,7 +67,7 @@ class TeacherController extends Controller
             if (!$id) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Invalid teacher ID',
+                    'message' => 'Nepareizs pasniedzēja ID',
                     'data' => null
                 ], 404);
             }
@@ -78,7 +76,7 @@ class TeacherController extends Controller
             if (!$teacher) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Teacher not found',
+                    'message' => 'Pasniedzējs nav atrasts',
                     'data' => null
                 ], 404);
             }
@@ -101,13 +99,13 @@ class TeacherController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Playlists retrieved successfully',
+                'message' => 'Kursi ir iegūti',
                 'data' => $playlists
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to get teacher playlists',
+                'message' => 'Neizdevās iegūt pasniedzēja kursus',
                 'data' => null
             ], 500);
         }
@@ -116,11 +114,9 @@ class TeacherController extends Controller
     public function all()
     {
         $teachers = Teachers::all()->map(function ($teacher) {
-            // Get playlist and content counts
             $playlistCount = $teacher->playlists()->count();
             $contentCount = $teacher->contents()->count();
 
-            // Get the formatted image
             $formattedImage = $teacher->formatted_image;
 
             return [
@@ -153,7 +149,7 @@ class TeacherController extends Controller
             if (!$id) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Invalid teacher ID',
+                    'message' => 'Nepareizs pasniedzēja ID',
                     'data' => null
                 ], 404);
             }
@@ -162,15 +158,13 @@ class TeacherController extends Controller
             if (!$teacher) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Teacher not found',
+                    'message' => 'Pasniedzējs nav atrasts',
                     'data' => null
                 ], 404);
             }
             
-            // Get the formatted image
             $formattedImage = $teacher->formatted_image;
             
-            // Prepare the response data
             $teacherData = [
                 'id' => $teacher->id,
                 'encrypted_id' => $teacher->encrypted_id,
@@ -183,14 +177,13 @@ class TeacherController extends Controller
             
             return response()->json([
                 'status' => 200,
-                'message' => 'Teacher found successfully',
+                'message' => 'Pasniedzējs ir atrasts',
                 'data' => $teacherData
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error finding teacher: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to find teacher',
+                'message' => 'Neizdevās iegūt pasniedzēja datus',
                 'data' => null
             ], 500);
         }

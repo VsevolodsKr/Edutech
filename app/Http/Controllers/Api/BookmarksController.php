@@ -16,7 +16,7 @@ class BookmarksController extends Controller
             $playlistId = $this->decryptId($request->playlist_id);
             if (!$playlistId) {
                 return response()->json([
-                    'message' => 'Invalid playlist ID',
+                    'message' => 'Nepareizs kursa ID',
                     'status' => 404
                 ], 404);
             }
@@ -33,7 +33,7 @@ class BookmarksController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to check bookmark status',
+                'message' => 'Neizdevās pārbaudīt atzīmēšanas statu',
                 'error' => $e->getMessage(),
                 'status' => 500
             ], 500);
@@ -45,7 +45,7 @@ class BookmarksController extends Controller
             $playlistId = $this->decryptId($request->playlist_id);
             if (!$playlistId) {
                 return response()->json([
-                    'message' => 'Invalid playlist ID',
+                    'message' => 'Nepareizs kursa ID',
                     'status' => 404
                 ], 404);
             }
@@ -56,12 +56,12 @@ class BookmarksController extends Controller
             $bookmark->save();
 
             return response()->json([
-                'message' => 'Bookmark added successfully',
+                'message' => 'Grāmatzīme veiksmīgi pievienota',
                 'status' => 200
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to add bookmark',
+                'message' => 'Neizdevās pievienot grāmatzīmi',
                 'error' => $e->getMessage(),
                 'status' => 500
             ], 500);
@@ -73,19 +73,19 @@ class BookmarksController extends Controller
             $bookmark = Bookmarks::find($id);
             if (!$bookmark) {
                 return response()->json([
-                    'message' => 'Bookmark not found',
+                    'message' => 'Grāmatzīme nav atrasta',
                     'status' => 404
                 ], 404);
             }
 
             $bookmark->delete();
             return response()->json([
-                'message' => 'Bookmark deleted successfully',
+                'message' => 'Grāmatzīme veiksmīgi dzēsta',
                 'status' => 200
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete bookmark',
+                'message' => 'Neizdevās dzēst grāmatzīmi',
                 'error' => $e->getMessage(),
                 'status' => 500
             ], 500);
@@ -96,7 +96,7 @@ class BookmarksController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid user ID',
+                'message' => 'Nepareizs lietotāja ID',
                 'status' => 404
             ], 404);
         }
@@ -109,7 +109,7 @@ class BookmarksController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid user ID',
+                'message' => 'Nepareizs lietotāja ID',
                 'status' => 404
             ], 404);
         }

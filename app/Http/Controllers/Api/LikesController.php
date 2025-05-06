@@ -35,7 +35,7 @@ class LikesController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to check like status',
+                'message' => 'Neizdevās pārbaudīt favorītvideo statu',
                 'error' => $e->getMessage(),
                 'status' => 500
             ], 500);
@@ -47,7 +47,7 @@ class LikesController extends Controller
             $contentId = $this->decryptId($request->content_id);
             if (!$contentId) {
                 return response()->json([
-                    'message' => 'Invalid content ID',
+                    'message' => 'Nepareizs video ID',
                     'status' => 404
                 ], 404);
             }
@@ -59,12 +59,12 @@ class LikesController extends Controller
             $like->save();
 
             return response()->json([
-                'message' => 'Like added successfully',
+                'message' => 'Favorītvideo ir pievienots',
                 'status' => 200
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to add like',
+                'message' => 'Neizdevās pievienot favorītvideo',
                 'error' => $e->getMessage(),
                 'status' => 500
             ], 500);
@@ -75,26 +75,26 @@ class LikesController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid like ID',
+                'message' => 'Nepareizs favorītvideo ID',
                 'status' => 404
             ], 404);
         }
         $check = Likes::find($id);
         if (!$check) {
             return response()->json([
-                'message' => 'Like not found',
+                'message' => 'Favorītvideo nav atrasts',
                 'status' => 404
             ], 404);
         }
         $check->delete();
-        return response()->json(['message' => 'Like deleted successfully', 'status' => 200], 200);
+        return response()->json(['message' => 'Favorītvideo ir dzēsts', 'status' => 200], 200);
     }
 
     public function count_content_likes(string $encryptedId){
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid content ID',
+                'message' => 'Nepareizs video ID',
                 'status' => 404
             ], 404);
         }
@@ -105,7 +105,7 @@ class LikesController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid user ID',
+                'message' => 'Nepareizs lietotāja ID',
                 'status' => 404
             ], 404);
         }
@@ -118,7 +118,7 @@ class LikesController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid teacher ID',
+                'message' => 'Nepareizs pasniedzēja ID',
                 'status' => 404
             ], 404);
         }
@@ -131,7 +131,7 @@ class LikesController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid user ID',
+                'message' => 'Nepareizs lietotāja ID',
                 'status' => 404
             ], 404);
         }

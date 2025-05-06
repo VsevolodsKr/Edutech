@@ -309,7 +309,6 @@ const loadPlaylists = async () => {
         }
 
     } catch (error) {
-        console.error('Error loading playlists:', error);
         messages.value = ['Failed to load playlists'];
         errorStatus.value = 500;
         if (error.response?.status === 401) {
@@ -369,7 +368,6 @@ const handleVideoChange = (event) => {
 };
 
 const handleVideoError = (event) => {
-    console.error('Video loading error:', event);
     messages.value = ['Neizdevās ielādēt video. Lūdzu, pārbaudiet faila ceļu.'];
     errorStatus.value = 500;
 };
@@ -474,7 +472,6 @@ const handleSubmit = async () => {
             errorStatus.value = response.data.status;
         }
     } catch (error) {
-        console.error('Error adding content:', error);
         messages.value = error.response?.data?.message || ['Kļūda, ievadot video'];
         errorStatus.value = error.response?.data?.status || 500;
     } finally {

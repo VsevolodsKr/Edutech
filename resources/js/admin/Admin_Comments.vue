@@ -131,17 +131,13 @@ const loadComments = async () => {
 
         const user = store.state.user;
         if (!user || !user.encrypted_id) {
-            console.error('No user data available');
             error.value = 'Nav pieejama lietotāja informācija';
             return;
         }
 
-        console.log('Loading comments for teacher:', user.encrypted_id);
         const response = await axios.get(`/api/comments/teacher/${user.encrypted_id}`, { headers });
-        console.log('Comments response:', response.data);
 
         if (!response.data.comments) {
-            console.error('No comments data in response');
             error.value = 'Neizdevās ielādēt komentārus';
             return;
         }
@@ -163,10 +159,7 @@ const loadComments = async () => {
                 } : null
             };
         });
-
-        console.log('Processed comments:', comments.value);
     } catch (err) {
-        console.error('Error loading comments:', err);
         error.value = 'Neizdevās ielādēt komentārus';
     } finally {
         isLoading.value = false;
@@ -218,7 +211,6 @@ const deleteComment = async (commentId) => {
             await loadComments();
         }
     } catch (error) {
-        console.error('Error deleting comment:', error);
         Swal.fire({
             title: 'Kļūda!',
             text: 'Neizdevās dzēst komentāru',

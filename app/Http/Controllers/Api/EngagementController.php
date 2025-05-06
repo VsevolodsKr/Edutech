@@ -22,12 +22,11 @@ class EngagementController extends Controller
             $teacherId = $this->decryptId($id);
             if (!$teacherId) {
                 return response()->json([
-                    'error' => 'Invalid teacher ID',
-                    'message' => 'Could not decrypt teacher ID'
+                    'error' => 'Nepareizs pasniedzēja ID',
+                    'message' => 'Nepareizs pasniedzēja ID'
                 ], 400);
             }
 
-            // Get the last 7 days
             $dates = collect(range(6, 0))->map(function ($days) {
                 return Carbon::now()->subDays($days)->format('Y-m-d');
             });
@@ -36,7 +35,6 @@ class EngagementController extends Controller
                 return Carbon::parse($date)->format('M d');
             });
 
-            // Get likes for each day
             $likes = $dates->map(function ($date) use ($teacherId) {
                 return DB::table('Likes')
                     ->join('Contents', 'Likes.content_id', '=', 'Contents.id')
@@ -45,7 +43,6 @@ class EngagementController extends Controller
                     ->count();
             })->values();
 
-            // Get comments for each day
             $comments = $dates->map(function ($date) use ($teacherId) {
                 return DB::table('Comments')
                     ->join('Contents', 'Comments.content_id', '=', 'Contents.id')
@@ -62,7 +59,7 @@ class EngagementController extends Controller
         } catch (\Exception $e) {
             Log::error('Error in get_teacher_engagement: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Failed to fetch engagement data',
+                'error' => 'Neizdevās iegūt ieguldījumu datus',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -74,8 +71,8 @@ class EngagementController extends Controller
             $teacherId = $this->decryptId($id);
             if (!$teacherId) {
                 return response()->json([
-                    'error' => 'Invalid teacher ID',
-                    'message' => 'Could not decrypt teacher ID'
+                    'error' => 'Nepareizs pasniedzēja ID',
+                    'message' => 'Nepareizs pasniedzēja ID'
                 ], 400);
             }
 
@@ -101,7 +98,7 @@ class EngagementController extends Controller
         } catch (\Exception $e) {
             Log::error('Error in get_popular_contents: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Failed to fetch popular contents',
+                'error' => 'Neizdevās iegūt populārākos saturus',
                 'message' => $e->getMessage()
             ], 500);
         }

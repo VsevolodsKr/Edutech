@@ -19,9 +19,6 @@ class PlaylistsController extends Controller
 
     private const PLAYLIST_THUMBS_PATH = 'playlist_thumbs';
 
-    /**
-     * Get all playlists
-     */
     public function all()
     {
         try {
@@ -48,9 +45,8 @@ class PlaylistsController extends Controller
 
             return response()->json($playlists);
         } catch (\Exception $e) {
-            \Log::error('Error getting all playlists: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to get playlists',
+                'message' => 'Neizdevās iegūt kursus',
                 'status' => 500
             ], 500);
         }
@@ -79,9 +75,6 @@ class PlaylistsController extends Controller
             });
     }
 
-    /**
-     * Get latest 7 playlists
-     */
     public function latest()
     {
         try {
@@ -110,22 +103,19 @@ class PlaylistsController extends Controller
             return response()->json($playlists);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to fetch latest playlists',
+                'message' => 'Neizdevās iegūt jaunākos kursus',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Find playlist by ID
-     */
     public function find($encryptedId)
     {
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
                 return response()->json([
-                    'message' => 'Invalid playlist ID',
+                    'message' => 'Nepareizs kursa ID',
                     'status' => 404
                 ], 404);
             }
@@ -133,7 +123,7 @@ class PlaylistsController extends Controller
             $playlist = Playlists::with('teacher')->find($id);
             if (!$playlist) {
                 return response()->json([
-                    'message' => 'Playlist not found',
+                    'message' => 'Kursa dati nav atrasts',
                     'status' => 404
                 ], 404);
             }
@@ -156,17 +146,13 @@ class PlaylistsController extends Controller
                 ] : null
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error finding playlist: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to find playlist',
+                'message' => 'Neizdevās iegūt kursa datus',
                 'status' => 500
             ], 500);
         }
     }
 
-    /**
-     * Search playlists
-     */
     public function search(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -182,9 +168,6 @@ class PlaylistsController extends Controller
             ->get();
     }
 
-    /**
-     * Add new playlist
-     */
     public function add(Request $request)
     {
         try {
@@ -206,31 +189,17 @@ class PlaylistsController extends Controller
 
             $playlist->save();
 
-            return $this->successResponse('Playlist created successfully');
+            return $this->successResponse('Kurss ir veiksmīgi izveidots!');
         } catch (\Exception $e) {
-            \Log::error('Failed to create playlist', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return $this->errorResponse(['Failed to create playlist: ' . $e->getMessage()]);
+            return $this->errorResponse(['Neizdevās izveidot kursu: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Update playlist
-     */
     public function update(Request $request, $id)
     {
         try {
-            \Log::info('Updating playlist', [
-                'id' => $id,
-                'request_data' => $request->except(['thumb']),
-                'has_thumb' => $request->hasFile('thumb')
-            ]);
-
             $validator = $this->validatePlaylist($request);
             if ($validator->fails()) {
-                \Log::error('Validation failed', ['errors' => $validator->messages()->all()]);
                 return $this->errorResponse($validator->messages()->all());
             }
 
@@ -243,65 +212,41 @@ class PlaylistsController extends Controller
                 'status' => $request->status
             ];
 
-            // Handle thumbnail update only if a new file is provided
             if ($request->hasFile('thumb')) {
                 try {
                     $updateData['thumb'] = $this->handleFileUpload($request->file('thumb'));
                     
-                    // Delete old thumbnail if exists
                     if ($playlist->thumb && Storage::disk('public')->exists($playlist->thumb)) {
                         Storage::disk('public')->delete($playlist->thumb);
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Thumbnail upload failed', ['error' => $e->getMessage()]);
-                    return $this->errorResponse(['Failed to upload thumbnail: ' . $e->getMessage()]);
+                    return $this->errorResponse(['Neizdevās augšupielādēt kursa attēlu: ' . $e->getMessage()]);
                 }
             }
-            // If no new thumb is provided, keep the existing one
-
-            \Log::info('Updating playlist with data', ['update_data' => $updateData]);
             
             $playlist->update($updateData);
 
-            return $this->successResponse('Playlist updated successfully');
+            return $this->successResponse('Kurss ir veiksmīgi rediģēts!');
         } catch (\Exception $e) {
-            \Log::error('Playlist update error', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return $this->errorResponse(['Failed to update playlist: ' . $e->getMessage()]);
+            return $this->errorResponse(['Neizdevās rediģēt kursu: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Delete playlist
-     */
     public function delete($id)
     {
         try {
             $playlist = Playlists::findOrFail($id);
             
-            // Delete associated contents
             Contents::where('playlist_id', $id)->delete();
             
-            // Delete the playlist
             $playlist->delete();
             
-            return $this->successResponse('Playlist deleted successfully');
+            return $this->successResponse('Kurss ir veiksmīgi dzēsts!');
         } catch (\Exception $e) {
-            \Log::error('Failed to delete playlist', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return $this->errorResponse(['Failed to delete playlist: ' . $e->getMessage()]);
+            return $this->errorResponse(['Neizdevās dzēst kursu: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Get teacher's playlists
-     */
     public function teacher_playlists($id)
     {
         try {
@@ -323,13 +268,13 @@ class PlaylistsController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Playlists retrieved successfully',
+                'message' => 'Kursi ir veiksmīgi iegūti',
                 'data' => $playlists
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to retrieve playlists',
+                'message' => 'Neizdevās iegūt kursus',
                 'data' => []
             ], 500);
         }
@@ -340,25 +285,22 @@ class PlaylistsController extends Controller
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
-                \Log::error('Invalid teacher ID decryption for encrypted ID: ' . $encryptedId);
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Invalid teacher ID',
+                    'message' => 'Nepareizs pasniedzēja ID',
                     'data' => []
                 ], 404);
             }
 
             $teacher = Teachers::find($id);
             if (!$teacher) {
-                \Log::error('Teacher not found for ID: ' . $id);
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Teacher not found',
+                    'message' => 'Pasniedzējs nav atrasts',
                     'data' => []
                 ], 404);
             }
 
-            \Log::info('Fetching playlists for teacher ID: ' . $id);
             $playlists = Playlists::where('teacher_id', $id)
                 ->where('status', 'active')
                 ->orderBy('date', 'desc')
@@ -376,35 +318,26 @@ class PlaylistsController extends Controller
                     ];
                 });
 
-            \Log::info('Successfully retrieved ' . count($playlists) . ' playlists for teacher ID: ' . $id);
             return response()->json([
                 'status' => 200,
-                'message' => 'Playlists retrieved successfully',
+                'message' => 'Kursi ir veiksmīgi iegūti',
                 'data' => $playlists
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error getting teacher playlists: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to get teacher playlists',
+                'message' => 'Neizdevās iegūt pasniedzēja kursus',
                 'data' => []
             ], 500);
         }
     }
 
-    /**
-     * Get playlist's teacher
-     */
     public function playlist_teacher($id)
     {
         $playlist = Playlists::findOrFail($id);
         return Teachers::findOrFail($playlist->teacher_id);
     }
 
-    /**
-     * Get teacher's playlist amount
-     */
     public function get_amount($encryptedId)
     {
         try {
@@ -424,13 +357,10 @@ class PlaylistsController extends Controller
         }
     }
 
-    /**
-     * Handle file upload
-     */
     private function handleFileUpload($file)
     {
         if (!$file) {
-            throw new \Exception('File not provided');
+            throw new \Exception('Nav norādīts fails');
         }
 
         try {
@@ -438,23 +368,15 @@ class PlaylistsController extends Controller
             $filePath = $file->storeAs(self::PLAYLIST_THUMBS_PATH, $fileName, 'public');
             
             if (!$filePath) {
-                throw new \Exception('Failed to store file');
+                throw new \Exception('Neizdevās saglabāt failu');
             }
             
             return $filePath;
         } catch (\Exception $e) {
-            \Log::error('File upload error', [
-                'error' => $e->getMessage(),
-                'file_name' => $file->getClientOriginalName(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw new \Exception('Failed to upload file: ' . $e->getMessage());
+            throw new \Exception('Neizdevās augšupielādēt failu: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Validate playlist request
-     */
     private function validatePlaylist(Request $request)
     {
         $rules = [
@@ -464,36 +386,30 @@ class PlaylistsController extends Controller
             'status' => 'required|in:active,deactive'
         ];
 
-        // Check if this is a new playlist or an update
         $isNewPlaylist = !$request->route('id');
 
-        // Only require thumb for new playlists
         if ($isNewPlaylist) {
             $rules['thumb'] = 'required|image|mimes:jpeg,png|max:2048';
         } else {
-            // For updates, thumb is completely optional
             if ($request->hasFile('thumb')) {
                 $rules['thumb'] = 'image|mimes:jpeg,png|max:2048';
             }
         }
 
         return Validator::make($request->all(), $rules, [
-            'title.required' => 'Please enter playlist title',
-            'description.required' => 'Please enter playlist description',
-            'teacher_id.required' => 'Teacher ID is required',
-            'teacher_id.exists' => 'Invalid teacher ID',
-            'status.required' => 'Please select playlist status',
-            'status.in' => 'Invalid status value',
-            'thumb.required' => 'Please select a thumbnail image',
-            'thumb.image' => 'The file must be an image',
-            'thumb.mimes' => 'The thumbnail must be a JPEG or PNG file',
-            'thumb.max' => 'The thumbnail size must not exceed 2MB'
+            'title.required' => 'Ievadiet kursa nosaukumu',
+            'description.required' => 'Ievadiet kursa aprakstu',
+            'teacher_id.required' => 'Pasniedzēja ID ir obligāts',
+            'teacher_id.exists' => 'Nepareizs pasniedzēja ID',
+            'status.required' => 'Izvēlieties kursa statusu',
+            'status.in' => 'Nepareizs statusa vērtības',
+            'thumb.required' => 'Izvēlieties kursa attēlu',
+            'thumb.image' => 'Attēls ir jābūt JPEG vai PNG failam',
+            'thumb.mimes' => 'Attēls ir jābūt JPEG vai PNG failam',
+            'thumb.max' => 'Attēla izmērs ir jābūt mazākam par 2MB'
         ]);
     }
 
-    /**
-     * Format error response
-     */
     private function errorResponse(array $messages, int $status = 500)
     {
         return response()->json([
@@ -502,9 +418,6 @@ class PlaylistsController extends Controller
         ], $status);
     }
 
-    /**
-     * Format success response
-     */
     private function successResponse(string $message, array $data = [], int $status = 200)
     {
         return response()->json(array_merge([
@@ -518,7 +431,7 @@ class PlaylistsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid playlist ID',
+                'message' => 'Nepareizs kursa ID',
                 'status' => 404
             ], 404);
         }
@@ -533,7 +446,7 @@ class PlaylistsController extends Controller
         $id = $this->decryptId($encryptedId);
         if (!$id) {
             return response()->json([
-                'message' => 'Invalid playlist ID',
+                'message' => 'Nepareizs kursa ID',
                 'status' => 404
             ], 404);
         }

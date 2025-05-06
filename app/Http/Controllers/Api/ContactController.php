@@ -18,10 +18,10 @@ class ContactController extends Controller
             'message' => 'required',
         );
         $messages = array(
-            'name.required' => 'Please, enter name!',
-            'email.required' => 'Please, enter email!',
-            'number.required' => 'Please, enter number!',
-            'message.required' => 'Please, enter your message!',
+            'name.required' => 'Ievadiet savu vārdu!',
+            'email.required' => 'Ievadiet savu e-pasta adresi!',
+            'number.required' => 'Ievadiet savu tālruņa numuru!',
+            'message.required' => 'Ievadiet savu ziņu!',
         );
         $validator = Validator::make($request->input(), $rules, $messages);
         if($validator->fails()){
@@ -35,9 +35,9 @@ class ContactController extends Controller
         $form->message = $request->message;
         $save = $form->save();
         if(!$save) {
-            return response()->json(['message' => array('Something went wrong, please try again later!'), 'status' => 500], 500);
+            return response()->json(['message' => array('Kaut kas nogāja greizi, mēģiniet vēlreiz!'), 'status' => 500], 500);
         } else {
-            return response()->json(['message' => array('You have succesfully created new playlist!'), 'status' => 200], 200);
+            return response()->json(['message' => array('Jūsu ziņa ir veiksmīgi nosūtīta!'), 'status' => 200], 200);
         }
 
     }

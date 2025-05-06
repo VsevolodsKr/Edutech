@@ -235,14 +235,6 @@ const handleSubmit = async (event) => {
         const thumbFile = thumbInput.value.files[0];
         formDataToSend.append('thumb', thumbFile);
 
-        console.log('Sending form data:', {
-            status: formData.value.status,
-            title: formData.value.title,
-            description: formData.value.description,
-            teacher_id: userResponse.data.id,
-            thumb: thumbFile.name
-        });
-
         const response = await axios.post('/api/playlists/add', formDataToSend, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -250,8 +242,6 @@ const handleSubmit = async (event) => {
                 Accept: 'application/json'
             }
         });
-
-        console.log('Response:', response.data);
 
         messages.value = Array.isArray(response.data.message) 
             ? response.data.message 
@@ -275,15 +265,12 @@ const handleSubmit = async (event) => {
         }
     } catch (error) {
         if (error.response) {
-            console.error('Error response:', error.response.data);
             messages.value = error.response.data.message || ['Kļūda, ievadot kursu'];
             errorStatus.value = error.response.data.status || 500;
         } else if (error.request) {
-            console.error('No response received:', error.request);
             messages.value = ['Nav iegūta atbilde no servera'];
             errorStatus.value = 500;
         } else {
-            console.error('Error setting up request:', error.message);
             messages.value = ['Neizdevās nosūtīt pieprasījumu'];
             errorStatus.value = 500;
         }

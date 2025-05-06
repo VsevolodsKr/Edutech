@@ -202,7 +202,6 @@
                                                 </p>
                                             </div>
 
-                                            <!-- YouTube Link -->
                                             <div v-else class="relative">
                                                 <input 
                                                     v-model="formData.youtube_link"
@@ -334,8 +333,6 @@ const loadPlaylists = async () => {
             }
         });
 
-        console.log('User response:', userResponse.data);
-
         const playlistsResponse = await axios.get(`/api/playlists/teacher_playlists/${userResponse.data.id}`, {
             headers: { 
                 Authorization: `Bearer ${token}`,
@@ -343,8 +340,6 @@ const loadPlaylists = async () => {
             }
         });
 
-        console.log('Raw playlists response:', playlistsResponse.data);
-        
         if (playlistsResponse.data.data && Array.isArray(playlistsResponse.data.data)) {
             playlists.value = playlistsResponse.data.data.map(playlist => ({
                 id: playlist.id,
@@ -352,11 +347,9 @@ const loadPlaylists = async () => {
                 status: playlist.status
             }));
         } else {
-            console.error('Unexpected playlists response format:', playlistsResponse.data);
             throw new Error('Invalid playlists response format');
         }
     } catch (error) {
-        console.error('Error loading playlists:', error);
         messages.value = ['Neizdevās ielādēt kursu'];
         errorStatus.value = 500;
     } finally {
@@ -490,7 +483,6 @@ const handleSubmit = async () => {
             errorStatus.value = response.data.status;
         }
     } catch (error) {
-        console.error('Error updating content:', error);
         messages.value = error.response?.data?.message || ['Neizdevās rediģēt saturu'];
         errorStatus.value = error.response?.data?.status || 500;
     } finally {
