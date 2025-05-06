@@ -93,7 +93,7 @@
                                     Dzēst
                                 </button>
                             </div>
-                            <button @click="router.push(`/admin_watch_content/${content.id}`)" 
+                            <button @click="router.push(`/admin_watch_content/${content.encrypted_id}`)" 
                                     class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">
                                 Skatīt video
                             </button>
@@ -162,16 +162,51 @@ const handleImageError = (event) => {
 
 const loadPlaylist = async () => {
     try {
-        const response = await axios.get(`/api/playlists/find/${route.params.id}`);
-        
-        if (response.data.playlist) {
-            playlist.value = {
-                ...response.data.playlist,
-                thumb: response.data.playlist.thumb
-            };
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            Swal.fire({
+                title: 'Kļūda!',
+                text: 'Nav pieejama lietotāja informācija',
+                icon: 'error'
+            });
+            return;
+        }
 
-            const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`);
+        console.log('Loading playlist with ID:', route.params.id);
+        const response = await axios.get(`/api/playlists/find/${route.params.id}`, {
+            headers: {
+                'X-Encrypted-ID': user.encrypted_id
+            }
+        });
+        
+        console.log('Playlist response:', response.data);
+        
+        if (!response.data || !response.data.playlist) {
+            console.error('Invalid playlist data:', response.data);
+            throw new Error('Invalid playlist data received');
+        }
+
+        playlist.value = {
+            ...response.data.playlist,
+            thumb: response.data.playlist.thumb,
+            id: response.data.playlist.id,
+            encrypted_id: response.data.playlist.encrypted_id
+        };
+
+        console.log('Playlist loaded:', playlist.value);
+
+        try {
+            const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.encrypted_id}/amount`, {
+                headers: {
+                    'X-Encrypted-ID': user.encrypted_id
+                }
+            });
             contentCount.value = countResponse.data;
+            console.log('Content count:', contentCount.value);
+        } catch (countError) {
+            console.error('Error loading content count:', countError);
+            contentCount.value = 0;
         }
     } catch (error) {
         console.error('Error loading playlist:', error);
@@ -180,6 +215,9 @@ const loadPlaylist = async () => {
             text: 'Neizdevās ielādēt kursu',
             icon: 'error'
         });
+        playlist.value = null;
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -187,19 +225,37 @@ const loadContents = async () => {
     if (!playlist.value) return;
     
     try {
-        const response = await axios.get(`/api/playlists/${playlist.value.id}/contents`);
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            return;
+        }
+
+        console.log('Loading contents for playlist:', playlist.value.encrypted_id);
+        const response = await axios.get(`/api/playlists/${playlist.value.encrypted_id}/contents`, {
+            headers: {
+                'X-Encrypted-ID': user.encrypted_id
+            }
+        });
         
+        if (!response.data) {
+            throw new Error('No data received from server');
+        }
+
+        console.log('Contents loaded:', response.data);
         contents.value = response.data.map(content => ({
             ...content,
             thumb: content.thumb
         }));
     } catch (error) {
         console.error('Error loading contents:', error);
-        Swal.fire({
-            title: 'Kļūda!',
-            text: 'Neizdevās ielādēt kursa saturu',
-            icon: 'error'
-        });
+        if (error.response?.status !== 200 || error.response?.data?.length === 0) {
+            Swal.fire({
+                title: 'Kļūda!',
+                text: 'Neizdevās ielādēt kursa saturu',
+                icon: 'error'
+            });
+        }
     }
 };
 
@@ -220,6 +276,12 @@ const handleDeletePlaylist = async (playlistId) => {
     const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
 
     try {
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            return;
+        }
+
         const result = await Swal.fire({
             title: 'Vai esat pārliecināts?',
             text: 'Kurss tiks dzēsts!',
@@ -234,7 +296,11 @@ const handleDeletePlaylist = async (playlistId) => {
         });
 
         if (result.isConfirmed) {
-            await axios.delete(`/api/playlists/delete/${playlistId}`);
+            await axios.delete(`/api/playlists/delete/${playlistId}`, {
+                headers: {
+                    'X-Encrypted-ID': user.encrypted_id
+                }
+            });
             
             await Swal.fire({
                 title: 'Dzēsts!',
@@ -260,6 +326,12 @@ const handleDeleteContent = async (contentId) => {
     const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
 
     try {
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            return;
+        }
+
         const result = await Swal.fire({
             title: 'Vai esat pārliecināts?',
             text: 'Video tiks dzēsts!',
@@ -274,7 +346,11 @@ const handleDeleteContent = async (contentId) => {
         });
 
         if (result.isConfirmed) {
-            await axios.delete(`/api/contents/delete/${contentId}`);
+            await axios.delete(`/api/contents/delete/${contentId}`, {
+                headers: {
+                    'X-Encrypted-ID': user.encrypted_id
+                }
+            });
             
             await Swal.fire({
                 title: 'Dzēsts!',
@@ -283,7 +359,11 @@ const handleDeleteContent = async (contentId) => {
             });
 
             await loadContents();
-            const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.id}/amount`);
+            const countResponse = await axios.get(`/api/contents/playlist/${playlist.value.encrypted_id}/amount`, {
+                headers: {
+                    'X-Encrypted-ID': user.encrypted_id
+                }
+            });
             contentCount.value = countResponse.data;
         }
     } catch (error) {
@@ -298,7 +378,17 @@ const handleDeleteContent = async (contentId) => {
 
 const savePlaylist = async () => {
     try {
-        await axios.post(`/api/playlists/${playlist.value.id}/save`);
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            return;
+        }
+
+        await axios.post(`/api/playlists/${playlist.value.id}/save`, {}, {
+            headers: {
+                'X-Encrypted-ID': user.encrypted_id
+            }
+        });
         Swal.fire({
             title: 'Veiksmīgi!',
             text: 'Kurss ir saglabāts.',

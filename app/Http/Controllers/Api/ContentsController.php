@@ -38,34 +38,42 @@ class ContentsController extends Controller
      */
     public function get_playlist_contents($encryptedId)
     {
-        $id = $this->decryptId($encryptedId);
-        if (!$id) {
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Invalid playlist ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $contents = Contents::where('playlist_id', $id)
+                ->orderBy('date', 'asc')
+                ->get()
+                ->map(function ($content) {
+                    return [
+                        'id' => $content->id,
+                        'encrypted_id' => $this->encryptId($content->id),
+                        'title' => $content->title,
+                        'description' => $content->description,
+                        'video' => $content->video,
+                        'thumb' => $content->thumb,
+                        'date' => $content->date,
+                        'status' => $content->status,
+                        'video_source_type' => $content->video_source_type,
+                        'teacher_id' => $content->teacher_id,
+                        'playlist_id' => $content->playlist_id
+                    ];
+                });
+
+            return response()->json($contents);
+        } catch (\Exception $e) {
+            \Log::error('Error getting playlist contents: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Invalid playlist ID',
-                'status' => 404
-            ], 404);
+                'message' => 'Failed to get playlist contents',
+                'status' => 500
+            ], 500);
         }
-
-        $contents = Contents::where('playlist_id', $id)
-            ->orderBy('date', 'asc')
-            ->get()
-            ->map(function ($content) {
-                return [
-                    'id' => $content->id,
-                    'encrypted_id' => $content->encrypted_id,
-                    'title' => $content->title,
-                    'description' => $content->description,
-                    'video' => $content->video,
-                    'thumb' => $content->thumb,
-                    'date' => $content->date,
-                    'status' => $content->status,
-                    'video_source_type' => $content->video_source_type,
-                    'teacher_id' => $content->teacher_id,
-                    'playlist_id' => $content->playlist_id
-                ];
-            });
-
-        return response()->json($contents);
     }
 
     /**

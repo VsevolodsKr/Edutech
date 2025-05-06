@@ -311,6 +311,7 @@ class PlaylistsController extends Controller
                 ->map(function ($playlist) {
                     return [
                         'id' => $playlist->id,
+                        'encrypted_id' => $this->encryptId($playlist->id),
                         'title' => $playlist->title,
                         'description' => $playlist->description,
                         'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,

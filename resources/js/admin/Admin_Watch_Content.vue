@@ -2,11 +2,11 @@
     <div>
         <Admin_Header />
         <section :class="sectionClasses">
-            <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+            <div v-if="isLoading" class="flex justify-center min-h-[calc(127.5vh-20rem)] items-center">
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <div v-else-if="!content" class="bg-base rounded-lg p-[1rem] text-center">
+            <div v-else-if="!content" class="bg-base rounded-lg p-[1rem] min-h-[calc(127.5vh-20rem)] text-center">
                 <h3 class="text-[1.5rem] text-text_dark">Video nav atrasts</h3>
             </div>
 
@@ -148,7 +148,7 @@ const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
-    'pt-[2rem] bg-background pr-[2rem] min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
+    'pt-[2rem] bg-background pr-[2rem] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
 const getVideoUrl = (video) => {
@@ -228,13 +228,15 @@ const loadContent = async () => {
 
             try {
                 const commentsResponse = await axios.get(`/api/comments/video/${route.params.id}`);
+                console.log('Comments response:', commentsResponse.data);
+                
                 if (commentsResponse.data.comments) {
-                    processedContent.comments = commentsResponse.data.comments.map((comment, index) => ({
+                    processedContent.comments = commentsResponse.data.comments.map(comment => ({
                         id: comment.id,
                         comment: comment.comment,
                         created_at: comment.date,
-                        user_name: commentsResponse.data.users[index].name,
-                        user_image: commentsResponse.data.users[index].image ? getThumbUrl(commentsResponse.data.users[index].image) : defaultAvatar
+                        user_name: comment.user?.name || 'Unknown User',
+                        user_image: comment.user?.image ? getThumbUrl(comment.user.image) : defaultAvatar
                     }));
                     processedContent.commentsCount = commentsResponse.data.comments.length;
                 } else {

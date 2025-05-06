@@ -44,7 +44,7 @@
                             </div>
                         </div>
                         <router-link 
-                            :to="'/admin_watch_content/' + comment.content?.id"
+                            :to="'/admin_watch_content/' + comment.content?.encrypted_id"
                             class="text-button hover:text-button1 transition-colors duration-200"
                         >
                             Skatīt video
@@ -113,6 +113,66 @@ const formatDate = (dateString) => {
     return `${day}.${month}.${year}`;
 };
 
+const loadComments = async () => {
+    try {
+        isLoading.value = true;
+        error.value = null;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
+        const headers = { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        };
+
+        const user = store.state.user;
+        if (!user || !user.encrypted_id) {
+            console.error('No user data available');
+            error.value = 'Nav pieejama lietotāja informācija';
+            return;
+        }
+
+        console.log('Loading comments for teacher:', user.encrypted_id);
+        const response = await axios.get(`/api/comments/teacher/${user.encrypted_id}`, { headers });
+        console.log('Comments response:', response.data);
+
+        if (!response.data.comments) {
+            console.error('No comments data in response');
+            error.value = 'Neizdevās ielādēt komentārus';
+            return;
+        }
+
+        comments.value = response.data.comments.map(comment => {
+            const cleanImagePath = comment.user?.image
+                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                ?.replace(/^\//, '');
+
+            return {
+                ...comment,
+                user: {
+                    ...comment.user,
+                    image: cleanImagePath ? `/storage/${cleanImagePath}` : '/storage/default-avatar.png'
+                },
+                content: comment.content ? {
+                    ...comment.content,
+                    thumb: comment.content.thumb ? `/storage/${comment.content.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}` : '/storage/default-thumb.png'
+                } : null
+            };
+        });
+
+        console.log('Processed comments:', comments.value);
+    } catch (err) {
+        console.error('Error loading comments:', err);
+        error.value = 'Neizdevās ielādēt komentārus';
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 const deleteComment = async (commentId) => {
     try {
         const token = localStorage.getItem('token');
@@ -140,56 +200,34 @@ const deleteComment = async (commentId) => {
 
         if (result.isConfirmed) {
             isDeleting.value = commentId;
-
             await axios.delete(`/api/comments/delete/${commentId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
                 }
             });
-
-            const updatedComments = comments.value.filter(comment => comment.id !== commentId);
-            store.commit('setComments', updatedComments);
-
+            
             await Swal.fire({
                 title: 'Dzēsts!',
                 text: 'Komentārs ir dzēsts.',
                 icon: 'success',
                 color: text_dark,
-                background: background,
+                background: background
             });
+
+            await loadComments();
         }
-    } catch (err) {
-        console.error('Error deleting comment:', err);
-        if (err.response?.status === 401) {
-            router.push('/');
-            return;
-        }
+    } catch (error) {
+        console.error('Error deleting comment:', error);
         Swal.fire({
             title: 'Kļūda!',
-            text: 'Neizdevās dzēst komentāru. Lūdzu, mēģiniet vēlreiz.',
+            text: 'Neizdevās dzēst komentāru',
             icon: 'error',
             color: text_dark,
-            background: background,
+            background: background
         });
     } finally {
         isDeleting.value = null;
-    }
-};
-
-const loadComments = async () => {
-    try {
-        const user = store.getters.getUser;
-        console.log('Loading comments for user:', user);
-        if (user) {
-            await store.dispatch('loadComments', user.id);
-            console.log('Comments loaded:', store.getters.getComments);
-        } else {
-            console.log('No user found');
-        }
-    } catch (err) {
-        console.error('Error loading comments:', err);
-        error.value = 'Neizdevās ielādēt komentārus. Lūdzu, mēģiniet vēlreiz.';
     }
 };
 
