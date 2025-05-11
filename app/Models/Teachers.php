@@ -70,4 +70,28 @@ class Teachers extends Authenticatable
     {
         return $this->hasMany('App\Models\Contents', 'teacher_id', 'id');
     }
+
+    public function comments()
+    {
+        return $this->hasManyThrough(
+            'App\Models\Comments',
+            'App\Models\Contents',
+            'teacher_id',
+            'content_id',
+            'id',
+            'id'
+        );
+    }
+
+    public function likes()
+    {
+        return $this->hasManyThrough(
+            'App\Models\Likes',
+            'App\Models\Contents',
+            'teacher_id',
+            'content_id',
+            'id',
+            'id'
+        );
+    }
 }

@@ -192,6 +192,39 @@ const adminRoutes = [
         beforeEnter: requireAdminAuth
     },
     {
+        path: '/admin_teachers',
+        component: () => import('../developers/Developer_Teachers.vue'),
+        name: 'Admin_Teachers',
+        meta: { 
+            title: 'Skolotāju pārvaldība',
+            requiresAuth: true,
+            isAdmin: true
+        },
+        beforeEnter: requireAdminAuth
+    },
+    {
+        path: '/admin_users',
+        component: () => import('../developers/Developer_Users.vue'),
+        name: 'Admin_Users',
+        meta: { 
+            title: 'Lietotāju pārvaldība',
+            requiresAuth: true,
+            isAdmin: true
+        },
+        beforeEnter: requireAdminAuth
+    },
+    {
+        path: '/admin_messages',
+        component: () => import('../developers/Developer_Messages.vue'),
+        name: 'Admin_Messages',
+        meta: { 
+            title: 'Ziņojumu pārvaldība',
+            requiresAuth: true,
+            isAdmin: true
+        },
+        beforeEnter: requireAdminAuth
+    },
+    {
         path: '/admin_playlists',
         component: () => import('../admin/Admin_Playlists.vue'),
         name: 'Admin_Playlists',
@@ -287,6 +320,49 @@ const adminRoutes = [
     }
 ];
 
+const developerRoutes = [
+    {
+        path: '/developer_dashboard',
+        component: () => import('../developers/Developer_Dashboard.vue'),
+        name: 'Developer_Dashboard',
+        meta: { 
+            title: 'Vadības panelis',
+            requiresAuth: true,
+            isDeveloper: true
+        }
+    },
+    {
+        path: '/developer_teachers',
+        component: () => import('../developers/Developer_Teachers.vue'),
+        name: 'Developer_Teachers',
+        meta: { 
+            title: 'Skolotāju pārvaldība',
+            requiresAuth: true,
+            isDeveloper: true
+        }
+    },
+    {
+        path: '/developer_users',
+        component: () => import('../developers/Developer_Users.vue'),
+        name: 'Developer_Users',
+        meta: { 
+            title: 'Lietotāju pārvaldība',
+            requiresAuth: true,
+            isDeveloper: true
+        }
+    },
+    {
+        path: '/developer_messages',
+        component: () => import('../developers/Developer_Messages.vue'),
+        name: 'Developer_Messages',
+        meta: { 
+            title: 'Ziņojumu pārvaldība',
+            requiresAuth: true,
+            isDeveloper: true
+        }
+    }
+];
+
 const errorRoutes = [
     {
         path: '/:pathMatch(.*)*',
@@ -304,6 +380,7 @@ const routes = [
     ...authRoutes,
     ...userRoutes,
     ...adminRoutes,
+    ...developerRoutes,
     ...errorRoutes
 ];
 

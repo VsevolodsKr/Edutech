@@ -8,6 +8,12 @@ use App\Models\Teachers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Teacher;
+use App\Models\Playlist;
+use App\Models\Content;
+use App\Models\Comment;
+use App\Models\Like;
+use Illuminate\Support\Facades\DB;
 
 class TeacherController extends Controller
 {
@@ -187,5 +193,184 @@ class TeacherController extends Controller
                 'data' => null
             ], 500);
         }
+    }
+
+    public function index()
+    {
+        try {
+            $teachers = Teachers::all()->map(function ($teacher) {
+                return [
+                    'id' => $teacher->id,
+                    'name' => $teacher->name,
+                    'email' => $teacher->email,
+                    'profession' => $teacher->profession,
+                    'status' => $teacher->status,
+                    'created_at' => $teacher->created_at
+                ];
+            });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Skolotāji veiksmīgi ielādēti',
+                'data' => $teachers
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās ielādēt skolotājus',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:teachers,email',
+                'profession' => 'required|string|max:255',
+                'status' => 'required|in:active,inactive'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Validācijas kļūda',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $teacher = Teachers::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'profession' => $request->profession,
+                'status' => $request->status
+            ]);
+
+            return response()->json([
+                'status' => 201,
+                'message' => 'Skolotājs veiksmīgi pievienots',
+                'data' => $teacher
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās pievienot skolotāju',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $teacher = Teachers::find($id);
+            if (!$teacher) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Skolotājs nav atrasts',
+                    'data' => null
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:teachers,email,' . $id,
+                'profession' => 'required|string|max:255',
+                'status' => 'required|in:active,inactive'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Validācijas kļūda',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $teacher->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'profession' => $request->profession,
+                'status' => $request->status
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Skolotājs veiksmīgi atjaunināts',
+                'data' => $teacher
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās atjaunināt skolotāju',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $teacher = Teachers::find($id);
+            if (!$teacher) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Skolotājs nav atrasts',
+                    'data' => null
+                ], 404);
+            }
+
+            $teacher->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Skolotājs veiksmīgi dzēsts',
+                'data' => null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās dzēst skolotāju',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function getTopTeachers()
+    {
+        $teachers = Teachers::withCount([
+            'playlists',
+            'contents',
+            'comments',
+            'likes'
+        ])
+        ->orderBy('likes_count', 'desc')
+        ->take(5)
+        ->get();
+
+        $data = [
+            'labels' => $teachers->pluck('name'),
+            'datasets' => [
+                'playlists' => $teachers->pluck('playlists_count'),
+                'contents' => $teachers->pluck('contents_count'),
+                'comments' => $teachers->pluck('comments_count'),
+                'likes' => $teachers->pluck('likes_count')
+            ]
+        ];
+
+        return response()->json($data);
+    }
+
+    public function getTeacherStats()
+    {
+        $stats = [
+            'total' => Teachers::count(),
+            'active' => Teachers::where('status', 'active')->count(),
+            'inactive' => Teachers::where('status', 'inactive')->count()
+        ];
+
+        return response()->json($stats);
     }
 }

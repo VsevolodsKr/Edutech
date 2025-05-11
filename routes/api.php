@@ -48,6 +48,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/profile', [AuthorizationController::class, 'getProfile']);
     Route::post('/user/update-profile', [AuthorizationController::class, 'updateProfile']);
 
+    // Admin Routes
+    Route::prefix('admin')->group(function () {
+        // Teacher Management
+        Route::get('/teachers', [TeacherController::class, 'index']);
+        Route::post('/teachers', [TeacherController::class, 'store']);
+        Route::put('/teachers/{id}', [TeacherController::class, 'update']);
+        Route::delete('/teachers/{id}', [TeacherController::class, 'destroy']);
+
+        // User Management
+        Route::get('/users', [AuthorizationController::class, 'index']);
+        Route::post('/users', [AuthorizationController::class, 'store']);
+        Route::put('/users/{id}', [AuthorizationController::class, 'update']);
+        Route::delete('/users/{id}', [AuthorizationController::class, 'destroy']);
+
+        // Message Management
+        Route::get('/messages', [ContactController::class, 'index']);
+        Route::post('/messages/{id}/reply', [ContactController::class, 'reply']);
+        Route::put('/messages/{id}/read', [ContactController::class, 'markAsRead']);
+        Route::delete('/messages/{id}', [ContactController::class, 'destroy']);
+    });
+
     // Playlist Routes
     Route::post('playlists/add', [PlaylistsController::class, 'add']);
     Route::post('playlists/update/{id}', [PlaylistsController::class, 'update']);
@@ -83,6 +104,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('comments/add', [CommentsController::class, 'add_comment']);
     Route::post('comments/{id}/edit', [CommentsController::class, 'edit_comment']);
     Route::delete('comments/delete/{id}', [CommentsController::class, 'delete_comment']);
+
+    // Developer Dashboard Routes
+    Route::prefix('developer')->group(function () {
+        Route::get('/dashboard/stats', [EngagementController::class, 'getDashboardStats']);
+        Route::get('/dashboard/activity', [EngagementController::class, 'getSystemActivity']);
+        Route::get('/dashboard/message-status', [ContactController::class, 'getMessageStatusDistribution']);
+        Route::get('/dashboard/top-teachers', [TeacherController::class, 'getTopTeachers']);
+        Route::get('/dashboard/unread-messages', [ContactController::class, 'getUnreadMessages']);
+    });
 });
 
 // Public Routes
@@ -92,3 +122,24 @@ Route::post('update/send', [AuthorizationController::class, 'update_store']);
 Route::post('admin_update/send', [AuthorizationController::class, 'admin_update_store']);
 Route::post('admin_register/send', [AuthorizationController::class, 'admin_registration_store']);
 Route::post('contact/send', [ContactController::class, 'send']);
+
+// Developer Routes
+Route::prefix('developer')->middleware('auth:sanctum')->group(function () {
+    // Teacher Management
+    Route::get('/teachers', [TeacherController::class, 'index']);
+    Route::post('/teachers', [TeacherController::class, 'store']);
+    Route::put('/teachers/{id}', [TeacherController::class, 'update']);
+    Route::delete('/teachers/{id}', [TeacherController::class, 'destroy']);
+
+    // User Management
+    Route::get('/users', [AuthorizationController::class, 'index']);
+    Route::post('/users', [AuthorizationController::class, 'store']);
+    Route::put('/users/{id}', [AuthorizationController::class, 'update']);
+    Route::delete('/users/{id}', [AuthorizationController::class, 'destroy']);
+
+    // Message Management
+    Route::get('/messages', [ContactController::class, 'index']);
+    Route::post('/messages/{id}/reply', [ContactController::class, 'reply']);
+    Route::put('/messages/{id}/read', [ContactController::class, 'markAsRead']);
+    Route::delete('/messages/{id}', [ContactController::class, 'destroy']);
+});

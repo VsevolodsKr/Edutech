@@ -299,6 +299,146 @@ class AuthorizationController extends Controller
         }
     }
 
+    public function index()
+    {
+        try {
+            $users = Users::all()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'created_at' => $user->created_at
+                ];
+            });
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Lietotāji veiksmīgi ielādēti',
+                'data' => $users
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās ielādēt lietotājus',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8',
+                'role' => 'required|in:admin,teacher,student'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Validācijas kļūda',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user = Users::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role
+            ]);
+
+            return response()->json([
+                'status' => 201,
+                'message' => 'Lietotājs veiksmīgi pievienots',
+                'data' => $user
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās pievienot lietotāju',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $user = Users::find($id);
+            if (!$user) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Lietotājs nav atrasts',
+                    'data' => null
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $id,
+                'role' => 'required|in:admin,teacher,student'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Validācijas kļūda',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'role' => $request->role
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Lietotājs veiksmīgi atjaunināts',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās atjaunināt lietotāju',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $user = Users::find($id);
+            if (!$user) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Lietotājs nav atrasts',
+                    'data' => null
+                ], 404);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Lietotājs veiksmīgi dzēsts',
+                'data' => null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās dzēst lietotāju',
+                'data' => null
+            ], 500);
+        }
+    }
+
     private function handleImageUpload($image)
     {
         if (!$image) {
