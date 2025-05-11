@@ -40,6 +40,7 @@
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Vārds</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">E-pasts</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Statuss</th>
+                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Reģistrācijas datums</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Darbības</th>
                         </tr>
                     </thead>
@@ -57,6 +58,7 @@
                                     {{ user.status === 'aktīvs' ? 'Aktīvs' : 'Neaktīvs' }}
                                 </span>
                             </td>
+                            <td class="p-[1rem] text-[var(--text_dark)]">{{ formatDate(user.created_at) }}</td>
                             <td class="p-[1rem]">
                                 <div class="flex gap-2">
                                     <button 
@@ -75,7 +77,7 @@
                             </td>
                         </tr>
                         <tr v-if="filteredUsers.length === 0">
-                            <td colspan="4" class="p-[2rem] text-center text-[var(--text_light)]">
+                            <td colspan="5" class="p-[2rem] text-center text-[var(--text_light)]">
                                 Nav atrasts neviens lietotājs
                             </td>
                         </tr>

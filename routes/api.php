@@ -141,5 +141,6 @@ Route::prefix('developer')->middleware('auth:sanctum')->group(function () {
     Route::get('/messages', [ContactController::class, 'index']);
     Route::post('/messages/{id}/reply', [ContactController::class, 'reply']);
     Route::put('/messages/{id}/read', [ContactController::class, 'markAsRead']);
+    Route::put('/messages/{id}/status', [ContactController::class, 'updateStatus']);
     Route::delete('/messages/{id}', [ContactController::class, 'destroy']);
 });

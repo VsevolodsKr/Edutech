@@ -52,7 +52,7 @@ class ContactController extends Controller
         $form->email = $request->email;
         $form->number = $request->number;
         $form->message = $request->message;
-        $form->status = 'unread';
+        $form->status = 'jauns';
         $save = $form->save();
         if(!$save) {
             return response()->json(['message' => array('Kaut kas nogāja greizi, mēģiniet vēlreiz!'), 'status' => 500], 500);
@@ -116,17 +116,17 @@ class ContactController extends Controller
                 ], 404);
             }
 
-            $message->update(['status' => 'read']);
+            $message->update(['status' => 'atvērts']);
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Ziņojums atzīmēts kā lasīts',
+                'message' => 'Ziņojums atzīmēts kā atvērts',
                 'data' => $message
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās atzīmēt ziņojumu kā lasītu',
+                'message' => 'Neizdevās atzīmēt ziņojumu kā atvērtu',
                 'data' => null
             ], 500);
         }
@@ -208,5 +208,45 @@ class ContactController extends Controller
             });
 
         return response()->json($messages);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'status' => 'required|in:jauns,atvērts,apstrāde,pabeigts'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'Validācijas kļūda',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $message = Contacts::find($id);
+            if (!$message) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Ziņojums nav atrasts',
+                    'data' => null
+                ], 404);
+            }
+
+            $message->update(['status' => $request->status]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Statuss veiksmīgi atjaunināts',
+                'data' => $message
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās atjaunināt statusu',
+                'data' => null
+            ], 500);
+        }
     }
 }

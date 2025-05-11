@@ -172,10 +172,10 @@ const updateMessageStatusChart = (data) => {
             datasets: [{
                 data: data.data,
                 backgroundColor: [
-                    getComputedStyle(document.documentElement).getPropertyValue('--button'),
-                    getComputedStyle(document.documentElement).getPropertyValue('--button2'),
+                    getComputedStyle(document.documentElement).getPropertyValue('--button4'),
                     getComputedStyle(document.documentElement).getPropertyValue('--button3'),
-                    getComputedStyle(document.documentElement).getPropertyValue('--button4')
+                    getComputedStyle(document.documentElement).getPropertyValue('--button2'),
+                    getComputedStyle(document.documentElement).getPropertyValue('--button')
                 ],
                 borderWidth: 2,
                 borderColor: getComputedStyle(document.documentElement).getPropertyValue('--base')

@@ -4,12 +4,6 @@
         <section :class="sectionClasses">
             <div class="flex justify-between items-center mb-[2rem]">
                 <h1 class="text-[1.5rem] text-[var(--text_dark)] capitalize">Ziņojumu pārvaldība</h1>
-                <button 
-                    @click="openAddModal"
-                    class="bg-[var(--button)] text-[var(--text_dark)] px-[1.5rem] py-[.5rem] rounded-lg hover:bg-transparent hover:text-[var(--button)] border-2 border-[var(--button)] transition-all duration-200"
-                >
-                    Jauns ziņojums
-                </button>
             </div>
 
             <!-- Search and Filter -->
@@ -27,9 +21,10 @@
                     class="p-[.8rem] rounded-lg bg-[var(--base)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
                 >
                     <option value="">Visi statusi</option>
-                    <option value="unread">Nelasīts</option>
-                    <option value="read">Lasīts</option>
-                    <option value="replied">Atbildēts</option>
+                    <option value="jauns">Jauns</option>
+                    <option value="atvērts">Atvērts</option>
+                    <option value="apstrāde">Apstrāde</option>
+                    <option value="pabeigts">Pabeigts</option>
                 </select>
             </div>
 
@@ -38,31 +33,33 @@
                 <table class="w-full">
                     <thead>
                         <tr class="bg-[var(--background)]">
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Nosaukums</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Sūtītājs</th>
+                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Vārds</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">E-pasts</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Status</th>
+                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Tālrunis</th>
+                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Statuss</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Datums</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Darbības</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="message in filteredMessages" :key="message.id" class="border-t-2 border-[var(--border-color)]">
-                            <td class="p-[1rem] text-[var(--text_dark)]">{{ message.subject }}</td>
                             <td class="p-[1rem] text-[var(--text_dark)]">{{ message.name }}</td>
                             <td class="p-[1rem] text-[var(--text_dark)]">{{ message.email }}</td>
+                            <td class="p-[1rem] text-[var(--text_dark)]">{{ message.number }}</td>
                             <td class="p-[1rem]">
                                 <span 
                                     :class="[
                                         'px-[.8rem] py-[.3rem] rounded-full text-sm',
-                                        message.status === 'unread' ? 'bg-[var(--button4)]' :
-                                        message.status === 'read' ? 'bg-[var(--button3)]' :
-                                        'bg-[var(--button2)]',
+                                        message.status === 'jauns' ? 'bg-[var(--button4)]' :
+                                        message.status === 'atvērts' ? 'bg-[var(--button3)]' :
+                                        message.status === 'apstrāde' ? 'bg-[var(--button2)]' :
+                                        'bg-[var(--button)]',
                                         'text-[var(--text_dark)]'
                                     ]"
                                 >
-                                    {{ message.status === 'unread' ? 'Nelasīts' :
-                                       message.status === 'read' ? 'Lasīts' : 'Atbildēts' }}
+                                    {{ message.status === 'jauns' ? 'Jauns' :
+                                       message.status === 'atvērts' ? 'Atvērts' :
+                                       message.status === 'apstrāde' ? 'Apstrāde' : 'Pabeigts' }}
                                 </span>
                             </td>
                             <td class="p-[1rem] text-[var(--text_dark)]">{{ formatDate(message.created_at) }}</td>
@@ -70,7 +67,7 @@
                                 <div class="flex gap-2">
                                     <button 
                                         @click="viewMessage(message)"
-                                        class="p-[.5rem] text-[var(--button)] hover:text-[var(--button3)] transition-colors duration-200"
+                                        class="p-[.5rem] text-[var(--button2)] hover:text-[var(--button)] transition-colors duration-200"
                                     >
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -97,40 +94,32 @@
         <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-[var(--base)] rounded-lg p-[2rem] w-[40rem] max-w-[90%]">
                 <h2 class="text-[1.5rem] text-[var(--text_dark)] mb-[2rem]">
-                    {{ selectedMessage?.subject }}
+                    Ziņojuma saturs
                 </h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[var(--text_dark)] mb-2">Sūtītājs</label>
-                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)]">
+                        <label class="block text-[var(--text_dark)] mb-2">Vārds</label>
+                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)]">
                             {{ selectedMessage?.name }}
                         </p>
                     </div>
                     <div>
                         <label class="block text-[var(--text_dark)] mb-2">E-pasts</label>
-                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)]">
+                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)]">
                             {{ selectedMessage?.email }}
                         </p>
                     </div>
                     <div>
+                        <label class="block text-[var(--text_dark)] mb-2">Tālrunis</label>
+                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)]">
+                            {{ selectedMessage?.number }}
+                        </p>
+                    </div>
+                    <div>
                         <label class="block text-[var(--text_dark)] mb-2">Ziņojums</label>
-                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] whitespace-pre-wrap">
+                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] min-h-[10rem] whitespace-pre-wrap">
                             {{ selectedMessage?.message }}
                         </p>
-                    </div>
-                    <div v-if="selectedMessage?.reply">
-                        <label class="block text-[var(--text_dark)] mb-2">Atbilde</label>
-                        <p class="p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] whitespace-pre-wrap">
-                            {{ selectedMessage?.reply }}
-                        </p>
-                    </div>
-                    <div v-if="!selectedMessage?.reply">
-                        <label class="block text-[var(--text_dark)] mb-2">Atbilde</label>
-                        <textarea 
-                            v-model="replyText"
-                            rows="4"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
-                        ></textarea>
                     </div>
                     <div class="flex justify-end gap-4 mt-[2rem]">
                         <button 
@@ -141,11 +130,18 @@
                             Aizvērt
                         </button>
                         <button 
-                            v-if="!selectedMessage?.reply"
-                            @click="sendReply"
+                            v-if="selectedMessage?.status !== 'apstrāde'"
+                            @click="updateStatus('apstrāde')"
+                            class="px-[1.5rem] py-[.5rem] rounded-lg bg-[var(--button2)] text-[var(--text_dark)] hover:bg-transparent hover:text-[var(--button2)] border-2 border-[var(--button2)] transition-all duration-200"
+                        >
+                            Apstrādē
+                        </button>
+                        <button 
+                            v-if="selectedMessage?.status !== 'pabeigts'"
+                            @click="updateStatus('pabeigts')"
                             class="px-[1.5rem] py-[.5rem] rounded-lg bg-[var(--button)] text-[var(--text_dark)] hover:bg-transparent hover:text-[var(--button)] border-2 border-[var(--button)] transition-all duration-200"
                         >
-                            Sūtīt atbildi
+                            Pabeigts
                         </button>
                     </div>
                 </div>
@@ -171,7 +167,6 @@ const searchQuery = ref('');
 const statusFilter = ref('');
 const showModal = ref(false);
 const selectedMessage = ref(null);
-const replyText = ref('');
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
@@ -182,9 +177,10 @@ const sectionClasses = computed(() => [
 
 const filteredMessages = computed(() => {
     return messages.value.filter(message => {
-        const matchesSearch = message.subject.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                            message.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                            message.email.toLowerCase().includes(searchQuery.value.toLowerCase());
+        const matchesSearch = message.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                            message.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                            message.number.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                            message.message.toLowerCase().includes(searchQuery.value.toLowerCase());
         const matchesStatus = !statusFilter.value || message.status === statusFilter.value;
         return matchesSearch && matchesStatus;
     });
@@ -208,55 +204,51 @@ const loadMessages = async () => {
 };
 
 const viewMessage = async (message) => {
-    selectedMessage.value = message;
-    replyText.value = '';
-    showModal.value = true;
-    
-    if (message.status === 'unread') {
-        try {
-            await axios.put(`/api/developer/messages/${message.id}/read`);
-            message.status = 'read';
-        } catch (error) {
-            console.error('Failed to mark message as read:', error);
+    try {
+        const response = await axios.put(`/api/developer/messages/${message.id}/read`);
+        if (response.data.status === 200) {
+            // Update the local message status
+            message.status = 'atvērts';
+            selectedMessage.value = message;
+            showModal.value = true;
         }
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Kļūda',
+            text: 'Neizdevās atvērt ziņojumu'
+        });
     }
 };
 
 const closeModal = () => {
     showModal.value = false;
     selectedMessage.value = null;
-    replyText.value = '';
 };
 
-const sendReply = async () => {
-    if (!replyText.value.trim()) {
-        await Swal.fire({
-            title: 'Kļūda',
-            text: 'Lūdzu ievadiet atbildi',
-            icon: 'error'
-        });
-        return;
-    }
-
+const updateStatus = async (newStatus) => {
     try {
-        await axios.post(`/api/developer/messages/${selectedMessage.value.id}/reply`, {
-            reply: replyText.value
+        await axios.put(`/api/developer/messages/${selectedMessage.value.id}/status`, {
+            status: newStatus
         });
         
-        selectedMessage.value.reply = replyText.value;
-        selectedMessage.value.status = 'replied';
+        selectedMessage.value.status = newStatus;
         
         await Swal.fire({
             title: 'Veiksmīgi',
-            text: 'Atbilde nosūtīta',
+            text: 'Statuss atjaunināts',
             icon: 'success',
             timer: 1500,
             showConfirmButton: false
         });
+        
+        closeModal();
+        await loadMessages();
     } catch (error) {
         await Swal.fire({
             title: 'Kļūda',
-            text: 'Neizdevās nosūtīt atbildi',
+            text: 'Neizdevās atjaunināt statusu',
             icon: 'error'
         });
     }
