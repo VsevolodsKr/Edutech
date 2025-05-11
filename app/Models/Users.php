@@ -12,6 +12,6 @@ class Users extends Authenticatable
 {
     use HasFactory, HasApiTokens, Encryptable;
     protected $guard = 'user';
-    protected $fillable = ['name', 'email', 'password', 'image'];
+    protected $fillable = ['name', 'email', 'password', 'image', 'status'];
     protected $appends = ['encrypted_id'];
 }

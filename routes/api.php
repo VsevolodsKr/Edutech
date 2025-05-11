@@ -132,10 +132,10 @@ Route::prefix('developer')->middleware('auth:sanctum')->group(function () {
     Route::delete('/teachers/{id}', [TeacherController::class, 'destroy']);
 
     // User Management
-    Route::get('/users', [AuthorizationController::class, 'index']);
-    Route::post('/users', [AuthorizationController::class, 'store']);
-    Route::put('/users/{id}', [AuthorizationController::class, 'update']);
-    Route::delete('/users/{id}', [AuthorizationController::class, 'destroy']);
+    Route::get('/users', [AuthorizationController::class, 'get_users']);
+    Route::post('/users', [AuthorizationController::class, 'store_user']);
+    Route::put('/users/{id}', [AuthorizationController::class, 'update_user']);
+    Route::delete('/users/{id}', [AuthorizationController::class, 'delete_user']);
 
     // Message Management
     Route::get('/messages', [ContactController::class, 'index']);

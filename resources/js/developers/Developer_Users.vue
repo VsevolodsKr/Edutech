@@ -23,13 +23,12 @@
                     >
                 </div>
                 <select 
-                    v-model="roleFilter"
+                    v-model="statusFilter"
                     class="p-[.8rem] rounded-lg bg-[var(--base)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
                 >
-                    <option value="">Visas lomas</option>
-                    <option value="admin">Administrators</option>
-                    <option value="teacher">Skolotājs</option>
-                    <option value="student">Skolnieks</option>
+                    <option value="">Visi statusi</option>
+                    <option value="aktīvs">Aktīvs</option>
+                    <option value="neaktīvs">Neaktīvs</option>
                 </select>
             </div>
 
@@ -40,8 +39,7 @@
                         <tr class="bg-[var(--background)]">
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Vārds</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">E-pasts</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Loma</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Reģistrējies</th>
+                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Statuss</th>
                             <th class="p-[1rem] text-left text-[var(--text_dark)]">Darbības</th>
                         </tr>
                     </thead>
@@ -53,17 +51,12 @@
                                 <span 
                                     :class="[
                                         'px-[.8rem] py-[.3rem] rounded-full text-sm',
-                                        user.role === 'admin' ? 'bg-[var(--button4)]' :
-                                        user.role === 'teacher' ? 'bg-[var(--button3)]' :
-                                        'bg-[var(--button2)]',
-                                        'text-[var(--text_dark)]'
+                                        user.status === 'aktīvs' ? 'bg-[var(--button2)] text-[var(--text_dark)]' : 'bg-[var(--button4)] text-[var(--text_dark)]'
                                     ]"
                                 >
-                                    {{ user.role === 'admin' ? 'Administrators' :
-                                       user.role === 'teacher' ? 'Skolotājs' : 'Skolnieks' }}
+                                    {{ user.status === 'aktīvs' ? 'Aktīvs' : 'Neaktīvs' }}
                                 </span>
                             </td>
-                            <td class="p-[1rem] text-[var(--text_dark)]">{{ formatDate(user.created_at) }}</td>
                             <td class="p-[1rem]">
                                 <div class="flex gap-2">
                                     <button 
@@ -82,7 +75,7 @@
                             </td>
                         </tr>
                         <tr v-if="filteredUsers.length === 0">
-                            <td colspan="5" class="p-[2rem] text-center text-[var(--text_light)]">
+                            <td colspan="4" class="p-[2rem] text-center text-[var(--text_light)]">
                                 Nav atrasts neviens lietotājs
                             </td>
                         </tr>
@@ -117,25 +110,53 @@
                         >
                     </div>
                     <div>
-                        <label class="block text-[var(--text_dark)] mb-2">Loma</label>
-                        <select 
-                            v-model="form.role"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
-                            required
-                        >
-                            <option value="admin">Administrators</option>
-                            <option value="teacher">Skolotājs</option>
-                            <option value="student">Skolnieks</option>
-                        </select>
-                    </div>
-                    <div v-if="!editingUser">
-                        <label class="block text-[var(--text_dark)] mb-2">Parole</label>
-                        <input 
-                            type="password" 
+                        <label class="block text-[var(--text_dark)] mb-2">
+                            {{ editingUser ? 'Mainīt paroli (neobligāts)' : 'Parole' }}
+                        </label>
+                        <input
+                            v-if="!editingUser || showPasswordField"
+                            type="password"
                             v-model="form.password"
+                            :required="!editingUser"
+                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                        >
+                        <div v-if="editingUser" class="mt-2">
+                            <label class="flex items-center text-[var(--text_dark)]">
+                                <input
+                                    type="checkbox"
+                                    v-model="showPasswordField"
+                                    class="mr-2"
+                                >
+                                Mainīt paroli
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[var(--text_dark)] mb-2">
+                            {{ editingUser ? 'Mainīt attēlu (neobligāts)' : 'Attēls' }}
+                        </label>
+                        <input
+                            type="file"
+                            ref="imageInput"
+                            @change="handleImageUpload"
+                            accept="image/*"
+                            :required="!editingUser"
+                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                        >
+                        <p v-if="editingUser" class="text-sm text-[var(--text_light)] mt-1">
+                            Ja nevēlaties mainīt attēlu, atstājiet šo lauku tukšu
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-[var(--text_dark)] mb-2">Statuss</label>
+                        <select 
+                            v-model="form.status"
                             class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
                             required
                         >
+                            <option value="aktīvs">Aktīvs</option>
+                            <option value="neaktīvs">Neaktīvs</option>
+                        </select>
                     </div>
                     <div class="flex justify-end gap-4 mt-[2rem]">
                         <button 
@@ -172,15 +193,19 @@ const { width } = useWindowSize();
 
 const users = ref([]);
 const searchQuery = ref('');
-const roleFilter = ref('');
+const statusFilter = ref('');
 const showModal = ref(false);
 const editingUser = ref(null);
+const showPasswordField = ref(false);
 const form = ref({
     name: '',
     email: '',
-    role: 'student',
-    password: ''
+    password: '',
+    status: 'aktīvs',
+    image: null
 });
+
+const imageInput = ref(null);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
@@ -193,8 +218,8 @@ const filteredUsers = computed(() => {
     return users.value.filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
                             user.email.toLowerCase().includes(searchQuery.value.toLowerCase());
-        const matchesRole = !roleFilter.value || user.role === roleFilter.value;
-        return matchesSearch && matchesRole;
+        const matchesStatus = !statusFilter.value || user.status === statusFilter.value;
+        return matchesSearch && matchesStatus;
     });
 });
 
@@ -215,21 +240,34 @@ const loadUsers = async () => {
     }
 };
 
+const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        form.value.image = file;
+    }
+};
+
 const openAddModal = () => {
     editingUser.value = null;
     form.value = {
         name: '',
         email: '',
-        role: 'student',
-        password: ''
+        password: '',
+        status: 'aktīvs',
+        image: null
     };
     showModal.value = true;
 };
 
 const editUser = (user) => {
     editingUser.value = user;
-    form.value = { ...user };
-    delete form.value.password; // Don't send password when editing
+    form.value = {
+        name: user.name,
+        email: user.email,
+        password: '',
+        status: user.status,
+        image: null
+    };
     showModal.value = true;
 };
 
@@ -239,38 +277,89 @@ const closeModal = () => {
     form.value = {
         name: '',
         email: '',
-        role: 'student',
-        password: ''
+        password: '',
+        status: 'aktīvs',
+        image: null
     };
+    if (imageInput.value) {
+        imageInput.value.value = '';
+    }
 };
 
 const handleSubmit = async () => {
     try {
+        console.log('Form data before submission:', form.value);
+        
+        const formData = new FormData();
+        formData.append('name', form.value.name);
+        formData.append('email', form.value.email);
+        formData.append('status', form.value.status);
+        
+        if (showPasswordField.value && form.value.password) {
+            formData.append('password', form.value.password);
+        } else if (!editingUser.value) {
+            formData.append('password', form.value.password);
+        }
+        
+        if (form.value.image) {
+            formData.append('image', form.value.image);
+        }
+
+        let response;
         if (editingUser.value) {
-            await axios.put(`/api/developer/users/${editingUser.value.id}`, form.value);
-            await Swal.fire({
-                title: 'Veiksmīgi',
-                text: 'Lietotājs atjaunināts',
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
+            // For PUT requests, we need to use _method=PUT with POST
+            formData.append('_method', 'PUT');
+            console.log('Sending update request for user:', editingUser.value.id);
+            console.log('Form data being sent:', Object.fromEntries(formData));
+            
+            response = await axios.post(`/api/developer/users/${editingUser.value.id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'application/json'
+                }
             });
         } else {
-            await axios.post('/api/developer/users', form.value);
+            console.log('Sending create request');
+            console.log('Form data being sent:', Object.fromEntries(formData));
+            
+            response = await axios.post('/api/developer/users', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'application/json'
+                }
+            });
+        }
+
+        console.log('Response received:', response.data);
+
+        if (response.data.status === 200 || response.data.status === 201) {
             await Swal.fire({
                 title: 'Veiksmīgi',
-                text: 'Lietotājs pievienots',
+                text: editingUser.value ? 'Lietotājs rediģēts!' : 'Lietotājs pievienots',
                 icon: 'success',
                 timer: 1500,
                 showConfirmButton: false
             });
+            closeModal();
+            await loadUsers();
         }
-        closeModal();
-        await loadUsers();
     } catch (error) {
+        console.error('Form submission error:', error);
+        console.error('Error response:', error.response?.data);
+        
+        const errorMessage = error.response?.data?.message || 'Kaut kas nogāja greizi';
+        const errorDetails = error.response?.data?.errors;
+        
         await Swal.fire({
             title: 'Kļūda',
-            text: error.response?.data?.message || 'Kaut kas nogāja greizi',
+            text: errorMessage,
+            html: errorDetails ? 
+                `<div class="text-left">
+                    ${Object.entries(errorDetails).map(([field, messages]) => 
+                        `<p class="mb-2"><strong>${field}:</strong> ${messages.join(', ')}</p>`
+                    ).join('')}
+                </div>` : 
+                errorMessage,
             icon: 'error'
         });
     }

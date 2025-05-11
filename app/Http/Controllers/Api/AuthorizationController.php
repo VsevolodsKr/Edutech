@@ -55,47 +55,60 @@ class AuthorizationController extends Controller
 
     public function login_store(Request $request)
     {
-        try {
-            $validator = $this->validateLogin($request);
-            if ($validator->fails()) {
-                return $this->errorResponse($validator->messages()->all());
-            }
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string'
+        ]);
 
-            $user = Users::where('email', $request->email)->first();
-            $teacher = Teachers::where('email', $request->email)->first();
-
-            if (!$user && !$teacher) {
-                return $this->errorResponse(['Nepareizs e-pasts vai parole!']);
-            }
-
-            if ($user && Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                if ($user->status === 'neaktīvs') {
-                    return $this->errorResponse(['Jūsu konts ir deaktivizēts. Lūdzu, sazinieties ar administratoru.'], 403);
-                }
-                $token = $user->createToken('MyApp')->plainTextToken;
-                return $this->successResponse('Autentifikācija veiksmīga!', [
-                    'data' => $user,
-                    'token' => $token,
-                    'is_teacher' => false
-                ]);
-            }
-
-            if ($teacher && Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                if ($teacher->status === 'neaktīvs') {
-                    return $this->errorResponse(['Jūsu konts ir deaktivizēts. Lūdzu, sazinieties ar administratoru.'], 403);
-                }
-                $token = $teacher->createToken('MyApp')->plainTextToken;
-                return $this->successResponse('Autentifikācija veiksmīga!', [
-                    'data' => $teacher,
-                    'token' => $token,
-                    'is_teacher' => true
-                ]);
-            }
-
-            return $this->errorResponse(['Nepareizs e-pasts vai parole!']);
-        } catch (\Exception $e) {
-            return $this->errorResponse(['Autentifikācija neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validācijas kļūda',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $user = Users::where('email', $request->email)->first();
+        $teacher = Teachers::where('email', $request->email)->first();
+
+        if ($user && $user->status === 'neaktīvs') {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Jūsu konts ir deaktivizēts'
+            ], 403);
+        }
+
+        if ($teacher && $teacher->status === 'neaktīvs') {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Jūsu konts ir deaktivizēts'
+            ], 403);
+        }
+
+        if ($user && Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
+            $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'status' => 200,
+                'message' => 'Veiksmīga autorizācija',
+                'token' => $token,
+                'is_teacher' => false
+            ]);
+        }
+
+        if ($teacher && Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
+            $token = $teacher->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'status' => 200,
+                'message' => 'Veiksmīga autorizācija',
+                'token' => $token,
+                'is_teacher' => true
+            ]);
+        }
+
+        return response()->json([
+            'status' => 401,
+            'message' => 'Nederīgs e-pasts vai parole'
+        ], 401);
     }
 
     public function update_store(Request $request)
@@ -305,41 +318,33 @@ class AuthorizationController extends Controller
         }
     }
 
-    public function index()
+    public function get_users()
     {
         try {
-            $users = Users::all()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'created_at' => $user->created_at
-                ];
-            });
-
+            $users = Users::all();
             return response()->json([
                 'status' => 200,
-                'message' => 'Lietotāji veiksmīgi ielādēti',
                 'data' => $users
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error fetching users: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās ielādēt lietotājus',
-                'data' => null
+                'message' => 'Kļūda ielādējot lietotājus',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function store(Request $request)
+    public function store_user(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
-                'role' => 'required|in:admin,teacher,student'
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6',
+                'status' => 'required|in:aktīvs,neaktīvs',
+                'image' => 'nullable|image|max:2048'
             ]);
 
             if ($validator->fails()) {
@@ -350,46 +355,50 @@ class AuthorizationController extends Controller
                 ], 422);
             }
 
-            $user = Users::create([
+            $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => $request->role
-            ]);
+                'status' => $request->status,
+                'image' => self::DEFAULT_IMAGE
+            ];
+
+            if ($request->hasFile('image')) {
+                $userData['image'] = $this->handleImageUpload($request->file('image'));
+            }
+
+            $user = Users::create($userData);
 
             return response()->json([
                 'status' => 201,
-                'message' => 'Lietotājs veiksmīgi pievienots',
+                'message' => 'Lietotājs veiksmīgi izveidots',
                 'data' => $user
             ], 201);
         } catch (\Exception $e) {
+            \Log::error('User creation error: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās pievienot lietotāju',
-                'data' => null
+                'message' => 'Kļūda izveidojot lietotāju',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function update(Request $request, $id)
+    public function update_user(Request $request, $id)
     {
         try {
-            $user = Users::find($id);
-            if (!$user) {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Lietotājs nav atrasts',
-                    'data' => null
-                ], 404);
-            }
+            \Log::info('Update user request data:', $request->all());
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email,' . $id,
-                'role' => 'required|in:admin,teacher,student'
+                'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+                'password' => 'nullable|string|min:6',
+                'status' => 'required|in:aktīvs,neaktīvs',
+                'image' => 'nullable|image|max:2048'
             ]);
 
             if ($validator->fails()) {
+                \Log::error('Validation failed:', $validator->errors()->toArray());
                 return response()->json([
                     'status' => 422,
                     'message' => 'Validācijas kļūda',
@@ -397,50 +406,63 @@ class AuthorizationController extends Controller
                 ], 422);
             }
 
-            $user->update([
+            $user = Users::findOrFail($id);
+            \Log::info('Found user:', $user->toArray());
+            
+            $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'role' => $request->role
-            ]);
+                'status' => $request->status
+            ];
+
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            if ($request->hasFile('image')) {
+                // Delete old image if it exists and is not the default image
+                if ($user->image && $user->image !== self::DEFAULT_IMAGE) {
+                    Storage::delete(str_replace('/storage/', '', $user->image));
+                }
+                $userData['image'] = $this->handleImageUpload($request->file('image'));
+            }
+
+            \Log::info('Updating user with data:', $userData);
+            $user->update($userData);
+            \Log::info('User updated successfully:', $user->fresh()->toArray());
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Lietotājs veiksmīgi atjaunināts',
-                'data' => $user
+                'data' => $user->fresh()
             ]);
         } catch (\Exception $e) {
+            \Log::error('User update error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās atjaunināt lietotāju',
-                'data' => null
+                'message' => 'Kļūda atjauninot lietotāju',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function destroy($id)
+    public function delete_user($id)
     {
         try {
-            $user = Users::find($id);
-            if (!$user) {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Lietotājs nav atrasts',
-                    'data' => null
-                ], 404);
-            }
-
+            $user = Users::findOrFail($id);
             $user->delete();
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Lietotājs veiksmīgi dzēsts',
-                'data' => null
+                'message' => 'Lietotājs veiksmīgi dzēsts'
             ]);
         } catch (\Exception $e) {
+            \Log::error('User deletion error: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās dzēst lietotāju',
-                'data' => null
+                'message' => 'Kļūda dzēšot lietotāju',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -473,17 +495,6 @@ class AuthorizationController extends Controller
             'email.required' => 'Ievadiet savu e-pastu',
             'password.required' => 'Ievadiet savu paroli',
             'conf_password.required' => 'Apstipriniet savu paroli'
-        ]);
-    }
-
-    private function validateLogin(Request $request)
-    {
-        return Validator::make($request->all(), [
-            'email' => 'required|email|max:50',
-            'password' => 'required|max:50'
-        ], [
-            'email.required' => 'Ievadiet savu e-pastu',
-            'password.required' => 'Ievadiet savu paroli'
         ]);
     }
 
