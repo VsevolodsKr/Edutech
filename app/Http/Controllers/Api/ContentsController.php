@@ -41,9 +41,13 @@ class ContentsController extends Controller
                 ], 404);
             }
 
-            $contents = Contents::where('playlist_id', $id)
+            $contents = Contents::with('teacher')
+                ->where('playlist_id', $id)
                 ->orderBy('date', 'asc')
                 ->get()
+                ->filter(function ($content) {
+                    return $content->teacher && $content->teacher->status === 'aktīvs';
+                })
                 ->map(function ($content) {
                     return [
                         'id' => $content->id,
@@ -71,30 +75,44 @@ class ContentsController extends Controller
 
     public function get_single($encryptedId)
     {
-        $id = $this->decryptId($encryptedId);
-        if (!$id) {
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Nepareizs video ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $content = Contents::with(['teacher', 'playlist'])->find($id);
+            
+            if (!$content) {
+                return response()->json([
+                    'message' => 'Video nav atrasts',
+                    'status' => 404
+                ], 404);
+            }
+
+            if (!$content->teacher || $content->teacher->status === 'neaktīvs') {
+                return response()->json([
+                    'message' => 'Šis video nav pieejams, jo pasniedzējs ir deaktivizēts',
+                    'status' => 403
+                ], 403);
+            }
+
+            $content->encrypted_playlist_id = $content->playlist->encrypted_id;
+
             return response()->json([
-                'message' => 'Nepareizs video ID',
-                'status' => 404
-            ], 404);
-        }
-
-        $content = Contents::with(['teacher', 'playlist'])->find($id);
-        
-        if (!$content) {
+                'content' => $content,
+                'teacher' => $content->teacher,
+                'playlist' => $content->playlist
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Video nav atrasts',
-                'status' => 404
-            ], 404);
+                'message' => 'Neizdevās iegūt video datus',
+                'status' => 500
+            ], 500);
         }
-
-        $content->encrypted_playlist_id = $content->playlist->encrypted_id;
-
-        return response()->json([
-            'content' => $content,
-            'teacher' => $content->teacher,
-            'playlist' => $content->playlist
-        ]);
     }
 
     public function get_amount($encryptedId)

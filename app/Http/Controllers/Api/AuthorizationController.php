@@ -61,15 +61,18 @@ class AuthorizationController extends Controller
                 return $this->errorResponse($validator->messages()->all());
             }
 
-        $user = Users::where('email', $request->email)->first();
-        $teacher = Teachers::where('email', $request->email)->first();
+            $user = Users::where('email', $request->email)->first();
+            $teacher = Teachers::where('email', $request->email)->first();
 
             if (!$user && !$teacher) {
                 return $this->errorResponse(['Nepareizs e-pasts vai parole!']);
-        }
+            }
 
-            if (Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
-            $token = $user->createToken('MyApp')->plainTextToken;
+            if ($user && Auth::guard('user')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                if ($user->status === 'neaktīvs') {
+                    return $this->errorResponse(['Jūsu konts ir deaktivizēts. Lūdzu, sazinieties ar administratoru.'], 403);
+                }
+                $token = $user->createToken('MyApp')->plainTextToken;
                 return $this->successResponse('Autentifikācija veiksmīga!', [
                     'data' => $user,
                     'token' => $token,
@@ -77,8 +80,11 @@ class AuthorizationController extends Controller
                 ]);
             }
 
-            if (Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
-            $token = $teacher->createToken('MyApp')->plainTextToken;
+            if ($teacher && Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
+                if ($teacher->status === 'neaktīvs') {
+                    return $this->errorResponse(['Jūsu konts ir deaktivizēts. Lūdzu, sazinieties ar administratoru.'], 403);
+                }
+                $token = $teacher->createToken('MyApp')->plainTextToken;
                 return $this->successResponse('Autentifikācija veiksmīga!', [
                     'data' => $teacher,
                     'token' => $token,

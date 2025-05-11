@@ -18,6 +18,7 @@ class Teachers extends Authenticatable
         'email',
         'password',
         'image',
+        'status'
     ];
     public $timestamps = false;
 

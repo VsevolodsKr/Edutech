@@ -25,6 +25,9 @@ class PlaylistsController extends Controller
             $playlists = Playlists::with('teacher')
                 ->orderBy('date', 'desc')
                 ->get()
+                ->filter(function ($playlist) {
+                    return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
+                })
                 ->map(function ($playlist) {
                     return [
                         'id' => $playlist->id,
@@ -54,9 +57,13 @@ class PlaylistsController extends Controller
 
     public function active()
     {
-        return Playlists::orderBy('date', 'desc')
+        return Playlists::with('teacher')
+            ->orderBy('date', 'desc')
             ->where('status', 'active')
             ->get()
+            ->filter(function ($playlist) {
+                return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
+            })
             ->map(function ($playlist) {
                 return [
                     'id' => $playlist->id,

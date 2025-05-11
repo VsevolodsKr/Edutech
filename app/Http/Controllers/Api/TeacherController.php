@@ -14,6 +14,9 @@ use App\Models\Content;
 use App\Models\Comment;
 use App\Models\Like;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use App\Models\Users;
+use Illuminate\Support\Facades\Storage;
 
 class TeacherController extends Controller
 {
@@ -230,7 +233,9 @@ class TeacherController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:teachers,email',
                 'profession' => 'required|string|max:255',
-                'status' => 'required|in:active,inactive'
+                'status' => 'required',
+                'password' => 'required|min:6',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
 
             if ($validator->fails()) {
@@ -241,19 +246,30 @@ class TeacherController extends Controller
                 ], 422);
             }
 
-            $teacher = Teachers::create([
+            $data = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'profession' => $request->profession,
-                'status' => $request->status
-            ]);
+                'status' => $request->status,
+                'password' => Hash::make($request->password)
+            ];
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
+                $image->storeAs('public/teachers', $imageName);
+                $data['image'] = 'teachers/' . $imageName;
+            }
+
+            $teacher = Teachers::create($data);
 
             return response()->json([
                 'status' => 201,
-                'message' => 'Skolotājs veiksmīgi pievienots',
+                'message' => 'Skolotājs veiksmīgi pievienots!',
                 'data' => $teacher
             ], 201);
         } catch (\Exception $e) {
+            \Log::error('Failed to create teacher: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
                 'message' => 'Neizdevās pievienot skolotāju',
@@ -265,47 +281,59 @@ class TeacherController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $teacher = Teachers::find($id);
-            if (!$teacher) {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Skolotājs nav atrasts',
-                    'data' => null
-                ], 404);
-            }
+            \Log::info('Update request data:', $request->all());
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:teachers,email,' . $id,
                 'profession' => 'required|string|max:255',
-                'status' => 'required|in:active,inactive'
+                'status' => 'required|in:aktīvs,neaktīvs',
+                'password' => 'nullable|min:6',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
             ]);
 
             if ($validator->fails()) {
+                \Log::error('Validation failed:', $validator->errors()->toArray());
                 return response()->json([
-                    'status' => 422,
                     'message' => 'Validācijas kļūda',
                     'errors' => $validator->errors()
                 ], 422);
             }
 
-            $teacher->update([
+            $teacher = Teachers::findOrFail($id);
+
+            $teacherData = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'profession' => $request->profession,
                 'status' => $request->status
-            ]);
+            ];
+
+            // Update password only if provided
+            if ($request->filled('password')) {
+                $teacherData['password'] = Hash::make($request->password);
+            }
+
+            // Handle image upload only if provided
+            if ($request->hasFile('image')) {
+                if ($teacher->image && Storage::disk('public')->exists($teacher->image)) {
+                    Storage::disk('public')->delete($teacher->image);
+                }
+                $teacherData['image'] = $request->file('image')->store('teachers', 'public');
+            }
+
+            $teacher->update($teacherData);
 
             return response()->json([
-                'status' => 200,
-                'message' => 'Skolotājs veiksmīgi atjaunināts',
-                'data' => $teacher
+                'message' => 'Skolotājs veiksmīgi rediģēts!',
+                'status' => 200
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error updating teacher: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
             return response()->json([
-                'status' => 500,
-                'message' => 'Neizdevās atjaunināt skolotāju',
-                'data' => null
+                'message' => 'Neizdevās rediģēt skolotāju',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
