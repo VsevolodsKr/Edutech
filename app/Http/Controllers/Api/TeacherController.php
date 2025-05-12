@@ -256,9 +256,9 @@ class TeacherController extends Controller
 
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
-                $imageName = time() . '.' . $image->getClientOriginalExtension();
-                $image->storeAs('public/teachers', $imageName);
-                $data['image'] = 'teachers/' . $imageName;
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $image->storeAs('public/uploads', $imageName);
+                $data['image'] = '/storage/app/public/uploads/' . $imageName;
             }
 
             $teacher = Teachers::create($data);
@@ -319,7 +319,10 @@ class TeacherController extends Controller
                 if ($teacher->image && Storage::disk('public')->exists($teacher->image)) {
                     Storage::disk('public')->delete($teacher->image);
                 }
-                $teacherData['image'] = $request->file('image')->store('teachers', 'public');
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $image->storeAs('public/uploads', $imageName);
+                $teacherData['image'] = '/storage/app/public/uploads/' . $imageName;
             }
 
             $teacher->update($teacherData);

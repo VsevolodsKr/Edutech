@@ -5,7 +5,6 @@
             <h1 class="text-[1.5rem] text-text_dark capitalize">Izstrādātāja panelis</h1>
             <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
 
-            <!-- Summary Info Boxes -->
             <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1rem] justify-center items-start pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">Sveicināti!</h2>
@@ -32,9 +31,7 @@
                 </div>
             </div>
 
-            <!-- Charts Section -->
             <div class="grid grid-cols-[repeat(auto-fit,_minmax(40rem,_1fr))] gap-[2rem] mt-[2rem] pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
-                <!-- Message Status Chart -->
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h2 class="text-center text-text_dark text-[1.5rem] mb-[2rem]">Ziņojumu statusi</h2>
                     <div class="relative h-[300px]">
@@ -42,7 +39,6 @@
                     </div>
                 </div>
 
-                <!-- Top Teachers Chart -->
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h2 class="text-center text-text_dark text-[1.5rem] mb-[2rem]">Populārākie skolotāji</h2>
                     <div class="relative h-[300px]">
@@ -97,8 +93,7 @@ const loadDashboardData = async () => {
     try {
         const response = await axios.get('/api/developer/dashboard/stats');
         statistics.value = response.data;
-        
-        // Update charts with new data
+
         if (activityChart.value) {
             updateActivityChart(statistics.value.activity);
         }
@@ -155,7 +150,6 @@ const updateMessageStatusChart = (data) => {
         chartInstances.value.messageStatus.destroy();
     }
 
-    // Map backend status values to display labels
     const statusLabelMap = {
         'jauns': 'Jauns',
         'atvērts': 'Atvērts',
@@ -196,6 +190,7 @@ const updateMessageStatusChart = (data) => {
                     position: 'bottom',
                     labels: {
                         padding: 20,
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                         font: {
                             size: 14
                         }
@@ -233,21 +228,25 @@ const updateTopTeachersChart = (data) => {
                 {
                     label: 'Saraksti',
                     data: data.datasets.playlists,
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button')
                 },
                 {
                     label: 'Satura elementi',
                     data: data.datasets.contents,
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button2')
                 },
                 {
                     label: 'Komentāri',
                     data: data.datasets.comments,
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button3')
                 },
                 {
                     label: 'Patīk',
                     data: data.datasets.likes,
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button4')
                 }
             ]
@@ -310,6 +309,5 @@ onMounted(async () => {
     await loadDashboardData();
 });
 
-// Refresh data every 5 minutes
 setInterval(loadDashboardData, 5 * 60 * 1000);
 </script>

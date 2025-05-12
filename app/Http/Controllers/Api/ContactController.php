@@ -61,49 +61,6 @@ class ContactController extends Controller
         }
     }
 
-    public function reply(Request $request, $id)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'reply' => 'required|string'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 422,
-                    'message' => 'Validācijas kļūda',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $message = Contacts::find($id);
-            if (!$message) {
-                return response()->json([
-                    'status' => 404,
-                    'message' => 'Ziņojums nav atrasts',
-                    'data' => null
-                ], 404);
-            }
-
-            $message->update([
-                'reply' => $request->reply,
-                'status' => 'replied'
-            ]);
-
-            return response()->json([
-                'status' => 200,
-                'message' => 'Atbilde veiksmīgi nosūtīta',
-                'data' => $message
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 500,
-                'message' => 'Neizdevās nosūtīt atbildi',
-                'data' => null
-            ], 500);
-        }
-    }
-
     public function markAsRead($id)
     {
         try {
@@ -160,18 +117,6 @@ class ContactController extends Controller
         }
     }
 
-    public function getMessageStats()
-    {
-        $stats = [
-            'total' => Contacts::count(),
-            'unread' => Contacts::where('status', 'unread')->count(),
-            'in_progress' => Contacts::whereIn('status', ['replied', 'read'])->count(),
-            'completed' => Contacts::where('status', 'replied')->count()
-        ];
-
-        return response()->json($stats);
-    }
-
     public function getMessageStatusDistribution()
     {
         $statuses = Contacts::select('status', DB::raw('count(*) as count'))
@@ -193,7 +138,7 @@ class ContactController extends Controller
 
     public function getUnreadMessages()
     {
-        $messages = Contacts::where('status', 'unread')
+        $messages = Contacts::where('status', 'jauns')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
@@ -220,7 +165,7 @@ class ContactController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'status' => 422,
-                    'message' => 'Validācijas kļūda',
+                    'message' => 'Validācijas kļūda!',
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -229,7 +174,7 @@ class ContactController extends Controller
             if (!$message) {
                 return response()->json([
                     'status' => 404,
-                    'message' => 'Ziņojums nav atrasts',
+                    'message' => 'Ziņojums nav atrasts!',
                     'data' => null
                 ], 404);
             }
@@ -238,13 +183,13 @@ class ContactController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => 'Statuss veiksmīgi atjaunināts',
+                'message' => 'Statuss veiksmīgi rediģēts!',
                 'data' => $message
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās atjaunināt statusu',
+                'message' => 'Neizdevās rediģēt statusu!',
                 'data' => null
             ], 500);
         }

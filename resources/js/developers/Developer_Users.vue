@@ -3,28 +3,27 @@
         <Developer_Header />
         <section :class="sectionClasses">
             <div class="flex justify-between items-center mb-[2rem]">
-                <h1 class="text-[1.5rem] text-[var(--text_dark)] capitalize">Lietotāju pārvaldība</h1>
+                <h1 class="text-[1.5rem] text-text_dark capitalize">Lietotāju pārvaldība</h1>
                 <button 
                     @click="openAddModal"
-                    class="bg-[var(--button)] text-[var(--text_dark)] px-[1.5rem] py-[.5rem] rounded-lg hover:bg-transparent hover:text-[var(--button)] border-2 border-[var(--button)] transition-all duration-200"
+                    class="bg-button text-base px-[1.5rem] py-[.5rem] rounded-lg hover:bg-transparent hover:text-button border-2 border-button transition-all duration-200"
                 >
                     Pievienot lietotāju
                 </button>
             </div>
 
-            <!-- Search and Filter -->
             <div class="mb-[2rem] flex gap-4">
                 <div class="flex-1">
                     <input 
                         type="text" 
                         v-model="searchQuery"
                         placeholder="Meklēt lietotājus..."
-                        class="w-full p-[.8rem] rounded-lg bg-[var(--base)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                        class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                     >
                 </div>
                 <select 
                     v-model="statusFilter"
-                    class="p-[.8rem] rounded-lg bg-[var(--base)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                    class="p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                 >
                     <option value="">Visi statusi</option>
                     <option value="aktīvs">Aktīvs</option>
@@ -32,44 +31,43 @@
                 </select>
             </div>
 
-            <!-- Users Table -->
-            <div class="bg-[var(--base)] rounded-lg overflow-hidden">
+            <div class="bg-base rounded-lg overflow-hidden">
                 <table class="w-full">
                     <thead>
-                        <tr class="bg-[var(--background)]">
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Vārds</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">E-pasts</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Statuss</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Reģistrācijas datums</th>
-                            <th class="p-[1rem] text-left text-[var(--text_dark)]">Darbības</th>
+                        <tr class="bg-background">
+                            <th class="p-[1rem] text-left text-text_dark">Vārds</th>
+                            <th class="p-[1rem] text-left text-text_dark">E-pasts</th>
+                            <th class="p-[1rem] text-left text-text_dark">Statuss</th>
+                            <th class="p-[1rem] text-left text-text_dark">Reģistrācijas datums</th>
+                            <th class="p-[1rem] text-left text-text_dark">Darbības</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="user in filteredUsers" :key="user.id" class="border-t-2 border-[var(--border-color)]">
-                            <td class="p-[1rem] text-[var(--text_dark)]">{{ user.name }}</td>
-                            <td class="p-[1rem] text-[var(--text_dark)]">{{ user.email }}</td>
+                        <tr v-for="user in filteredUsers" :key="user.id" class="border-t-2 border-line">
+                            <td class="p-[1rem] text-text_dark">{{ user.name }}</td>
+                            <td class="p-[1rem] text-text_dark">{{ user.email }}</td>
                             <td class="p-[1rem]">
                                 <span 
                                     :class="[
                                         'px-[.8rem] py-[.3rem] rounded-full text-sm',
-                                        user.status === 'aktīvs' ? 'bg-[var(--button2)] text-[var(--text_dark)]' : 'bg-[var(--button4)] text-[var(--text_dark)]'
+                                        user.status === 'aktīvs' ? 'bg-button2 text-base' : 'bg-button4 text-base'
                                     ]"
                                 >
                                     {{ user.status === 'aktīvs' ? 'Aktīvs' : 'Neaktīvs' }}
                                 </span>
                             </td>
-                            <td class="p-[1rem] text-[var(--text_dark)]">{{ formatDate(user.created_at) }}</td>
+                            <td class="p-[1rem] text-text_dark">{{ formatDate(user.created_at) }}</td>
                             <td class="p-[1rem]">
                                 <div class="flex gap-2">
                                     <button 
                                         @click="editUser(user)"
-                                        class="p-[.5rem] text-[var(--button3)] hover:text-[var(--button)] transition-colors duration-200"
+                                        class="p-[.5rem] text-button3 hover:text-button transition-colors duration-200"
                                     >
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button 
                                         @click="deleteUser(user)"
-                                        class="p-[.5rem] text-[var(--button4)] hover:text-[var(--button)] transition-colors duration-200"
+                                        class="p-[.5rem] text-button4 hover:text-button transition-colors duration-200"
                                     >
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -77,19 +75,52 @@
                             </td>
                         </tr>
                         <tr v-if="filteredUsers.length === 0">
-                            <td colspan="5" class="p-[2rem] text-center text-[var(--text_light)]">
+                            <td colspan="5" class="p-[2rem] text-center text-text_light">
                                 Nav atrasts neviens lietotājs
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                <div class="flex justify-between items-center p-4 border-t-2 border-line">
+                    <div class="text-text_dark">
+                        Rādīt {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, users.length) }} no {{ users.length }}
+                    </div>
+                    <div class="flex gap-2">
+                        <button 
+                            @click="changePage(currentPage - 1)"
+                            :disabled="currentPage === 1"
+                            class="px-3 py-1 rounded-lg border-2 border-line text-text_dark disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Iepriekšējā
+                        </button>
+                        <button 
+                            v-for="page in totalPages" 
+                            :key="page"
+                            @click="changePage(page)"
+                            :class="[
+                                'px-3 py-1 rounded-lg border-2',
+                                currentPage === page 
+                                    ? 'bg-button text-base border-button' 
+                                    : 'border-line text-text_dark'
+                            ]"
+                        >
+                            {{ page }}
+                        </button>
+                        <button 
+                            @click="changePage(currentPage + 1)"
+                            :disabled="currentPage === totalPages"
+                            class="px-3 py-1 rounded-lg border-2 border-line text-text_dark disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Nākamā
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Add/Edit Modal -->
         <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-[var(--base)] rounded-lg p-[2rem] w-[40rem] max-w-[90%]">
-                <h2 class="text-[1.5rem] text-[var(--text_dark)] mb-[2rem]">
+            <div class="bg-base rounded-lg p-[2rem] w-[40rem] max-w-[90%]">
+                <h2 class="text-[1.5rem] text-text_dark mb-[2rem]">
                     {{ editingUser ? 'Rediģēt lietotāju' : 'Pievienot jaunu lietotāju' }}
                 </h2>
                 <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -98,7 +129,7 @@
                         <input 
                             type="text" 
                             v-model="form.name"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                            class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                             required
                         >
                     </div>
@@ -107,12 +138,12 @@
                         <input 
                             type="email" 
                             v-model="form.email"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                            class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                             required
                         >
                     </div>
                     <div>
-                        <label class="block text-[var(--text_dark)] mb-2">
+                        <label class="block text-text_dark mb-2">
                             {{ editingUser ? 'Mainīt paroli (neobligāts)' : 'Parole' }}
                         </label>
                         <input
@@ -120,10 +151,10 @@
                             type="password"
                             v-model="form.password"
                             :required="!editingUser"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                            class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                         >
                         <div v-if="editingUser" class="mt-2">
-                            <label class="flex items-center text-[var(--text_dark)]">
+                            <label class="flex items-center text-text_dark">
                                 <input
                                     type="checkbox"
                                     v-model="showPasswordField"
@@ -134,7 +165,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[var(--text_dark)] mb-2">
+                        <label class="block text-text_dark mb-2">
                             {{ editingUser ? 'Mainīt attēlu (neobligāts)' : 'Attēls' }}
                         </label>
                         <input
@@ -143,17 +174,17 @@
                             @change="handleImageUpload"
                             accept="image/*"
                             :required="!editingUser"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                            class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                         >
-                        <p v-if="editingUser" class="text-sm text-[var(--text_light)] mt-1">
+                        <p v-if="editingUser" class="text-sm text-text_light mt-1">
                             Ja nevēlaties mainīt attēlu, atstājiet šo lauku tukšu
                         </p>
                     </div>
                     <div>
-                        <label class="block text-[var(--text_dark)] mb-2">Statuss</label>
+                        <label class="block text-text_dark mb-2">Statuss</label>
                         <select 
                             v-model="form.status"
-                            class="w-full p-[.8rem] rounded-lg bg-[var(--background)] text-[var(--text_dark)] border-2 border-[var(--border-color)] focus:border-[var(--button)] focus:outline-none"
+                            class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-line focus:border-button focus:outline-none"
                             required
                         >
                             <option value="aktīvs">Aktīvs</option>
@@ -164,13 +195,13 @@
                         <button 
                             type="button"
                             @click="closeModal"
-                            class="px-[1.5rem] py-[.5rem] rounded-lg border-2 border-[var(--border-color)] text-[var(--text_dark)] hover:bg-[var(--background)] transition-all duration-200"
+                            class="px-[1.5rem] py-[.5rem] rounded-lg border-2 border-line text-text_dark hover:bg-background transition-all duration-200"
                         >
                             Atcelt
                         </button>
                         <button 
                             type="submit"
-                            class="px-[1.5rem] py-[.5rem] rounded-lg bg-[var(--button)] text-[var(--text_dark)] hover:bg-transparent hover:text-[var(--button)] border-2 border-[var(--button)] transition-all duration-200"
+                            class="px-[1.5rem] py-[.5rem] rounded-lg bg-button text-text_dark hover:bg-transparent hover:text-button border-2 border-button transition-all duration-200"
                         >
                             {{ editingUser ? 'Saglabāt' : 'Pievienot' }}
                         </button>
@@ -198,6 +229,8 @@ const searchQuery = ref('');
 const statusFilter = ref('');
 const showModal = ref(false);
 const editingUser = ref(null);
+const currentPage = ref(1);
+const itemsPerPage = 10;
 const showPasswordField = ref(false);
 const form = ref({
     name: '',
@@ -217,13 +250,32 @@ const sectionClasses = computed(() => [
 ]);
 
 const filteredUsers = computed(() => {
-    return users.value.filter(user => {
+    const filtered = users.value.filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
                             user.email.toLowerCase().includes(searchQuery.value.toLowerCase());
         const matchesStatus = !statusFilter.value || user.status === statusFilter.value;
         return matchesSearch && matchesStatus;
     });
+
+    // Calculate pagination
+    const startIndex = (currentPage.value - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
 });
+
+const totalPages = computed(() => {
+    const filtered = users.value.filter(user => {
+        const matchesSearch = user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                            user.email.toLowerCase().includes(searchQuery.value.toLowerCase());
+        const matchesStatus = !statusFilter.value || user.status === statusFilter.value;
+        return matchesSearch && matchesStatus;
+    });
+    return Math.ceil(filtered.length / itemsPerPage);
+});
+
+const changePage = (page) => {
+    currentPage.value = page;
+};
 
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString('lv-LV');
@@ -290,8 +342,6 @@ const closeModal = () => {
 
 const handleSubmit = async () => {
     try {
-        console.log('Form data before submission:', form.value);
-        
         const formData = new FormData();
         formData.append('name', form.value.name);
         formData.append('email', form.value.email);
@@ -309,7 +359,6 @@ const handleSubmit = async () => {
 
         let response;
         if (editingUser.value) {
-            // For PUT requests, we need to use _method=PUT with POST
             formData.append('_method', 'PUT');
             console.log('Sending update request for user:', editingUser.value.id);
             console.log('Form data being sent:', Object.fromEntries(formData));
