@@ -150,8 +150,9 @@ const handleSubmit = async () => {
 
         localStorage.setItem('token', response.data.token);
         const userData = {
-            ...response.data.data,
-            is_teacher: response.data.is_teacher
+            ...(response.data.data || {}),
+            is_teacher: response.data.is_teacher,
+            is_developer: response.data.is_developer
         };
         localStorage.setItem('user', JSON.stringify(userData));
         store.commit('setUser', userData);
@@ -162,7 +163,13 @@ const handleSubmit = async () => {
         isError.value = false;
 
         setTimeout(() => {
-            router.push(response.data.is_teacher ? '/dashboard' : '/');
+            if (response.data.is_developer) {
+                router.push('/developer_dashboard');
+            } else if (response.data.is_teacher) {
+                router.push('/dashboard');
+            } else {
+                router.push('/');
+            }
         }, 500);
     } catch (err) {
         console.error('Login error:', err);

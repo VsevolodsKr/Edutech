@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('status', ['aktīvs', 'neaktīvs'])->default('aktīvs')->after('email');
-        });
+        if (!Schema::hasColumn('users', 'status')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->enum('status', ['aktīvs', 'neaktīvs'])->default('aktīvs')->after('email');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('status');
-        });
+        if (Schema::hasColumn('users', 'status')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
     }
 };

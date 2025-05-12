@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use App\Models\Users;
 use App\Models\Teachers;
+use App\Models\Developers;
 
 class AuthorizationController extends Controller
 {
@@ -70,6 +71,7 @@ class AuthorizationController extends Controller
 
         $user = Users::where('email', $request->email)->first();
         $teacher = Teachers::where('email', $request->email)->first();
+        $developer = Developers::where('email', $request->email)->first();
 
         if ($user && $user->status === 'neaktīvs') {
             return response()->json([
@@ -85,13 +87,21 @@ class AuthorizationController extends Controller
             ], 403);
         }
 
+        if ($developer && $developer->status === 'neaktīvs') {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Jūsu konts ir deaktivizēts'
+            ], 403);
+        }
+
         if ($user && Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $user->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'status' => 200,
                 'message' => 'Veiksmīga autorizācija',
                 'token' => $token,
-                'is_teacher' => false
+                'is_teacher' => false,
+                'is_developer' => false
             ]);
         }
 
@@ -101,7 +111,26 @@ class AuthorizationController extends Controller
                 'status' => 200,
                 'message' => 'Veiksmīga autorizācija',
                 'token' => $token,
-                'is_teacher' => true
+                'is_teacher' => true,
+                'is_developer' => false
+            ]);
+        }
+
+        if ($developer && Hash::check($request->password, $developer->password)) {
+            $token = $developer->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'status' => 200,
+                'message' => 'Veiksmīga autorizācija',
+                'token' => $token,
+                'is_teacher' => false,
+                'is_developer' => true,
+                'data' => [
+                    'id' => $developer->id,
+                    'name' => $developer->name,
+                    'email' => $developer->email,
+                    'image' => $developer->image ?: self::DEFAULT_IMAGE,
+                    'status' => $developer->status
+                ]
             ]);
         }
 

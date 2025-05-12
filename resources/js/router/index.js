@@ -168,6 +168,24 @@ const requireAdminAuth = (to, from, next) => {
     next();
 };
 
+const requireDeveloperAuth = (to, from, next) => {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    if (!token || !user) {
+        localStorage.setItem('developerRedirectTo', to.fullPath);
+        next('/login');
+        return;
+    }
+    
+    if (!user.is_developer) {
+        next('/');
+        return;
+    }
+    
+    next();
+};
+
 const adminRoutes = [
     {
         path: '/dashboard',
@@ -329,7 +347,8 @@ const developerRoutes = [
             title: 'Vadības panelis',
             requiresAuth: true,
             isDeveloper: true
-        }
+        },
+        beforeEnter: requireDeveloperAuth
     },
     {
         path: '/developer_teachers',
@@ -339,7 +358,8 @@ const developerRoutes = [
             title: 'Skolotāju pārvaldība',
             requiresAuth: true,
             isDeveloper: true
-        }
+        },
+        beforeEnter: requireDeveloperAuth
     },
     {
         path: '/developer_users',
@@ -349,7 +369,8 @@ const developerRoutes = [
             title: 'Lietotāju pārvaldība',
             requiresAuth: true,
             isDeveloper: true
-        }
+        },
+        beforeEnter: requireDeveloperAuth
     },
     {
         path: '/developer_messages',
@@ -359,7 +380,8 @@ const developerRoutes = [
             title: 'Ziņojumu pārvaldība',
             requiresAuth: true,
             isDeveloper: true
-        }
+        },
+        beforeEnter: requireDeveloperAuth
     }
 ];
 

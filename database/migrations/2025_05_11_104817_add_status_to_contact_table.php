@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('contact', function (Blueprint $table) {
-            $table->enum('status', ['jauns', 'atvērts', 'apstrāde', 'pabeigts'])->default('jauns')->after('message');
-        });
+        if (!Schema::hasColumn('contact', 'status')) {
+            Schema::table('contact', function (Blueprint $table) {
+                $table->enum('status', ['jauns', 'atvērts', 'apstrāde', 'pabeigts'])->default('jauns')->after('message');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contact', function (Blueprint $table) {
-            $table->dropColumn('status');
-        });
+        if (Schema::hasColumn('contact', 'status')) {
+            Schema::table('contact', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
     }
 };
