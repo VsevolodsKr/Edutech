@@ -179,7 +179,11 @@ const requireDeveloperAuth = (to, from, next) => {
     }
     
     if (!user.is_developer) {
-        next('/');
+        if (user.is_teacher) {
+            next('/dashboard');
+        } else {
+            next('/');
+        }
         return;
     }
     

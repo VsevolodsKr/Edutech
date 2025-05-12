@@ -184,7 +184,7 @@ const { width } = useWindowSize();
 // State
 const isLoggingOut = ref(false);
 const error = ref(null);
-const isAuthenticated = ref(false);
+const isAuthenticated = computed(() => store.getters.getUser !== null);
 
 // Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
@@ -215,11 +215,16 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-const statistics = computed(() => [
-    { value: dashboardStats.value?.likes || 0, label: 'Favorītvideo', link: '/likes' },
-    { value: dashboardStats.value?.playlists || 0, label: 'Gramātiezīmētie kursi', link: '/bookmarks' },
-    { value: dashboardStats.value?.comments || 0, label: 'Komentāri', link: '/comments' }
-]);
+const statistics = computed(() => {
+    const stats = store.getters.getDashboardStats;
+    console.log('Computing statistics with stats:', stats);
+    
+    return [
+        { value: parseInt(stats?.likes) || 0, label: 'Favorītvideo', link: '/likes' },
+        { value: parseInt(stats?.playlists) || 0, label: 'Grāmatzīmes', link: '/bookmarks' },
+        { value: parseInt(stats?.comments) || 0, label: 'Komentāri', link: '/comments' }
+    ];
+});
 
 const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -258,35 +263,55 @@ watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
 
-watch(() => user.value?.encrypted_id, async (newId) => {
-    if (newId) {
-        await store.dispatch('loadUserStats', newId);
-    }
-});
+watch(() => store.getters.getDashboardStats, (newStats, oldStats) => {
+    console.log('Dashboard stats changed:', {
+        old: oldStats,
+        new: newStats
+    });
+}, { deep: true });
 
 onMounted(async () => {
     try {
         const token = localStorage.getItem('token');
-        isAuthenticated.value = !!token;
-        
-        await store.dispatch('loadLatestPlaylists');
+        if (!token) {
+            await router.push('/login');
+            return;
+        }
 
-        if (isAuthenticated.value) {
-            if (!user.value?.id) {
-                await store.dispatch('loadUserData');
-            }
-            if (user.value?.encrypted_id) {
-                await store.dispatch('loadUserStats', user.value.encrypted_id);
-            }
-        }
-    } catch (err) {
-        console.error('Error in onMounted:', err);
-        if (err.response?.status === 401) {
-            localStorage.removeItem('token');
-            isAuthenticated.value = false;
-        } else {
-            error.value = 'Failed to load dashboard data. Please try again later.';
-        }
+        // Load initial user data
+        await store.dispatch('loadUserData');
+        
+        // Load latest playlists
+        await store.dispatch('loadLatestPlaylists');
+    } catch (error) {
+        console.error('Error in Home.vue setup:', error);
+    }
+});
+
+// Watch for user changes
+watch(() => store.getters.getUser, async (newUser, oldUser) => {
+    console.log('User changed:', {
+        oldId: oldUser?.encrypted_id,
+        newId: newUser?.encrypted_id,
+        newUser: newUser
+    });
+
+    if (newUser?.encrypted_id) {
+        await store.dispatch('loadUserStats', newUser.encrypted_id);
+    }
+}, { deep: true, immediate: true });
+
+// Watch for dashboard stats changes
+watch(() => store.getters.getDashboardStats, (newStats) => {
+    console.log('Dashboard stats updated:', newStats);
+}, { deep: true });
+
+// Watch for route changes
+watch(() => router.currentRoute.value.path, async (newPath, oldPath) => {
+    if (newPath === '/' && newPath !== oldPath && store.getters.getUser?.encrypted_id) {
+        console.log('Returned to home, refreshing stats');
+        await store.dispatch('loadUserStats', store.getters.getUser.encrypted_id);
+        await store.dispatch('loadLatestPlaylists');
     }
 });
 </script>

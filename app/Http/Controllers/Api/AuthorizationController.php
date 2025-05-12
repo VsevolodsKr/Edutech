@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\File;
 use App\Models\Users;
 use App\Models\Teachers;
 use App\Models\Developers;
+use App\Traits\Encryptable;
 
 class AuthorizationController extends Controller
 {
+    use Encryptable;
+
     private const DEFAULT_IMAGE = '/storage/app/public/default.png';
     private const UPLOAD_PATH = 'uploads';
 
@@ -101,7 +104,14 @@ class AuthorizationController extends Controller
                 'message' => 'Veiksmīga autorizācija',
                 'token' => $token,
                 'is_teacher' => false,
-                'is_developer' => false
+                'is_developer' => false,
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'image' => $user->image ?: self::DEFAULT_IMAGE,
+                    'status' => $user->status
+                ]
             ]);
         }
 
@@ -112,7 +122,16 @@ class AuthorizationController extends Controller
                 'message' => 'Veiksmīga autorizācija',
                 'token' => $token,
                 'is_teacher' => true,
-                'is_developer' => false
+                'is_developer' => false,
+                'data' => [
+                    'id' => $teacher->id,
+                    'encrypted_id' => $this->encryptId($teacher->id),
+                    'name' => $teacher->name,
+                    'email' => $teacher->email,
+                    'profession' => $teacher->profession,
+                    'image' => $teacher->image ?: self::DEFAULT_IMAGE,
+                    'status' => $teacher->status
+                ]
             ]);
         }
 

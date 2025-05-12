@@ -25,69 +25,76 @@
                     </router-link>
                 </div>
 
-                <div v-for="content in contents" 
-                     :key="content.id" 
-                     class="bg-base rounded-lg p-[2rem] w-full">
-                    <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
-                        <div>
-                            <i :class="[
-                                content.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
-                                'fas fa-circle-dot text-[1.2rem]'
-                            ]"></i>
-                            <span :class="[
-                                content.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
-                                'text-[1.2rem]'
-                            ]">
-                                {{ content.status }}
-                            </span>
+                <template v-if="contents.length === 0">
+                    <div class="bg-base rounded-lg p-[2rem] w-full">
+                        <p class="text-center text-text_light">Jums vēl nav pievienotu video. Sāciet, pievienojot savu pirmo video!</p>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <div v-for="content in contents" 
+                         :key="content.id" 
+                         class="bg-base rounded-lg p-[2rem] w-full">
+                        <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
+                            <div>
+                                <i :class="[
+                                    content.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
+                                    'fas fa-circle-dot text-[1.2rem]'
+                                ]"></i>
+                                <span :class="[
+                                    content.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
+                                    'text-[1.2rem]'
+                                ]">
+                                    {{ content.status }}
+                                </span>
+                            </div>
+                            <div>
+                                <i class="fas fa-calendar text-button text-[1.2rem]"></i>
+                                <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
+                                    {{ formatDate(content.date) }}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <i class="fas fa-calendar text-button text-[1.2rem]"></i>
-                            <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                {{ formatDate(content.date) }}
-                            </span>
+
+                        <div class="relative">
+                            <img 
+                                :src="getImageUrl(content.thumb)" 
+                                :alt="content.title"
+                                @error="handleImageError"
+                                class="w-full h-[20rem] object-cover rounded-lg z-[-120] [@media(max-width:550px)]:h-[12rem]">
                         </div>
-                    </div>
 
-                    <div class="flex justify-center mb-4">
-                        <img 
-                            :src="getImageUrl(content.thumb)" 
-                            :alt="content.title"
-                            @error="handleImageError"
-                            class="w-full h-48 object-cover rounded-lg"
-                        >
-                    </div>
+                        <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
+                            {{ content.title }}
+                        </h3>
 
-                    <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
-                        {{ content.title }}
-                    </h3>
+                        <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem] line-clamp-3">
+                            {{ content.description }}
+                        </div>
 
-                    <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem] line-clamp-3">
-                        {{ content.description }}
-                    </div>
+                        <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
+                            <button 
+                                @click="router.push(`/admin_contents/update/${content.encrypted_id}`)"
+                                class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            >
+                                Rediģēt
+                            </button>
+                            <button 
+                                @click="handleDelete(content.encrypted_id)"
+                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            >
+                                Dzēst
+                            </button>
+                        </div>
 
-                    <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
                         <button 
-                            @click="router.push(`/admin_contents/update/${content.encrypted_id}`)"
-                            class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            @click="router.push(`/admin_watch_content/${content.encrypted_id}`)"
+                            class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Rediģēt
-                        </button>
-                        <button 
-                            @click="handleDelete(content.id)"
-                            class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                        >
-                            Dzēst
+                            Skatīt video
                         </button>
                     </div>
-
-                    <button 
-                        @click="router.push(`/admin_watch_content/${content.encrypted_id}`)"
-                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                    >
-                        Skatīt video
-                    </button>
-                </div>
+                </template>
             </div>
         </section>
         <Admin_Sidebar />
@@ -106,42 +113,30 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-const error = ref(null);
 const isLoading = ref(true);
-
-const showSidebar = computed(() => store.getters.getShowSidebar);
+const error = ref(null);
 const contents = computed(() => store.getters.getContents);
 const storeIsLoading = computed(() => store.getters.getIsLoading);
-const loading = computed(() => isLoading.value || storeIsLoading.value);
+
+const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-const defaultThumb = '/images/default-thumb.png';
-
 const getImageUrl = (image) => {
-    if (!image) return defaultThumb;
+    if (!image) return '/storage/default-thumbnail.png';
     if (image.startsWith('data:')) return image;
     if (image.startsWith('http')) return image;
-
-    let cleanPath = image;
-    if (cleanPath.includes('/storage/app/public/')) {
-        cleanPath = cleanPath.replace('/storage/app/public/', '');
-    } else if (cleanPath.includes('storage/app/public/')) {
-        cleanPath = cleanPath.replace('storage/app/public/', '');
-    }
-
-    cleanPath = cleanPath.replace(/^\/+/, '');
-    return `${window.location.origin}/storage/${cleanPath}`;
+    return `/storage/${image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`;
 };
 
 const handleImageError = (event) => {
-    event.target.src = defaultThumb;
+    event.target.src = '/storage/default-thumbnail.png';
 };
 
-const handleDelete = async (contentId) => {
+const handleDelete = async (encryptedId) => {
     const background = getComputedStyle(document.documentElement).getPropertyValue('--background');
     const text_dark = getComputedStyle(document.documentElement).getPropertyValue('--text_dark');
     const button4 = getComputedStyle(document.documentElement).getPropertyValue('--button4');
@@ -161,9 +156,9 @@ const handleDelete = async (contentId) => {
         });
 
         if (result.isConfirmed) {
-            await axios.delete(`/api/contents/delete/${contentId}`);
+            await axios.delete(`/api/contents/delete/${encryptedId}`);
             
-            const updatedContents = contents.value.filter(content => content.id !== contentId);
+            const updatedContents = contents.value.filter(content => content.encrypted_id !== encryptedId);
             store.commit('setContents', updatedContents);
             
             await Swal.fire({
@@ -195,22 +190,34 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
     try {
+        isLoading.value = true;
+        error.value = null;
+        
         const user = store.getters.getUser;
-        if (user) {
-            await store.dispatch('loadContents', user.id);
+        if (!user || !user.encrypted_id) {
+            router.push('/login');
+            return;
         }
-    } catch (error) {
-        console.error('Error loading contents:', error);
+
+        await store.dispatch('loadContents', user.encrypted_id);
+    } catch (err) {
+        console.error('Error in onMounted:', err);
+        error.value = 'Neizdevās ielādēt video: ' + (err.message || 'Nezināma kļūda');
     } finally {
         isLoading.value = false;
     }
 });
 
 watch(storeIsLoading, (newValue) => {
-    if (!newValue && contents.value.length === 0) {
-        isLoading.value = false;
-    }
+    isLoading.value = newValue;
 });
+
+// Add watcher for contents
+watch(contents, (newContents) => {
+    if (!newContents || newContents.length === 0) {
+        error.value = null; // Clear error when there are no contents
+    }
+}, { deep: true });
 </script>
 
 <style scoped>

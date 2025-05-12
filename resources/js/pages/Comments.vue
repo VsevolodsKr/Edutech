@@ -223,9 +223,12 @@ const deleteComment = async (commentId) => {
 
             await axios.delete(`/api/comments/delete/${commentId}`, { headers });
 
+            // Update local state
             comments.value = comments.value.filter(comment => comment.id !== commentId);
-
-            await store.dispatch('loadUserStats', user.value.id);
+            
+            // Update store stats
+            store.commit('decrementStat', 'comments');
+            await store.dispatch('loadUserStats', user.value.encrypted_id);
 
             await Swal.fire({
                 title: 'Dzēsts!',

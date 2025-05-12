@@ -23,11 +23,44 @@ class ContentsController extends Controller
     private const CONTENT_THUMBS_PATH = 'content_thumbs';
     private const CONTENT_VIDEOS_PATH = 'content_videos';
 
-    public function get_teacher_contents(string $id)
+    public function get_teacher_contents(string $encryptedId)
     {
-        return Contents::where('teacher_id', $id)
-            ->orderBy('date', 'desc')
-            ->get();
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Nepareizs pasniedzēja ID',
+                    'status' => 404
+                ], 404);
+            }
+
+            $contents = Contents::where('teacher_id', $id)
+                ->orderBy('date', 'desc')
+                ->get()
+                ->map(function ($content) {
+                    return [
+                        'id' => $content->id,
+                        'encrypted_id' => $this->encryptId($content->id),
+                        'title' => $content->title,
+                        'description' => $content->description,
+                        'video' => $content->video,
+                        'thumb' => $content->thumb,
+                        'date' => $content->date,
+                        'status' => $content->status,
+                        'video_source_type' => $content->video_source_type,
+                        'teacher_id' => $content->teacher_id,
+                        'playlist_id' => $content->playlist_id
+                    ];
+                });
+
+            return response()->json($contents);
+        } catch (\Exception $e) {
+            \Log::error('Error getting teacher contents: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Neizdevās iegūt video sarakstu',
+                'status' => 500
+            ], 500);
+        }
     }
 
     public function get_playlist_contents($encryptedId)
@@ -201,16 +234,20 @@ class ContentsController extends Controller
         }
     }
 
-    public function store(Request $request, string $id)
+    public function store(Request $request, string $encryptedId)
     {
         try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return $this->errorResponse(['Nepareizs video ID']);
+            }
+
             $validator = $this->validateContent($request);
             if ($validator->fails()) {
                 return $this->errorResponse($validator->messages()->all());
             }
 
             $content = Contents::findOrFail($id);
-            
             
             $updateData = [
                 'status' => $request->status,
@@ -227,9 +264,14 @@ class ContentsController extends Controller
         }
     }
 
-    public function delete($id)
+    public function delete($encryptedId)
     {
         try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return $this->errorResponse(['Nepareizs video ID']);
+            }
+
             $content = Contents::findOrFail($id);
             
             Comments::where('content_id', $id)->delete();

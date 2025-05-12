@@ -456,35 +456,41 @@ const handleSubmit = async () => {
             }
         }
 
-        const response = await axios.post(`/api/contents/update/${route.params.id}/send`, data, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-                'Content-Type': 'multipart/form-data'
+        const response = await axios.post(
+            `/api/contents/update/${content.value.encrypted_id}/send`,
+            data,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
             }
-        });
+        );
 
-        if (response.data.status === 'success') {
-            messages.value = ['Saturs rediģēts'];
-            errorStatus.value = 200;
-            
-            await Swal.fire({
-                title: 'Success!',
-                text: 'Saturs rediģēts',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-            
-            router.push('/admin_contents');
+        if (response.data.status === 500) {
+            errorStatus.value = 500;
+            messages.value = Array.isArray(response.data.message) 
+                ? response.data.message 
+                : [response.data.message];
         } else {
             messages.value = Array.isArray(response.data.message) 
                 ? response.data.message 
                 : [response.data.message];
             errorStatus.value = response.data.status;
+
+            if (response.data.status === 200) {
+                setTimeout(() => {
+                    router.push('/admin_contents');
+                }, 1000);
+            }
         }
     } catch (error) {
-        messages.value = error.response?.data?.message || ['Neizdevās rediģēt saturu'];
-        errorStatus.value = error.response?.data?.status || 500;
+        console.error('Error updating content:', error);
+        messages.value = Array.isArray(error.response?.data?.message)
+            ? error.response.data.message
+            : [error.response?.data?.message || 'An error occurred while updating the content'];
+        errorStatus.value = error.response?.status || 500;
     } finally {
         isSubmitting.value = false;
     }

@@ -6,6 +6,7 @@ export default createStore({
         return {
             showSidebar: true,
             user: null,
+            userLoaded: false,
             searchPlaylist: '',
             isLoading: false,
             dashboardStats: {
@@ -13,9 +14,15 @@ export default createStore({
                 contents: 0,
                 likes: 0,
                 comments: 0,
-                engagement: null,
+                engagement: {
+                    labels: [],
+                    likes: [],
+                    comments: []
+                },
                 popularContents: []
             },
+            dashboardStatsLoaded: false,
+            isLoadingDashboard: false,
             playlists: [],
             contents: [],
             comments: [],
@@ -64,36 +71,87 @@ export default createStore({
         getCoursesError: (state) => state.coursesError,
         getTeachers: (state) => state.teachers,
         getTeachersLoading: (state) => state.teachersLoading,
-        getTeachersError: (state) => state.teachersError
+        getTeachersError: (state) => state.teachersError,
+        isUserLoaded: state => state.userLoaded
     },
 
     mutations: {
-        setShowSidebar: function (state, newValue){
-            state.showSidebar = newValue
+        setShowSidebar: function (state, value){
+            state.showSidebar = value
         },
-        setUser: function (state, newUser){
-            state.user = newUser
+        setUser: function (state, value){
+            state.user = value
         },
-        setSearchPlaylist: function (state, newSearchPlaylist){
-            state.searchPlaylist = newSearchPlaylist
+        setUserLoaded: function (state, value){
+            state.userLoaded = value
+        },
+        setSearchPlaylist: function (state, value){
+            state.searchPlaylist = value
         },
         setIsLoading: function (state, value){
             state.isLoading = value
         },
-        setLoading: function (state, value){
-            state.isLoading = value
+        setDashboardStats: function (state, value) {
+            if (value === null) {
+                state.dashboardStats = {
+                    playlists: 0,
+                    contents: 0,
+                    likes: 0,
+                    comments: 0,
+                    engagement: {
+                        labels: [],
+                        likes: [],
+                        comments: []
+                    },
+                    popularContents: []
+                };
+            } else {
+                state.dashboardStats = {
+                    ...state.dashboardStats,
+                    ...value
+                };
+            }
         },
-        setDashboardStats: function (state, stats){
-            state.dashboardStats = stats
+        setDashboardLoading: function (state, value){
+            state.isLoadingDashboard = value
         },
-        setPlaylists: function (state, playlists){
-            state.playlists = playlists
+        setPlaylists: function (state, value){
+            state.playlists = value
         },
-        setContents: function (state, contents){
-            state.contents = contents
+        setContents: function (state, value){
+            state.contents = value
         },
-        setComments: function (state, comments){
-            state.comments = comments
+        setComments: function (state, value){
+            state.comments = value
+        },
+        clearState: function (state) {
+            state.user = null;
+            state.userLoaded = false;
+            state.dashboardStats = {
+                playlists: 0,
+                contents: 0,
+                likes: 0,
+                comments: 0,
+                engagement: {
+                    labels: [],
+                    likes: [],
+                    comments: []
+                },
+                popularContents: []
+            };
+            state.dashboardStatsLoaded = false;
+            state.isLoadingDashboard = false;
+            state.playlists = [];
+            state.contents = [];
+            state.comments = [];
+            state.latestPlaylists = [];
+            state.latestPlaylistsError = null;
+        },
+        initializeDashboardStats: function(state, stats) {
+            if (stats) {
+                state.dashboardStats = stats;
+                state.dashboardStatsLoaded = true;
+            }
         },
         setLatestPlaylists(state, playlists) {
             state.latestPlaylists = playlists;
@@ -121,284 +179,398 @@ export default createStore({
         },
         setTeachersError(state, error) {
             state.teachersError = error;
+        },
+        updateUserStats(state, { type, value }) {
+            if (state.dashboardStats) {
+                state.dashboardStats[type] = value;
+            }
+        },
+        incrementStat(state, type) {
+            if (state.dashboardStats && typeof state.dashboardStats[type] === 'number') {
+                state.dashboardStats[type]++;
+            }
+        },
+        decrementStat(state, type) {
+            if (state.dashboardStats && typeof state.dashboardStats[type] === 'number' && state.dashboardStats[type] > 0) {
+                state.dashboardStats[type]--;
+            }
         }
     },
 
     actions: {
-        async loadUserData({ commit, state }) {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-
+        async clearAndLoadUserData({ commit, dispatch }) {
+            commit('clearState');
+            commit('setIsLoading', true);
+            
             try {
-                commit('setIsLoading', true);
-                const response = await axios.get('/api/user', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                // Process user image URL
-                let userImage = response.data.image;
-                if (userImage) {
-                    // Clean up the image path
-                    userImage = userImage
-                        .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                        .replace(/^\//, '');
-                    userImage = `/storage/${userImage}`;
-                } else {
-                    userImage = '/storage/default-avatar.png';
-                }
-
-                const userData = {
-                    ...response.data,
-                    image: userImage
-                };
-
-                commit('setUser', userData);
+                await dispatch('loadUserData');
                 
-                // Always load fresh stats, even if user data is already loaded
-                try {
-                    const [likes, bookmarks, comments] = await Promise.all([
-                        axios.get(`/api/likes/count_user/${userData.encrypted_id}`),
-                        axios.get(`/api/bookmarks/count_user/${userData.encrypted_id}`),
-                        axios.get(`/api/comments/count_user/${userData.encrypted_id}`)
-                    ]);
-
-                    commit('setDashboardStats', {
-                        likes: likes.data?.data || 0,
-                        playlists: bookmarks.data?.data || 0,
-                        comments: comments.data?.data || 0
-                    });
-                } catch (statsError) {
-                    console.error('Error loading user stats:', statsError);
-                    // Set default values if stats loading fails
-                    commit('setDashboardStats', {
-                        likes: 0,
-                        playlists: 0,
-                        comments: 0
-                    });
-                }
-
-                // Only load admin-specific data if user is an admin
-                if (response.data.profession) {
-                    await Promise.all([
-                        this.dispatch('loadPlaylists', userData.encrypted_id),
-                        this.dispatch('loadContents', userData.encrypted_id),
-                        this.dispatch('loadComments', userData.encrypted_id)
-                    ]);
+                const user = this.state.user;
+                if (user?.encrypted_id) {
+                    await dispatch('loadUserStats', user.encrypted_id);
                 }
             } catch (error) {
-                console.error('Error loading user data:', error);
-                if (error.response?.status === 401) {
-                    localStorage.removeItem('token');
+                console.error('Error in clearAndLoadUserData:', error);
+                commit('setUser', null);
+            } finally {
+                commit('setIsLoading', false);
+            }
+        },
+        async loadUserData({ commit, dispatch, state }) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.log('No token found, clearing user data');
                     commit('setUser', null);
-                }
-                throw error;
-            } finally {
-                commit('setIsLoading', false);
-            }
-        },
-
-        async loadDashboardStats({ commit }, teacherId) {
-            try {
-                commit('setIsLoading', true);
-                const [playlists, contents, likes, comments, popular, engagement] = await Promise.all([
-                    axios.get(`/api/playlists/amount/${teacherId}`),
-                    axios.get(`/api/contents/amount/${teacherId}`),
-                    axios.get(`/api/likes/count_content/${teacherId}`),
-                    axios.get(`/api/comments/content_amount/${teacherId}`),
-                    axios.get(`/api/contents/popular/${teacherId}`),
-                    axios.get(`/api/engagement/teacher/${teacherId}`)
-                ]);
-
-                commit('setDashboardStats', {
-                    playlists: playlists.data?.data || 0,
-                    contents: contents.data?.data || 0,
-                    likes: likes.data?.data || 0,
-                    comments: comments.data?.data || 0,
-                    popularContents: popular.data || [],
-                    engagement: engagement.data || {
-                        labels: [],
-                        likes: [],
-                        comments: []
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading dashboard stats:', error);
-                commit('setDashboardStats', {
-                    playlists: 0,
-                    contents: 0,
-                    likes: 0,
-                    comments: 0,
-                    popularContents: [],
-                    engagement: {
-                        labels: [],
-                        likes: [],
-                        comments: []
-                    }
-                });
-            } finally {
-                commit('setIsLoading', false);
-            }
-        },
-
-        async loadUserStats({ commit, state }, userId) {
-            try {
-                const user = state.user;
-                if (!user || !user.encrypted_id) {
-                    console.error('No user data available');
+                    commit('setUserLoaded', true);
                     return;
                 }
 
-                const [likes, bookmarks, comments] = await Promise.all([
-                    axios.get(`/api/likes/count_user/${user.encrypted_id}`),
-                    axios.get(`/api/bookmarks/count_user/${user.encrypted_id}`),
-                    axios.get(`/api/comments/count_user/${user.encrypted_id}`)
+                console.log('Loading user data with token');
+                const response = await axios.get('/api/user', {
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json'
+                    }
+                });
+
+                if (!response.data) {
+                    console.error('No user data received from API');
+                    commit('setUser', null);
+                    commit('setUserLoaded', true);
+                    return;
+                }
+
+                const userData = response.data;
+                console.log('Received user data:', userData);
+
+                // Store user data
+                commit('setUser', userData);
+                commit('setUserLoaded', true);
+
+                // Load user stats if we have encrypted_id
+                if (userData.encrypted_id) {
+                    console.log('Loading stats for user with encrypted_id:', userData.encrypted_id);
+                    await dispatch('loadUserStats', userData.encrypted_id);
+                } else {
+                    console.error('User data missing encrypted_id:', userData);
+                }
+            } catch (error) {
+                console.error('Error in loadUserData:', error);
+                commit('setUser', null);
+                commit('setUserLoaded', true);
+            } finally {
+                commit('setIsLoading', false);
+            }
+        },
+
+        async loadDashboardStats({ commit, state }, teacherId) {
+            // Prevent multiple simultaneous loads
+            if (state.isLoadingDashboard) {
+                console.log('Dashboard stats already loading, skipping...');
+                return;
+            }
+
+            try {
+                commit('setDashboardLoading', true);
+
+                const token = localStorage.getItem('token');
+                const headers = { Authorization: `Bearer ${token}` };
+                
+                const [playlistsAmount, contentsAmount, commentsAmount, engagementData, popularContents] = await Promise.all([
+                    axios.get(`/api/playlists/amount/${teacherId}`, { headers }),
+                    axios.get(`/api/contents/amount/${teacherId}`, { headers }),
+                    axios.get(`/api/comments/count_teacher/${teacherId}`, { headers }),
+                    axios.get(`/api/engagement/teacher/${teacherId}`, { headers }),
+                    axios.get(`/api/contents/popular/${teacherId}`, { headers })
                 ]);
 
-                commit('setDashboardStats', {
-                    likes: likes.data?.data || 0,
-                    playlists: bookmarks.data?.data || 0,
-                    comments: comments.data?.data || 0
-                });
+                const stats = {
+                    playlists: playlistsAmount.data?.data || 0,
+                    contents: contentsAmount.data?.data || 0,
+                    comments: commentsAmount.data?.data || 0,
+                    popularContents: popularContents.data || [],
+                    engagement: engagementData.data || {
+                        labels: [],
+                        likes: [],
+                        comments: []
+                    }
+                };
+
+                commit('setDashboardStats', stats);
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                // Don't reset stats on error, just keep existing data
+            } finally {
+                commit('setDashboardLoading', false);
+            }
+        },
+
+        async loadUserStats({ commit, state }, encryptedId) {
+            if (!encryptedId) {
+                console.error('No encrypted ID provided for loadUserStats');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('No token available for loadUserStats');
+                    return;
+                }
+
+                const headers = { 
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                };
+
+                console.log('Loading stats for user:', encryptedId);
+
+                // Make API calls one by one for better error tracking
+                const likesRes = await axios.get(`/api/likes/count_user/${encryptedId}`, { headers });
+                console.log('Likes response:', likesRes.data);
+
+                const bookmarksRes = await axios.get(`/api/bookmarks/count_user/${encryptedId}`, { headers });
+                console.log('Bookmarks response:', bookmarksRes.data);
+
+                const commentsRes = await axios.get(`/api/comments/count_user/${encryptedId}`, { headers });
+                console.log('Comments response:', commentsRes.data);
+
+                // Extract the actual count values
+                const stats = {
+                    likes: parseInt(likesRes.data?.data) || 0,
+                    playlists: parseInt(bookmarksRes.data?.data) || 0,
+                    comments: parseInt(commentsRes.data?.data) || 0
+                };
+
+                console.log('Setting dashboard stats:', stats);
+                commit('setDashboardStats', stats);
+                return stats;
             } catch (error) {
                 console.error('Error loading user stats:', error);
-                // Set default values if stats loading fails
-                commit('setDashboardStats', {
-                    likes: 0,
-                    playlists: 0,
-                    comments: 0
-                });
+                if (error.response) {
+                    console.error('Error response:', error.response.data);
+                }
             }
         },
 
         async loadPlaylists({ commit }, userId) {
             try {
                 const response = await axios.get(`/api/playlists/teacher_playlists/${userId}`);
-                if (response.data && response.data.data) {
-                    commit('setPlaylists', response.data.data);
-                }
+                const playlists = response.data?.data || [];
+                
+                // Process playlists to ensure correct image paths
+                const processedPlaylists = playlists.map(playlist => ({
+                    ...playlist,
+                    thumb: playlist.thumb ? `/storage/${playlist.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}` : '/storage/default-thumbnail.png'
+                }));
+                
+                commit('setPlaylists', processedPlaylists);
             } catch (error) {
                 console.error('Error loading playlists:', error);
-                throw error;
+                commit('setPlaylists', []);
             }
         },
 
         async loadContents({ commit }, userId) {
             try {
-                const response = await axios.get(`/api/contents/${userId}`);
-                commit('setContents', response.data);
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const headers = { Authorization: `Bearer ${token}` };
+                const response = await axios.get(`/api/contents/${userId}`, { headers });
+                
+                if (!response.data) {
+                    commit('setContents', []);
+                    return;
+                }
+
+                const contents = Array.isArray(response.data) ? response.data : [];
+                
+                // Process contents to ensure correct video and thumbnail paths
+                const processedContents = contents.map(content => {
+                    let processedContent = { ...content };
+
+                    // Handle video URL
+                    if (content.video) {
+                        if (content.video_source_type === 'youtube') {
+                            processedContent.video = content.video; // Keep YouTube URLs as is
+                        } else {
+                            // Process local video path
+                            let videoPath = content.video;
+                            videoPath = videoPath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                            videoPath = videoPath.replace(/^\/+/, '');
+                            videoPath = videoPath.split('/').filter(Boolean).join('/');
+                            processedContent.video = `/storage/${videoPath}`;
+                        }
+                    }
+
+                    // Handle thumbnail
+                    if (content.thumb) {
+                        // Check if it's a YouTube thumbnail
+                        if (content.thumb.includes('youtube.com') || content.thumb.includes('youtu.be')) {
+                            processedContent.thumb = content.thumb; // Keep YouTube thumbnail URLs as is
+                        } else {
+                            // Process local thumbnail path
+                            let thumbPath = content.thumb;
+                            thumbPath = thumbPath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                            thumbPath = thumbPath.replace(/^\/+/, '');
+                            thumbPath = thumbPath.split('/').filter(Boolean).join('/');
+                            processedContent.thumb = `/storage/${thumbPath}`;
+                        }
+                    } else {
+                        processedContent.thumb = '/storage/default-thumbnail.png';
+                    }
+
+                    return processedContent;
+                });
+                
+                commit('setContents', processedContents);
             } catch (error) {
                 console.error('Error loading contents:', error);
-                throw error;
+                commit('setContents', []); // Set empty array on error
             }
         },
 
-        async loadComments({ commit }, userId) {
+        async loadComments({ commit }, teacherId) {
+            if (!teacherId) {
+                console.error('Teacher ID is required for loading comments');
+                commit('setComments', []);
+                return;
+            }
+
             try {
-                const response = await axios.get(`/api/comments/teacher/${userId}`);
+                const token = localStorage.getItem('token');
+                const headers = { Authorization: `Bearer ${token}` };
+                const response = await axios.get(`/api/comments/teacher/${teacherId}`, { headers });
+                
+                if (!response.data?.comments) {
+                    commit('setComments', []);
+                    return;
+                }
+
                 const processedComments = response.data.comments.map((comment, index) => ({
                     ...comment,
-                    user: {
+                    user: response.data.users[index] ? {
                         ...response.data.users[index],
-                        image: response.data.users[index]?.image 
+                        image: response.data.users[index].image 
                             ? `/storage/${response.data.users[index].image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`
                             : '/storage/default-avatar.png'
-                    },
-                    content: response.data.contents[index]
+                    } : null,
+                    content: response.data.contents[index] ? {
+                        ...response.data.contents[index],
+                        thumb: response.data.contents[index].thumb 
+                            ? `/storage/${response.data.contents[index].thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`
+                            : '/storage/default-thumbnail.png'
+                    } : null
                 })).sort((a, b) => new Date(b.date) - new Date(a.date));
                 
                 commit('setComments', processedComments);
             } catch (error) {
                 console.error('Error loading comments:', error);
-                throw error;
+                commit('setComments', []);
             }
         },
 
         async loadLatestPlaylists({ commit, state }) {
-            // If we already have latest playlists and they're not too old (e.g., less than 5 minutes old)
-            if (state.latestPlaylists.length > 0 && 
-                Date.now() - (state.latestPlaylists[0]?.timestamp || 0) < 300000) {
-                return;
-            }
-
             try {
                 commit('setLatestPlaylistsLoading', true);
                 commit('setLatestPlaylistsError', null);
 
+                console.log('Fetching latest playlists...');
                 const response = await axios.get('/api/playlists/latest');
-                if (!Array.isArray(response.data)) {
+                
+                if (!response.data || !Array.isArray(response.data)) {
+                    console.error('Invalid response format:', response.data);
                     throw new Error('Invalid response format');
                 }
 
+                console.log('Raw playlists data:', response.data);
+
                 const processedPlaylists = await Promise.all(
-                    response.data.map(async (playlist) => {
-                        const processed = { 
-                            ...playlist, 
-                            timestamp: Date.now(),
-                            encrypted_id: playlist.encrypted_id || playlist.id
-                        };
-
-                        // Handle thumbnail
-                        if (processed.thumb) {
-                            const cleanPath = processed.thumb
-                                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                .replace(/^\//, '');
-                            processed.thumb = `/storage/${cleanPath}`;
-                        } else {
-                            processed.thumb = '/storage/default-thumbnail.png';
-                        }
-
-                        // Fetch teacher data if we have teacher_id
-                        if (processed.teacher_id) {
+                    response.data
+                        .filter(playlist => playlist.teacher && playlist.teacher.status === 'aktīvs')
+                        .map(async (playlist) => {
                             try {
-                                const teacherResponse = await axios.get(`/api/teachers/find_teacher/${processed.teacher_id}`);
-                                
-                                if (teacherResponse.data?.data) {
-                                    const teacherData = teacherResponse.data.data;
-                                    let teacherImage = teacherData.formatted_image || teacherData.image;
-                                    if (teacherImage) {
-                                        const cleanTeacherPath = teacherImage
+                                const processed = { 
+                                    ...playlist,
+                                    timestamp: Date.now(),
+                                    encrypted_id: playlist.encrypted_id || playlist.id
+                                };
+
+                                // Handle thumbnail
+                                if (processed.thumb) {
+                                    if (processed.thumb.startsWith('http')) {
+                                        // Keep external URLs as is
+                                        processed.thumb = processed.thumb;
+                                    } else {
+                                        // Clean and format local paths
+                                        const cleanPath = processed.thumb
                                             .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                                             .replace(/^\//, '');
-                                        teacherImage = `/storage/${cleanTeacherPath}`;
+                                        processed.thumb = `/storage/${cleanPath}`;
+                                    }
+                                } else {
+                                    processed.thumb = '/storage/default-thumbnail.png';
+                                }
+
+                                // Format teacher data if available
+                                if (processed.teacher) {
+                                    let teacherImage = processed.teacher.formatted_image || processed.teacher.image;
+                                    
+                                    if (teacherImage) {
+                                        if (teacherImage.startsWith('http')) {
+                                            // Keep external URLs as is
+                                            teacherImage = teacherImage;
+                                        } else {
+                                            // Clean and format local paths
+                                            const cleanTeacherPath = teacherImage
+                                                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                                                .replace(/^\//, '');
+                                            teacherImage = `/storage/${cleanTeacherPath}`;
+                                        }
                                     }
                                     
                                     processed.teacher = {
-                                        ...teacherData,
-                                        name: teacherData.name || 'Unknown Teacher',
+                                        ...processed.teacher,
+                                        name: processed.teacher.name || 'Unknown Teacher',
                                         image: teacherImage || '/storage/default-avatar.png'
                                     };
+                                } else {
+                                    processed.teacher = {
+                                        name: 'Unknown Teacher',
+                                        image: '/storage/default-avatar.png'
+                                    };
                                 }
-                            } catch (teacherError) {
-                                console.error('Error fetching teacher:', teacherError);
-                                processed.teacher = {
-                                    name: 'Unknown Teacher',
-                                    image: '/storage/default-avatar.png'
-                                };
+
+                                // Get content count
+                                try {
+                                    const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
+                                    processed.content_count = contentResponse.data || 0;
+                                    console.log('Content count for playlist:', processed.content_count);
+                                } catch (contentError) {
+                                    console.error('Error fetching content count:', contentError);
+                                    processed.content_count = 0;
+                                }
+
+                                return processed;
+                            } catch (error) {
+                                console.error('Error processing playlist:', error);
+                                return null;
                             }
-                        } else {
-                            processed.teacher = {
-                                name: 'Unknown Teacher',
-                                image: '/storage/default-avatar.png'
-                            };
-                        }
-
-                        // Get content count
-                        try {
-                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
-                            processed.content_count = contentResponse.data || 0;
-                        } catch (contentError) {
-                            console.error('Error fetching content count:', contentError);
-                            processed.content_count = 0;
-                        }
-
-                        return processed;
-                    })
+                        })
                 );
 
-                commit('setLatestPlaylists', processedPlaylists.filter(Boolean));
+                const validPlaylists = processedPlaylists.filter(Boolean);
+                console.log('Processed playlists:', validPlaylists);
+
+                commit('setLatestPlaylists', validPlaylists);
             } catch (err) {
                 console.error('Error loading latest playlists:', err);
                 commit('setLatestPlaylistsError', 'Failed to load latest playlists. Please try again.');
+                commit('setLatestPlaylists', []);
             } finally {
                 commit('setLatestPlaylistsLoading', false);
             }
@@ -659,6 +831,13 @@ export default createStore({
                 commit('setTeachers', []);
             } finally {
                 commit('setTeachersLoading', false);
+            }
+        },
+
+        // Add new action to refresh stats after user actions
+        async refreshUserStats({ dispatch, state }) {
+            if (state.user?.encrypted_id) {
+                await dispatch('loadUserStats', state.user.encrypted_id);
             }
         }
     }

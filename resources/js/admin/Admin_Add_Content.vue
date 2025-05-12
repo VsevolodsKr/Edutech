@@ -453,10 +453,7 @@ const handleSubmit = async () => {
             }
         );
 
-        if (response.data.status === 'success') {
-            messages.value = ['Video pievienots'];
-            errorStatus.value = 200;
-            
+        if (response.data.status === 200) {
             await Swal.fire({
                 title: 'Pievienots!',
                 text: 'Video ir pievienots',
@@ -472,6 +469,7 @@ const handleSubmit = async () => {
             errorStatus.value = response.data.status;
         }
     } catch (error) {
+        console.error('Error submitting content:', error);
         messages.value = error.response?.data?.message || ['Kļūda, ievadot video'];
         errorStatus.value = error.response?.data?.status || 500;
     } finally {

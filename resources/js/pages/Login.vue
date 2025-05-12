@@ -126,57 +126,58 @@ const togglePassword = () => {
 
 const handleSubmit = async () => {
     try {
+        isLoading.value = true;
         validationMessages.value = [];
         isError.value = false;
-        isLoading.value = true;
-
-        if (!email.value.trim()) {
-            validationMessages.value.push('Email is required');
-            isError.value = true;
-            return;
-        }
-
-        if (!password.value) {
-            validationMessages.value.push('Password is required');
-            isError.value = true;
-            return;
-        }
 
         const formData = new FormData();
-        formData.append('email', email.value.trim());
+        formData.append('email', email.value);
         formData.append('password', password.value);
 
-        const response = await axios.post('api/login/send', formData);
+        const response = await axios.post('/api/login/send', formData);
 
-        localStorage.setItem('token', response.data.token);
-        const userData = {
-            ...(response.data.data || {}),
-            is_teacher: response.data.is_teacher,
-            is_developer: response.data.is_developer
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-        store.commit('setUser', userData);
+        if (response.data.status === 200) {
+            localStorage.setItem('token', response.data.token);
+            
+            const userData = {
+                ...response.data.data,
+                is_teacher: response.data.is_teacher,
+                is_developer: response.data.is_developer,
+                encrypted_id: response.data.data.encrypted_id
+            };
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            await store.dispatch('clearAndLoadUserData');
 
-        validationMessages.value = Array.isArray(response.data.message) 
-            ? response.data.message 
-            : [response.data.message];
-        isError.value = false;
-
-        setTimeout(() => {
             if (response.data.is_developer) {
-                router.push('/developer_dashboard');
+                const redirectTo = localStorage.getItem('developerRedirectTo');
+                if (redirectTo) {
+                    localStorage.removeItem('developerRedirectTo');
+                    router.push(redirectTo);
+                } else {
+                    router.push('/developer_dashboard');
+                }
             } else if (response.data.is_teacher) {
-                router.push('/dashboard');
+                const redirectTo = localStorage.getItem('adminRedirectTo');
+                if (redirectTo) {
+                    localStorage.removeItem('adminRedirectTo');
+                    router.push(redirectTo);
+                } else {
+                    router.push('/dashboard');
+                }
             } else {
                 router.push('/');
             }
-        }, 500);
-    } catch (err) {
-        console.error('Login error:', err);
+        } else {
+            validationMessages.value = Array.isArray(response.data.message) 
+                ? response.data.message 
+                : [response.data.message];
+            isError.value = true;
+        }
+    } catch (error) {
+        console.error('Login error:', error);
         
-        validationMessages.value = Array.isArray(err.response?.data?.message)
-            ? err.response.data.message
-            : [err.response?.data?.message || 'An error occurred during login. Please try again.'];
+        validationMessages.value = error.response?.data?.message || ['Kļūda autentifikācijā'];
         isError.value = true;
     } finally {
         isLoading.value = false;

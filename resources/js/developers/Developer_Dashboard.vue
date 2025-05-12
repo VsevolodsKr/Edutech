@@ -226,13 +226,13 @@ const updateTopTeachersChart = (data) => {
             labels: data.labels,
             datasets: [
                 {
-                    label: 'Saraksti',
+                    label: 'Kursi',
                     data: data.datasets.playlists,
                     color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button')
                 },
                 {
-                    label: 'Satura elementi',
+                    label: 'Video',
                     data: data.datasets.contents,
                     color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button2')

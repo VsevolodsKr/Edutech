@@ -85,6 +85,7 @@ const chartInstance = ref(null);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const teacherData = computed(() => store.getters.getUser);
+const isUserLoaded = computed(() => store.getters.isUserLoaded);
 const statistics = computed(() => store.getters.getDashboardStats);
 const popularContents = computed(() => {
     return statistics.value?.popularContents || [];
@@ -179,34 +180,51 @@ const updateEngagementChart = (data) => {
     });
 };
 
+// Add a watch effect for user data loading
+watch(isUserLoaded, async (loaded) => {
+    if (loaded && teacherData.value?.encrypted_id) {
+        await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
+    }
+});
+
 onMounted(async () => {
     try {
-        const user = store.state.user;
-        if (user && user.encrypted_id) {
-            await store.dispatch('loadDashboardStats', user.encrypted_id);
+        // Load user data if not already loaded
+        if (!isUserLoaded.value) {
+            await store.dispatch('loadUserData');
+        }
+        
+        // User data should now be loaded, check if we have valid data
+        if (!teacherData.value?.encrypted_id) {
+            console.error('No valid user data found');
+            return;
+        }
+
+        // Load dashboard stats if user is loaded
+        if (isUserLoaded.value) {
+            await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
         }
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
 });
 
+// Update watchers to use encrypted_id from teacherData
+watch(() => store.getters.getPlaylists, async () => {
+    if (teacherData.value?.encrypted_id) {
+        await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
+    }
+}, { deep: true });
+
+watch(() => store.getters.getContents, async () => {
+    if (teacherData.value?.encrypted_id) {
+        await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
+    }
+}, { deep: true });
+
 watch(() => engagementData.value, (newData) => {
     if (newData && engagementChart.value) {
         updateEngagementChart(newData);
-    }
-}, { deep: true });
-
-watch(() => store.state.playlists, async () => {
-    const user = store.state.user;
-    if (user && user.encrypted_id) {
-        await store.dispatch('loadDashboardStats', user.encrypted_id);
-    }
-}, { deep: true });
-
-watch(() => store.state.contents, async () => {
-    const user = store.state.user;
-    if (user && user.encrypted_id) {
-        await store.dispatch('loadDashboardStats', user.encrypted_id);
     }
 }, { deep: true });
 </script>

@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Swal from 'sweetalert2';
@@ -115,54 +115,69 @@ const formatDate = (dateString) => {
 
 const loadComments = async () => {
     try {
-        isLoading.value = true;
         error.value = null;
-
         const token = localStorage.getItem('token');
         if (!token) {
             router.push('/');
             return;
         }
 
-        const headers = { 
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-        };
-
         const user = store.state.user;
-        if (!user || !user.encrypted_id) {
+        if (!user?.encrypted_id) {
             error.value = 'Nav pieejama lietotāja informācija';
             return;
         }
 
-        const response = await axios.get(`/api/comments/teacher/${user.encrypted_id}`, { headers });
+        store.commit('setIsLoading', true);
 
-        if (!response.data.comments) {
-            error.value = 'Neizdevās ielādēt komentārus';
+        const response = await axios.get(`/api/comments/teacher/${user.encrypted_id}`, {
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.data || !response.data.comments) {
+            store.commit('setComments', []);
             return;
         }
 
-        comments.value = response.data.comments.map(comment => {
-            const cleanImagePath = comment.user?.image
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
+        // Process the comments data
+        const processedComments = response.data.comments.map(comment => {
+            // Process user image path
+            let userImage = comment.user?.image || '/storage/default-avatar.png';
+            if (userImage && !userImage.startsWith('http')) {
+                userImage = userImage.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                userImage = `/storage/${userImage}`;
+            }
+
+            // Process content thumbnail path
+            let contentThumb = comment.content?.thumb || '/storage/default-thumbnail.png';
+            if (contentThumb && !contentThumb.startsWith('http')) {
+                contentThumb = contentThumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                contentThumb = `/storage/${contentThumb}`;
+            }
 
             return {
                 ...comment,
-                user: {
+                user: comment.user ? {
                     ...comment.user,
-                    image: cleanImagePath ? `/storage/${cleanImagePath}` : '/storage/default-avatar.png'
-                },
+                    image: userImage
+                } : null,
                 content: comment.content ? {
                     ...comment.content,
-                    thumb: comment.content.thumb ? `/storage/${comment.content.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}` : '/storage/default-thumb.png'
+                    thumb: contentThumb
                 } : null
             };
         });
+
+        store.commit('setComments', processedComments);
     } catch (err) {
+        console.error('Error loading comments:', err);
         error.value = 'Neizdevās ielādēt komentārus';
+        store.commit('setComments', []);
     } finally {
-        isLoading.value = false;
+        store.commit('setIsLoading', false);
     }
 };
 
@@ -225,5 +240,12 @@ const deleteComment = async (commentId) => {
 
 onMounted(() => {
     loadComments();
+});
+
+// Add watcher for user changes
+watch(() => store.state.user?.encrypted_id, (newId) => {
+    if (newId) {
+        loadComments();
+    }
 });
 </script> 

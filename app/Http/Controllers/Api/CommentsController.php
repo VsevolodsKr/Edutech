@@ -15,36 +15,44 @@ class CommentsController extends Controller
     use Encryptable;
 
     public function add_comment(Request $request){
-        $rules = array(
-            'content_id' => 'required',
-            'user_id' => 'required',
-            'teacher_id' => 'required',
-            'comment' => 'required'
-        );
-        $messages = array(
-            'content_id.required' => 'Sistēmas kļūda, mēģiniet vēlreiz',
-            'user_id.required' => 'Jums ir jāpiesakās, lai rakstītu komentārus',
-            'teacher_id.required' => 'Kļūda, mēģiniet vēlreiz',
-            'comment.required' => 'Lūdzu, ievadiet savu komentāru'
-        );
-        $validator = Validator::make($request->input(), $rules, $messages);
-       if($validator->fails()){
-            $errors = $validator->messages()->all();
-            return response()->json(['message' => $errors, 'status' => 500], 500);
-        }
+        try {
+            $rules = array(
+                'content_id' => 'required',
+                'user_id' => 'required',
+                'teacher_id' => 'required',
+                'comment' => 'required'
+            );
+            $messages = array(
+                'content_id.required' => 'Sistēmas kļūda, mēģiniet vēlreiz',
+                'user_id.required' => 'Jums ir jāpiesakās, lai rakstītu komentārus',
+                'teacher_id.required' => 'Kļūda, mēģiniet vēlreiz',
+                'comment.required' => 'Lūdzu, ievadiet savu komentāru'
+            );
+            
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if($validator->fails()){
+                $errors = $validator->messages()->all();
+                return response()->json(['message' => $errors, 'status' => 500], 500);
+            }
+
+            // Create new comment
             $comment = new Comments;
             $comment->content_id = $request->content_id;
             $comment->user_id = $request->user_id;
             $comment->teacher_id = $request->teacher_id;
             $comment->comment = $request->comment;
-            $dt = Carbon::now();
-            $comment->date = $dt->toDateString();
+            $comment->date = Carbon::now()->toDateString();
+            
             $save = $comment->save();
+            
             if(!$save) {
-                return response()->json(['message' => array('Kaut kas nogāja greizi, mēģiniet vēlreiz!'), 'status' => 500], 500);
-            } else {
-                return response()->json(['message' => array('Jūsu komentārs ir veiksmīgi pievienots!'), 'status' => 200], 200);
+                return response()->json(['message' => ['Kaut kas nogāja greizi, mēģiniet vēlreiz!'], 'status' => 500], 500);
             }
+            
+            return response()->json(['message' => ['Jūsu komentārs ir veiksmīgi pievienots!'], 'status' => 200], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => ['Neizdevās pievienot komentāru: ' . $e->getMessage()], 'status' => 500], 500);
+        }
     }
 
     public function count_comments(string $encryptedId) {
@@ -249,33 +257,72 @@ class CommentsController extends Controller
     }
 
     public function get_teacher_comments(string $encryptedId) {
-        $id = $this->decryptId($encryptedId);
-        if (!$id) {
-            return response()->json([
-                'message' => 'Nepareizs pasniedzēja ID',
-                'status' => 404
-            ], 404);
-        }
-        $comments = Comments::where('teacher_id', $id)
-            ->orderBy('date', 'desc')
-            ->get();
-        
-        $users = array();
-        $contents = array();
-        foreach($comments as $comment) {
-            array_push($users, $comment->user);
-            array_push($contents, $comment->content);
-        }
-        
-        return response()->json([
-            'comments' => $comments->map(function($comment) {
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Nepareizs pasniedzēja ID',
+                    'status' => 404
+                ], 404);
+            }
+            
+            // Get all comments for the teacher's content
+            $comments = Comments::with(['user', 'content'])
+                ->whereHas('content', function($query) use ($id) {
+                    $query->where('teacher_id', $id);
+                })
+                ->orderBy('date', 'desc')
+                ->get();
+
+            if (!$comments) {
+                return response()->json([
+                    'comments' => [],
+                    'users' => [],
+                    'contents' => []
+                ]);
+            }
+
+            // Process and format the data
+            $formattedComments = $comments->map(function($comment) {
                 return [
-                    ...$comment->toArray(),
-                    'encrypted_id' => $comment->encrypted_id
+                    'id' => $comment->id,
+                    'encrypted_id' => $comment->encrypted_id,
+                    'content_id' => $comment->content_id,
+                    'user_id' => $comment->user_id,
+                    'teacher_id' => $comment->teacher_id,
+                    'comment' => $comment->comment,
+                    'date' => $comment->date,
+                    'user' => $comment->user ? [
+                        'id' => $comment->user->id,
+                        'name' => $comment->user->name,
+                        'image' => $comment->user->image
+                    ] : null,
+                    'content' => $comment->content ? [
+                        'id' => $comment->content->id,
+                        'encrypted_id' => $comment->content->encrypted_id,
+                        'title' => $comment->content->title,
+                        'thumb' => $comment->content->thumb,
+                        'video' => $comment->content->video,
+                        'video_source_type' => $comment->content->video_source_type
+                    ] : null
                 ];
-            }),
-            'users' => $users,
-            'contents' => $contents
-        ]);
+            });
+
+            return response()->json([
+                'comments' => $formattedComments,
+                'users' => $comments->map(function($comment) {
+                    return $comment->user;
+                })->filter(),
+                'contents' => $comments->map(function($comment) {
+                    return $comment->content;
+                })->filter()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in get_teacher_comments: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Neizdevās ielādēt komentārus',
+                'status' => 500
+            ], 500);
+        }
     }
 }

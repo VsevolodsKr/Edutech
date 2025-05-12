@@ -280,8 +280,11 @@ const deleteLike = async (contentId) => {
 
             await axios.delete(`/api/likes/delete/${contentId}`, { headers });
 
-            contents.value = contents.value.filter(content => content.id !== contentId);
-
+            // Update local state
+            contents.value = contents.value.filter(content => content.like_id !== contentId);
+            
+            // Update store stats
+            store.commit('decrementStat', 'likes');
             await store.dispatch('loadUserStats', user.value.encrypted_id);
 
             await Swal.fire({

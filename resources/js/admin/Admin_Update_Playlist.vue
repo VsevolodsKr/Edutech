@@ -248,7 +248,7 @@ const handleSubmit = async () => {
         }
 
         const response = await axios.post(
-            `/api/playlists/update/${route.params.id}`,
+            `/api/playlists/update/${playlist.value.encrypted_id}`,
             formDataToSend,
             {
                 headers: {
@@ -277,6 +277,7 @@ const handleSubmit = async () => {
             }
         }
     } catch (error) {
+        console.error('Error updating playlist:', error);
         messages.value = Array.isArray(error.response?.data?.message)
             ? error.response.data.message
             : [error.response?.data?.message || 'An error occurred while updating the playlist'];

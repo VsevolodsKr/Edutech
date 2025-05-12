@@ -92,7 +92,7 @@
 
             <form 
                 v-if="user" 
-                @submit.prevent="handleAddComment"
+                @submit.prevent="handleCommentSubmit"
                 class="bg-base rounded-lg p-[1rem] mb-[1rem]"
             >
                 <h3 class="text-[1.5rem] text-text_dark mb-[.5rem] [@media(max-width:550px)]:text-[1.2rem]">
@@ -264,6 +264,7 @@ const loadContent = async () => {
         // Set content data
         content.value = {
             ...contentData,
+            id: contentData.id,
             thumb: contentData.thumb ? contentData.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '') : null,
             video: contentData.video ? contentData.video.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '') : null,
             encrypted_playlist_id: contentData.encrypted_playlist_id,
@@ -272,13 +273,12 @@ const loadContent = async () => {
 
         // Set teacher data
         if (teacherData) {
-            const cleanImagePath = teacherData.image
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
-
             teacher.value = {
                 ...teacherData,
-                image: cleanImagePath ? `/storage/${cleanImagePath}` : '/storage/default-avatar.png'
+                id: teacherData.id,
+                image: teacherData.image 
+                    ? `/storage/${teacherData.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '')}`
+                    : '/storage/default-avatar.png'
             };
         }
 
@@ -431,50 +431,42 @@ const loadCommentsCount = async () => {
     }
 };
 
-const handleAddComment = async () => {
+const handleCommentSubmit = async () => {
     try {
-        if (!user.value) {
+        if (!newComment.value.trim()) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        if (!token || !userData) {
             router.push('/login');
             return;
         }
 
-        isCommentLoading.value = true;
-        errors.value = [];
-
-        const token = localStorage.getItem('token');
-        const formData = new FormData();
-        formData.append('comment', newComment.value.trim());
-        formData.append('content_id', route.params.id);
-        formData.append('user_id', user.value.id);
-        formData.append('teacher_id', teacher.value.id);
-
-        await axios.post('/api/comments/add', formData, {
+        // Get the raw content ID from the encrypted ID
+        const contentId = content.value.id; // Use the raw ID instead of encrypted_id
+        
+        const response = await axios.post('/api/comments/add', {
+            content_id: contentId,
+            user_id: userData.id,
+            teacher_id: teacher.value.id,
+            comment: newComment.value
+        }, {
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json'
             }
         });
 
-        await Swal.fire({
-            title: 'Komentārs pievienots!',
-            text: 'Paldies par dalīšanos ar savu domu!',
-            icon: 'success',
-            color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
-            background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
-        });
-
-        newComment.value = '';
-        await Promise.all([
-            loadComments(),
-            loadCommentsCount()
-        ]);
-    } catch (err) {
-        console.error('Error adding comment:', err);
-        errors.value = Array.isArray(err.response?.data?.message) 
-            ? err.response.data.message 
-            : [err.response?.data?.message || 'Failed to add comment'];
-    } finally {
-        isCommentLoading.value = false;
+        if (response.data.status === 200) {
+            newComment.value = '';
+            await loadComments();
+            await loadCommentsCount();
+        }
+    } catch (error) {
+        console.error('Error submitting comment:', error);
     }
 };
 

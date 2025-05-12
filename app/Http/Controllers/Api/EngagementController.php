@@ -38,18 +38,18 @@ class EngagementController extends Controller
             });
 
             $likes = $dates->map(function ($date) use ($teacherId) {
-                return DB::table('Likes')
-                    ->join('Contents', 'Likes.content_id', '=', 'Contents.id')
-                    ->where('Contents.teacher_id', $teacherId)
-                    ->whereDate('Likes.created_at', $date)
+                return DB::table('likes')
+                    ->join('contents', 'likes.content_id', '=', 'contents.id')
+                    ->where('contents.teacher_id', $teacherId)
+                    ->whereDate('likes.created_at', $date)
                     ->count();
             })->values();
 
             $comments = $dates->map(function ($date) use ($teacherId) {
-                return DB::table('Comments')
-                    ->join('Contents', 'Comments.content_id', '=', 'Contents.id')
-                    ->where('Contents.teacher_id', $teacherId)
-                    ->whereDate('Comments.date', $date)
+                return DB::table('comments')
+                    ->join('contents', 'comments.content_id', '=', 'contents.id')
+                    ->where('contents.teacher_id', $teacherId)
+                    ->whereDate('comments.date', $date)
                     ->count();
             })->values();
 
@@ -78,10 +78,10 @@ class EngagementController extends Controller
                 ], 400);
             }
 
-            $contents = DB::table('Contents')
-                ->select('Contents.*')
-                ->selectRaw('(SELECT COUNT(*) FROM Likes WHERE Contents.id = Likes.content_id) as likes_count')
-                ->selectRaw('(SELECT COUNT(*) FROM Comments WHERE Contents.id = Comments.content_id) as comments_count')
+            $contents = DB::table('contents')
+                ->select('contents.*')
+                ->selectRaw('(SELECT COUNT(*) FROM likes WHERE contents.id = likes.content_id) as likes_count')
+                ->selectRaw('(SELECT COUNT(*) FROM comments WHERE contents.id = comments.content_id) as comments_count')
                 ->where('teacher_id', $teacherId)
                 ->orderByDesc('likes_count')
                 ->orderByDesc('comments_count')

@@ -44,7 +44,7 @@
                         <div>
                             <i class="fas fa-calendar text-button text-[1.2rem]"></i>
                             <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                {{ playlist.formatted_date || playlist.date || 'Nav pieejams' }}
+                                {{ formatDate(playlist.date) || 'Nav pieejams' }}
                             </span>
                         </div>
                     </div>
@@ -194,6 +194,17 @@ const handleDelete = async (id) => {
             icon: 'error'
         });
     }
+};
+
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 onMounted(async () => {

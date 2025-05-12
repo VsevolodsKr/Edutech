@@ -90,25 +90,52 @@ class PlaylistsController extends Controller
                 ->orderBy('date', 'desc')
                 ->take(7)
                 ->get()
+                ->filter(function ($playlist) {
+                    return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
+                })
                 ->map(function ($playlist) {
+                    // Format teacher image
+                    $teacherImage = null;
+                    if ($playlist->teacher) {
+                        $teacherImage = $playlist->teacher->formatted_image ?? $playlist->teacher->image;
+                    }
+
+                    // Format playlist thumbnail
+                    $thumb = $playlist->thumb;
+                    if ($thumb && !str_starts_with($thumb, 'http')) {
+                        $thumb = str_replace([
+                            'storage/app/public/',
+                            'storage/',
+                            '/app/public/',
+                            'app/public/',
+                            'uploads/uploads/',
+                            'uploads/'
+                        ], '', $thumb);
+                        $thumb = '/storage/' . $thumb;
+                    }
+
                     return [
                         'id' => $playlist->id,
                         'encrypted_id' => $this->encryptId($playlist->id),
                         'title' => $playlist->title,
                         'description' => $playlist->description,
-                        'thumb' => $playlist->thumb,
+                        'thumb' => $thumb,
                         'date' => $playlist->date,
                         'teacher_id' => $playlist->teacher_id,
                         'teacher' => $playlist->teacher ? [
                             'id' => $playlist->teacher->id,
                             'name' => $playlist->teacher->name,
-                            'image' => $playlist->teacher->image,
-                        ] : null
+                            'image' => $teacherImage,
+                            'status' => $playlist->teacher->status
+                        ] : null,
+                        'content_count' => $playlist->contents()->count()
                     ];
-                });
+                })
+                ->values(); // Re-index the array after filtering
 
             return response()->json($playlists);
         } catch (\Exception $e) {
+            \Log::error('Error in latest playlists: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Neizdevās iegūt jaunākos kursus',
                 'error' => $e->getMessage()
@@ -202,9 +229,14 @@ class PlaylistsController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $encryptedId)
     {
         try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return $this->errorResponse(['Nepareizs kursa ID']);
+            }
+
             $validator = $this->validatePlaylist($request);
             if ($validator->fails()) {
                 return $this->errorResponse($validator->messages()->all());
