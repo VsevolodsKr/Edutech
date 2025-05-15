@@ -59,7 +59,7 @@ class PlaylistsController extends Controller
     {
         return Playlists::with('teacher')
             ->orderBy('date', 'desc')
-            ->where('status', 'active')
+            ->where('status', 'Aktīvs')
             ->get()
             ->filter(function ($playlist) {
                 return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
@@ -86,7 +86,7 @@ class PlaylistsController extends Controller
     {
         try {
             $playlists = Playlists::with('teacher')
-                ->where('status', 'active')
+                ->where('status', 'Aktīvs')
                 ->orderBy('date', 'desc')
                 ->take(7)
                 ->get()
@@ -341,7 +341,7 @@ class PlaylistsController extends Controller
             }
 
             $playlists = Playlists::where('teacher_id', $id)
-                ->where('status', 'active')
+                ->where('status', 'Aktīvs')
                 ->orderBy('date', 'desc')
                 ->get()
                 ->map(function ($playlist) {
@@ -422,7 +422,7 @@ class PlaylistsController extends Controller
             'title' => 'required|max:100',
             'description' => 'required',
             'teacher_id' => 'required|exists:teachers,id',
-            'status' => 'required|in:active,deactive'
+            'status' => 'required|in:Aktīvs,Neaktīvs'
         ];
 
         $isNewPlaylist = !$request->route('id');

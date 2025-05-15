@@ -3,7 +3,8 @@
     <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <template v-if="isAuthenticated">
+                <!-- Dashboard section for authenticated users -->
+                <div v-if="isAuthenticated">
                     <h1 class="text-[1.5rem] text-text_dark">Vadības panelis</h1>
                     <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
 
@@ -80,10 +81,13 @@
                             </div>
                         </div>
                     </div>
-                </template>
+                </div>
 
+                <!-- Latest courses section - visible to all users -->
                 <div class="mt-8">
-                    <h2 class="text-[1.5rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.2rem]">Jaunākie kursi</h2>
+                    <h2 class="text-[1.5rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.2rem]">
+                        {{ isAuthenticated ? 'Jaunākie kursi' : 'Pieejamie kursi' }}
+                    </h2>
                     <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
 
                     <div v-if="isPlaylistsLoading" class="flex justify-center items-center min-h-[20vh]">
@@ -104,7 +108,7 @@
                         Nav pieejami kursi
                     </div>
 
-                    <!-- Playlists Grid -->
+                    <!-- Playlists Grid - visible to all users -->
                     <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                         <div v-for="playlist in latestPlaylists" 
                              :key="playlist.id" 
@@ -135,7 +139,7 @@
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
                                     <router-link 
-                                        :to="'/playlist/' + playlist.encrypted_id"
+                                        :to="isAuthenticated ? '/playlist/' + playlist.encrypted_id : '/login'"
                                         class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
                                     >
                                         Skatīt kursu
@@ -155,7 +159,7 @@
                                     {{ playlist.description }}
                                 </p>
                                 <router-link 
-                                    :to="'/playlist/' + playlist.encrypted_id"
+                                    :to="isAuthenticated ? '/playlist/' + playlist.encrypted_id : '/login'"
                                     class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                                 >
                                     Sākt mācīties
@@ -167,7 +171,7 @@
             </section>
         </div>
         <Sidebar />
-        </div>
+    </div>
 </template>
 
 <script setup>
@@ -272,16 +276,13 @@ watch(() => store.getters.getDashboardStats, (newStats, oldStats) => {
 
 onMounted(async () => {
     try {
+        // Load user data if token exists
         const token = localStorage.getItem('token');
-        if (!token) {
-            await router.push('/login');
-            return;
+        if (token) {
+            await store.dispatch('loadUserData');
         }
-
-        // Load initial user data
-        await store.dispatch('loadUserData');
         
-        // Load latest playlists
+        // Load latest playlists for all users
         await store.dispatch('loadLatestPlaylists');
     } catch (error) {
         console.error('Error in Home.vue setup:', error);
@@ -308,9 +309,10 @@ watch(() => store.getters.getDashboardStats, (newStats) => {
 
 // Watch for route changes
 watch(() => router.currentRoute.value.path, async (newPath, oldPath) => {
-    if (newPath === '/' && newPath !== oldPath && store.getters.getUser?.encrypted_id) {
-        console.log('Returned to home, refreshing stats');
-        await store.dispatch('loadUserStats', store.getters.getUser.encrypted_id);
+    if (newPath === '/' && newPath !== oldPath) {
+        if (store.getters.getUser?.encrypted_id) {
+            await store.dispatch('loadUserStats', store.getters.getUser.encrypted_id);
+        }
         await store.dispatch('loadLatestPlaylists');
     }
 });

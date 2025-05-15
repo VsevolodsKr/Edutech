@@ -34,7 +34,7 @@ class EngagementController extends Controller
             });
 
             $labels = $dates->map(function ($date) {
-                return Carbon::parse($date)->format('M d');
+                return Carbon::parse($date)->format('d.m.Y');
             });
 
             $likes = $dates->map(function ($date) use ($teacherId) {

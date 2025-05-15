@@ -7,8 +7,8 @@
             
             <div class="text-[1.5rem] flex">
                 <button 
-                    @click="changeShowSide(); updateShowSidebar()" 
-                    class="hidden items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] [@media(max-width:1180px)]:flex"
+                    @click="toggleSidebar" 
+                    class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem]"
                 >
                     <i class="fa fa-bars"></i>
                 </button>
@@ -86,7 +86,7 @@
             </router-link>
             <div class="text-[1.5rem] flex [@media(max-width:970px)]:text-[1rem]">
                 <button 
-                    @click="changeShowSide(); updateShowSidebar()" 
+                    @click="toggleSidebar" 
                     class="flex items-center justify-center text-text_dark bg-background rounded-lg h-[3rem] w-[3rem] leading-[4rem] cursor-pointer text-center ml-[.7rem] hover:bg-text_dark hover:text-base hover:flex hover:items-center hover:justify-center hover:text-[1.5rem] [@media(max-width:970px)]:h-[2.5rem] [@media(max-width:970px)]:w-[2.5rem] [@media(max-width:970px)]:mt-[.2rem]"
                 >
                     <i class="fa fa-bars"></i>
@@ -172,14 +172,8 @@ const currentTheme = ref(localStorage.getItem('theme-color') || 'theme-light');
 const showSidebar = computed(() => store.getters.getShowSidebar);
 
 // Methods
-const changeShowSide = () => {
+const toggleSidebar = () => {
     store.commit('setShowSidebar', !showSidebar.value);
-};
-
-const updateShowSidebar = () => {
-    if (width.value >= 1180) {
-        store.commit('setShowSidebar', true);
-    }
 };
 
 const switchTheme = () => {

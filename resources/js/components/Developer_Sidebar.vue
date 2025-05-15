@@ -124,7 +124,7 @@ const adminData = computed(() => {
 
 const navigationItems = [
     { path: '/developer_dashboard', icon: 'fa fa-home', label: 'Izstrādātāja panelis' },
-    { path: '/developer_teachers', icon: 'fa-solid fa-chalkboard-user', label: 'Skolotāji' },
+    { path: '/developer_teachers', icon: 'fa-solid fa-chalkboard-user', label: 'Pasniedzēji' },
     { path: '/developer_users', icon: 'fa-solid fa-users', label: 'Lietotāji' },
     { path: '/developer_messages', icon: 'fa-solid fa-envelope', label: 'Ziņojumi' }
 ];

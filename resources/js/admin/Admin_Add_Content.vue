@@ -53,8 +53,8 @@
                                         required
                                     >
                                         <option value="" disabled>Izvēlieties statusu...</option>
-                                        <option value="active">Aktīvs</option>
-                                        <option value="deactive">Neaktīvs</option>
+                                        <option value="Aktīvs">Aktīvs</option>
+                                        <option value="Neaktīvs">Neaktīvs</option>
                     </select>
                                 </div>
 
@@ -90,7 +90,7 @@
                                             <option v-for="playlist in playlists" 
                                                     :key="playlist.id" 
                                                     :value="playlist.id">
-                                                {{ playlist.title }} (<span :class="playlist.status === 'active' ? 'text-green-600' : 'text-red-600'">{{ playlist.status }}</span>)
+                                                {{ playlist.title }} (<span :class="playlist.status === 'Aktīvs' ? 'text-green-600' : 'text-red-600'">{{ playlist.status }}</span>)
                                             </option>
                     </select>
                                         <div v-if="isLoadingPlaylists" class="absolute right-3 top-1/2 transform -translate-y-1/2">

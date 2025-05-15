@@ -3,12 +3,12 @@
         <Developer_Header />
         <section :class="sectionClasses">
             <div class="flex justify-between items-center mb-[2rem]">
-                <h1 class="text-[1.5rem] text-text_dark capitalize">Skolotāju pārvaldība</h1>
+                <h1 class="text-[1.5rem] text-text_dark capitalize">Pasniedzēju pārvaldība</h1>
                 <button 
                     @click="openAddModal"
                     class="bg-button text-base px-[1.5rem] py-[.5rem] rounded-lg hover:bg-transparent hover:text-button border-2 border-button transition-all duration-200"
                 >
-                    Pievienot skolotāju
+                    Pievienot pasniedzēju
                 </button>
             </div>
 
@@ -17,7 +17,7 @@
                     <input 
                         type="text" 
                         v-model="searchQuery"
-                        placeholder="Meklēt skolotājus..."
+                        placeholder="Meklēt pasniedzējus..."
                         class="w-full p-[.8rem] rounded-lg bg-base text-text_dark border-2 border-base focus:border-button focus:outline-none"
                     >
                 </div>

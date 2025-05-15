@@ -53,8 +53,8 @@
                                         required
                                     >
                                         <option value="" disabled>Izvēlieties statusu...</option>
-                                        <option value="active">Aktīvs</option>
-                                        <option value="deactive">Neaktīvs</option>
+                                        <option value="Aktīvs">Aktīvs</option>
+                                        <option value="Neaktīvs">Neaktīvs</option>
                                     </select>
                                 </div>
 
@@ -223,8 +223,6 @@ const handleSubmit = async (event) => {
                 Accept: 'application/json'
             }
         });
-
-        console.log('User data:', userResponse.data);
 
         const formDataToSend = new FormData();
         formDataToSend.append('status', formData.value.status);

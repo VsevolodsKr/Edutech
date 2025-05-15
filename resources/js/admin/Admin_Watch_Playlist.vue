@@ -35,7 +35,7 @@
                         </div>
                         <div class="flex gap-[1rem]">
                             <button @click="router.push(`/admin_playlists/update/${playlist.id}`)" 
-                                    class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">
+                                    class="bg-button3 text-base text-center border-3 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">
                                 Rediģēt kursu
                             </button>
                             <button @click="handleDeletePlaylist(playlist.id)" 
@@ -62,13 +62,13 @@
                              class="bg-base rounded-lg p-[2rem] w-full">
                             <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
                                 <div>
-                                    <i :class="[content.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]', 'fas fa-circle-dot text-[1.2rem]']"></i>
-                                    <span :class="[content.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]', 'text-[1.2rem]']">
+                                    <i :class="[content.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]', 'fas fa-circle-dot text-[1.2rem] mr-[.3rem]']"></i>
+                                    <span :class="[content.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]', 'text-[1.2rem]']">
                                         {{ content.status }}
                                     </span>
                                 </div>
                                 <div>
-                                    <i class="fas fa-calendar text-button text-[1.2rem]"></i>
+                                    <i class="fas fa-calendar text-button text-[1.2rem] mr-[.3rem]"></i>
                                     <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                         {{ formatDate(content.date) }}
                                     </span>
@@ -85,7 +85,7 @@
                             </h3>
                             <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
                                 <button @click="router.push(`/admin_contents/update/${content.id}`)" 
-                                        class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">
+                                        class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button3 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">
                                     Rediģēt
                                 </button>
                                 <button @click="handleDeleteContent(content.id)" 

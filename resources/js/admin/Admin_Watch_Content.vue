@@ -50,7 +50,7 @@
 
                 <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
                     <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                        <i class="fas fa-calendar text-button"></i>
+                        <i class="fas fa-calendar text-button mr-[.3rem]"></i>
                         <span class="text-text_light">{{ formatDate(content.date) }}</span>
                     </p>
                 </div>
@@ -62,7 +62,7 @@
                 <div class="flex justify-between w-full gap-[1rem] my-[1rem]">
                     <button 
                         @click="router.push(`/admin_contents/update/${content.id}`)"
-                        class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                        class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button3 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
                         Rediģēt
                     </button>

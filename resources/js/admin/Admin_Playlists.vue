@@ -31,18 +31,18 @@
                     <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
                         <div>
                             <i :class="[
-                                playlist.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
-                                'fas fa-circle-dot text-[1.2rem]'
+                                playlist.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]',
+                                'fas fa-circle-dot text-[1.2rem] mr-[.3rem]'
                             ]"></i>
                             <span :class="[
-                                playlist.status === 'active' ? 'text-[#0eed46]' : 'text-[#e83731]',
+                                playlist.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]',
                                 'text-[1.2rem]'
                             ]">
-                                {{ playlist.status === 'active' ? 'Aktīvs' : 'Neaktīvs' }}
+                                {{ playlist.status }}
                             </span>
                         </div>
                         <div>
-                            <i class="fas fa-calendar text-button text-[1.2rem]"></i>
+                            <i class="fas fa-calendar text-button text-[1.2rem] mr-[.3rem]"></i>
                             <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
                                 {{ formatDate(playlist.date) || 'Nav pieejams' }}
                             </span>
@@ -69,7 +69,7 @@
                     <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
                         <button 
                             @click="router.push(`/admin_playlists/update/${playlist.encrypted_id}`)"
-                            class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
                             Rediģēt
                         </button>
