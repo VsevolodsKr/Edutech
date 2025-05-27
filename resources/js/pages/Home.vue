@@ -111,7 +111,7 @@
                     <!-- Playlists Grid with pagination -->
                     <div v-else>
                         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
-                            <div v-for="playlist in paginatedPlaylists" 
+                            <div v-for="playlist in latestPlaylists" 
                                 :key="playlist.id" 
                                 class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                                 <!-- Teacher Info with lazy loading -->
@@ -172,27 +172,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Pagination controls -->
-                        <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-8">
-                            <button 
-                                @click="currentPage--"
-                                :disabled="currentPage === 1"
-                                class="px-4 py-2 rounded-lg bg-button text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-button2 transition-colors"
-                            >
-                                Iepriekšējā
-                            </button>
-                            <span class="px-4 py-2">
-                                {{ currentPage }} / {{ totalPages }}
-                            </span>
-                            <button 
-                                @click="currentPage++"
-                                :disabled="currentPage === totalPages"
-                                class="px-4 py-2 rounded-lg bg-button text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-button2 transition-colors"
-                            >
-                                Nākamā
-                            </button>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -211,21 +190,6 @@ import store from '../store/store';
 
 const router = useRouter();
 const { width } = useWindowSize();
-
-// Pagination state
-const currentPage = ref(1);
-const itemsPerPage = 6;
-
-// Computed properties for pagination
-const paginatedPlaylists = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return latestPlaylists.value.slice(start, end);
-});
-
-const totalPages = computed(() => {
-    return Math.ceil(latestPlaylists.value.length / itemsPerPage);
-});
 
 // State
 const isLoggingOut = ref(false);

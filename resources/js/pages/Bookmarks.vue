@@ -144,10 +144,8 @@ const loadBookmarks = async () => {
         };
 
         console.log('Making API request to:', `/api/bookmarks/user/${user.value.encrypted_id}`);
-        console.log('With headers:', headers);
         
         const response = await axios.get(`/api/bookmarks/user/${user.value.encrypted_id}`, { headers });
-        console.log('Full API response:', response);
         
         if (!response.data || !Array.isArray(response.data.playlists)) {
             console.error('Invalid response format:', response.data);
@@ -155,8 +153,46 @@ const loadBookmarks = async () => {
             return;
         }
 
-        playlists.value = response.data.playlists;
-        console.log('Loaded playlists:', playlists.value);
+        // Process playlists and format image paths
+        playlists.value = response.data.playlists.map(playlist => {
+            let thumbPath = playlist.thumb;
+            
+            // Process thumbnail path
+            if (thumbPath) {
+                if (thumbPath.includes('/storage/app/public/')) {
+                    thumbPath = thumbPath.replace('/storage/app/public/', '');
+                } else if (thumbPath.includes('storage/app/public/')) {
+                    thumbPath = thumbPath.replace('storage/app/public/', '');
+                }
+                thumbPath = thumbPath.replace(/^\/+/, '');
+                thumbPath = `/storage/${thumbPath}`;
+            } else {
+                thumbPath = '/storage/default-thumb.png';
+            }
+
+            // Process teacher image path
+            if (playlist.teacher) {
+                let imagePath = playlist.teacher.image;
+                if (imagePath) {
+                    if (imagePath.includes('/storage/app/public/')) {
+                        imagePath = imagePath.replace('/storage/app/public/', '');
+                    } else if (imagePath.includes('storage/app/public/')) {
+                        imagePath = imagePath.replace('storage/app/public/', '');
+                    }
+                    imagePath = imagePath.replace(/^\/+/, '');
+                    playlist.teacher.image = `/storage/${imagePath}`;
+                } else {
+                    playlist.teacher.image = '/storage/default-avatar.png';
+                }
+            }
+
+            return {
+                ...playlist,
+                thumb: thumbPath
+            };
+        });
+
+        console.log('Processed playlists:', playlists.value);
 
     } catch (err) {
         console.error('Error loading bookmarks:', err.response || err);

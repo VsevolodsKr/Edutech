@@ -42,7 +42,7 @@
             </div>
 
             <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] mt-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
-                <div v-for="teacher in teachers" 
+                <div v-for="teacher in paginatedTeachers" 
                      :key="teacher.id" 
                      class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
                     <div class="flex items-start gap-[1rem] mb-[1.5rem]">
@@ -80,6 +80,27 @@
                     </router-link>
                 </div>
             </div>
+
+            <!-- Pagination controls -->
+            <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-8">
+                <button 
+                    @click="currentPage--"
+                    :disabled="currentPage === 1"
+                    class="px-4 py-2 rounded-lg bg-button text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-button2 transition-colors"
+                >
+                    Iepriekšējā
+                </button>
+                <span class="px-4 py-2">
+                    {{ currentPage }} / {{ totalPages }}
+                </span>
+                <button 
+                    @click="currentPage++"
+                    :disabled="currentPage === totalPages"
+                    class="px-4 py-2 rounded-lg bg-button text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-button2 transition-colors"
+                >
+                    Nākamā
+                </button>
+            </div>
         </section>
         <Sidebar />
     </div>
@@ -99,6 +120,26 @@ const { width } = useWindowSize();
 
 const searchQuery = ref('');
 const isSearching = ref(false);
+
+// Pagination state
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+// Computed properties for pagination
+const paginatedTeachers = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return teachers.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(teachers.value.length / itemsPerPage);
+});
+
+// Reset page when search query changes
+watch(searchQuery, () => {
+    currentPage.value = 1;
+});
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const teachers = computed(() => {

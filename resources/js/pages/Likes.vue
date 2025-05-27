@@ -174,9 +174,13 @@ const loadLikedContent = async () => {
             Accept: 'application/json'
         };
 
+        console.log('Making request to:', `/api/likes/user/${user.value.encrypted_id}`);
         const response = await axios.get(`/api/likes/user/${user.value.encrypted_id}`, { headers });
+        console.log('Raw API response:', response.data);
+        console.log('Number of likes received:', response.data.contents.length);
         
         contents.value = response.data.contents.map(content => {
+            console.log('Processing content:', content);
             let thumbPath = content.thumb;
             
             // Handle YouTube thumbnails
@@ -213,12 +217,17 @@ const loadLikedContent = async () => {
                 content.teacher.image = cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png';
             }
 
-            return {
+            const processedContent = {
                 ...content,
                 thumb: thumbPath,
                 like_id: content.like_id
             };
+            console.log('Processed content:', processedContent);
+            return processedContent;
         });
+
+        console.log('Final contents array:', contents.value);
+        console.log('Number of contents after processing:', contents.value.length);
 
     } catch (err) {
         console.error('Error loading liked content:', err);

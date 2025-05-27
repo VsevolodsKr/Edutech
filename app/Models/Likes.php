@@ -22,14 +22,14 @@ class Likes extends Model
     public $timestamps = true;
 
     public function user() {
-        return $this->hasOne('App\Models\Users', 'id', 'user_id');
+        return $this->belongsTo('App\Models\Users', 'user_id', 'id');
     }
 
     public function teacher() {
-        return $this->hasOne('App\Models\Teachers', 'id', 'teacher_id');
+        return $this->belongsTo('App\Models\Teachers', 'teacher_id', 'id');
     }
 
     public function content() {
-        return $this->hasOne('App\Models\Contents', 'id', 'content_id');
+        return $this->belongsTo('App\Models\Contents', 'content_id', 'id');
     }
 }
