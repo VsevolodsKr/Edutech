@@ -57,7 +57,7 @@ class PlaylistsController extends Controller
 
     public function active()
     {
-        return Playlists::with('teacher')
+        return Playlists::with(['teacher', 'contents'])
             ->orderBy('date', 'desc')
             ->where('status', 'Aktīvs')
             ->get()
@@ -73,10 +73,12 @@ class PlaylistsController extends Controller
                     'thumb' => $playlist->thumb,
                     'date' => $playlist->date,
                     'teacher_id' => $playlist->teacher_id,
+                    'content_count' => $playlist->contents->count(),
                     'teacher' => $playlist->teacher ? [
                         'id' => $playlist->teacher->id,
                         'name' => $playlist->teacher->name,
                         'image' => $playlist->teacher->image,
+                        'status' => $playlist->teacher->status
                     ] : null
                 ];
             });
@@ -84,63 +86,31 @@ class PlaylistsController extends Controller
 
     public function latest()
     {
-        try {
-            $playlists = Playlists::with('teacher')
-                ->where('status', 'Aktīvs')
-                ->orderBy('date', 'desc')
-                ->take(7)
-                ->get()
-                ->filter(function ($playlist) {
-                    return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
-                })
-                ->map(function ($playlist) {
-                    // Format teacher image
-                    $teacherImage = null;
-                    if ($playlist->teacher) {
-                        $teacherImage = $playlist->teacher->formatted_image ?? $playlist->teacher->image;
-                    }
-
-                    // Format playlist thumbnail
-                    $thumb = $playlist->thumb;
-                    if ($thumb && !str_starts_with($thumb, 'http')) {
-                        $thumb = str_replace([
-                            'storage/app/public/',
-                            'storage/',
-                            '/app/public/',
-                            'app/public/',
-                            'uploads/uploads/',
-                            'uploads/'
-                        ], '', $thumb);
-                        $thumb = '/storage/' . $thumb;
-                    }
-
-                    return [
-                        'id' => $playlist->id,
-                        'encrypted_id' => $this->encryptId($playlist->id),
-                        'title' => $playlist->title,
-                        'description' => $playlist->description,
-                        'thumb' => $thumb,
-                        'date' => $playlist->date,
-                        'teacher_id' => $playlist->teacher_id,
-                        'teacher' => $playlist->teacher ? [
-                            'id' => $playlist->teacher->id,
-                            'name' => $playlist->teacher->name,
-                            'image' => $teacherImage,
-                            'status' => $playlist->teacher->status
-                        ] : null,
-                        'content_count' => $playlist->contents()->count()
-                    ];
-                })
-                ->values(); // Re-index the array after filtering
-
-            return response()->json($playlists);
-        } catch (\Exception $e) {
-            \Log::error('Error in latest playlists: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Neizdevās iegūt jaunākos kursus',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return Playlists::with(['teacher', 'contents'])
+            ->orderBy('date', 'desc')
+            ->where('status', 'Aktīvs')
+            ->get()
+            ->filter(function ($playlist) {
+                return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
+            })
+            ->map(function ($playlist) {
+                return [
+                    'id' => $playlist->id,
+                    'encrypted_id' => $this->encryptId($playlist->id),
+                    'title' => $playlist->title,
+                    'description' => $playlist->description,
+                    'thumb' => $playlist->thumb,
+                    'date' => $playlist->date,
+                    'teacher_id' => $playlist->teacher_id,
+                    'content_count' => $playlist->contents->count(),
+                    'teacher' => $playlist->teacher ? [
+                        'id' => $playlist->teacher->id,
+                        'name' => $playlist->teacher->name,
+                        'image' => $playlist->teacher->image,
+                        'status' => $playlist->teacher->status
+                    ] : null
+                ];
+            });
     }
 
     public function find($encryptedId)
@@ -197,9 +167,31 @@ class PlaylistsController extends Controller
             return $this->errorResponse($validator->messages()->all());
         }
 
-        return Playlists::where('title', 'like', '%' . $request->name . '%')
+        return Playlists::with(['teacher', 'contents'])
+            ->where('title', 'like', '%' . $request->name . '%')
             ->orderBy('date', 'desc')
-            ->get();
+            ->get()
+            ->filter(function ($playlist) {
+                return $playlist->teacher && $playlist->teacher->status === 'aktīvs';
+            })
+            ->map(function ($playlist) {
+                return [
+                    'id' => $playlist->id,
+                    'encrypted_id' => $this->encryptId($playlist->id),
+                    'title' => $playlist->title,
+                    'description' => $playlist->description,
+                    'thumb' => $playlist->thumb,
+                    'date' => $playlist->date,
+                    'teacher_id' => $playlist->teacher_id,
+                    'content_count' => $playlist->contents->count(),
+                    'teacher' => $playlist->teacher ? [
+                        'id' => $playlist->teacher->id,
+                        'name' => $playlist->teacher->name,
+                        'image' => $playlist->teacher->image,
+                        'status' => $playlist->teacher->status
+                    ] : null
+                ];
+            });
     }
 
     public function add(Request $request)

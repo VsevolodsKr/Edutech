@@ -19,25 +19,32 @@ class AuthorizationController extends Controller
 {
     use Encryptable;
 
+    // Konstantes
     private const DEFAULT_IMAGE = '/storage/app/public/default.png';
     private const UPLOAD_PATH = 'uploads';
 
+    // Reģistrācijas metode
     public function registration_store(Request $request)
     {
         try {
+            // Validācija
             $validator = $this->validateRegistration($request);
+            // Ja validācija neizdodas, atgriež kļūdas
             if ($validator->fails()) {
                 return $this->errorResponse($validator->messages()->all());
             }
 
+            // Vai paroles sakrīt?
             if ($request->password !== $request->conf_password) {
-                return $this->errorResponse(['Passwords do not match']);
+                return $this->errorResponse(['Paroles nesakrīt!']);
             }
 
+            // Vai e-pasts jau eksistē?
             if (Users::where('email', $request->email)->exists()) {
-                return $this->errorResponse(['Email already exists in database. Try to login!']);
+                return $this->errorResponse(['E-pasts jau eksistē. Pamēģiniet ielogoties!']);
             }
 
+            // Pēc visām validācijām izveido jaunu lietotāju un aizpilda tā laukus
             $user = new Users();
             $user->fill([
                 'name' => $request->name,
@@ -46,24 +53,31 @@ class AuthorizationController extends Controller
                 'image' => $this->handleImageUpload($request->image)
             ]);
 
+            // Saglabājam jaunu lietotāju
+
             $user->save();
 
+            // Atgriežam lietotāja datus un veiksmīgu reģistrācijas paziņojumu
             return $this->successResponse(
                 'Jūs veiksmīgi esat reģistrējusies Edutech platformā!',
                 ['data' => $user]
             );
         } catch (\Exception $e) {
+            // Ja kāda kļūda notikusi, atgriežam kļūdas paziņojumu
             return $this->errorResponse(['Reģistrācija neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }
 
+    // Autentifikācijas metode
     public function login_store(Request $request)
     {
+        // Validācija
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string'
         ]);
 
+        // Ja validācija neizdodas, atgriežam kļūdas
         if ($validator->fails()) {
             return response()->json([
                 'status' => 422,
@@ -72,10 +86,12 @@ class AuthorizationController extends Controller
             ], 422);
         }
 
+        // Iegūstam lietotāju, pasniedzēju vai administratoru
         $user = Users::where('email', $request->email)->first();
         $teacher = Teachers::where('email', $request->email)->first();
         $developer = Developers::where('email', $request->email)->first();
 
+        // Ja lietotājs ir deaktivizēts, atgriežam kļūdas
         if ($user && $user->status === 'neaktīvs') {
             return response()->json([
                 'status' => 403,
@@ -83,6 +99,7 @@ class AuthorizationController extends Controller
             ], 403);
         }
 
+        // Ja pasniedzējs ir deaktivizēts, atgriežam kļūdas
         if ($teacher && $teacher->status === 'neaktīvs') {
             return response()->json([
                 'status' => 403,
@@ -90,6 +107,7 @@ class AuthorizationController extends Controller
             ], 403);
         }
 
+        // Ja izstrādātājs ir deaktivizēts, atgriežam kļūdas
         if ($developer && $developer->status === 'neaktīvs') {
             return response()->json([
                 'status' => 403,
@@ -97,6 +115,7 @@ class AuthorizationController extends Controller
             ], 403);
         }
 
+        // Ja lietotājs ir aktivizēts un e-pasts ar paroli sakrīt, izveidojam jaunu token un atgriežam lietotāja datus
         if ($user && Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $user->createToken('auth_token')->plainTextToken;
             return response()->json([
@@ -115,6 +134,7 @@ class AuthorizationController extends Controller
             ]);
         }
 
+        // Ja pasniedzējs ir aktivizēts un e-pasts ar paroli sakrīt, izveidojam jaunu token un atgriežam pasniedzēja datus
         if ($teacher && Auth::guard('teacher')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $teacher->createToken('auth_token')->plainTextToken;
             return response()->json([
@@ -135,6 +155,7 @@ class AuthorizationController extends Controller
             ]);
         }
 
+        // Ja administrators ir aktivizēts un e-pasts ar paroli sakrīt, izveidojam jaunu token un atgriežam administratora datus
         if ($developer && Hash::check($request->password, $developer->password)) {
             $token = $developer->createToken('auth_token')->plainTextToken;
             return response()->json([
@@ -153,56 +174,72 @@ class AuthorizationController extends Controller
             ]);
         }
 
+        // Ja neizdodas, atgriežam kļūdas
         return response()->json([
             'status' => 401,
             'message' => 'Nederīgs e-pasts vai parole'
         ], 401);
     }
 
+    // Lietotāja profila rediģēšanas metode
     public function update_store(Request $request)
     {
         try {
+            // Validācija
             $validator = $this->validateUpdate($request);
+            // Ja validācija neizdodas, atgriežam kļūdas
             if ($validator->fails()) {
                 return $this->errorResponse($validator->messages()->all());
             }
 
+            // Iegūstam lietotāju
             $user = Users::where('email', $request->old_email)->firstOrFail();
 
+            // Ja jāmaina parole
             if ($this->shouldChangePassword($request)) {
+                // Validācija
                 $passwordValidator = $this->validatePasswordChange($request);
+                // Ja validācija neizdodas, atgriežam kļūdas
                 if ($passwordValidator->fails()) {
                     return $this->errorResponse($passwordValidator->messages()->all());
                 }
 
+                // Ja iepriekšējā parole nav pareiza, atgriežam kļūdas
                 if (!Hash::check($request->p_password, $user->password)) {
                     return $this->errorResponse(['Iepriekšējā parole nav pareiza!']);
                 }
 
+                // Ja jaunā parole nesakrīt, atgriežam kļūdas
                 if ($request->n_password !== $request->c_password) {
                     return $this->errorResponse(['Jaunas paroles nesakrīt!']);
                 }
 
+                // Ja visas validācijas izdevās, maina paroli
                 $user->password = Hash::make($request->n_password);
             }
 
+            // Ja e-pasts ir mainīts uz jau eksistējošu e-pastu, atgriežam kļūdas
             if ($request->email !== $request->old_email && Users::where('email', $request->email)->exists()) {
                 return $this->errorResponse(['E-pasts jau eksistē!']);
             }
 
+            // Ja visas validācijas izdevās, aizpilda lietotāja datus
             $user->fill([
                 'name' => $request->name,
                 'email' => $request->email,
                 'image' => $request->hasFile('image') ? $this->handleImageUpload($request->image) : $user->image
             ]);
 
+            // Saglabājam lietotāja datus
             $user->save();
 
+            // Atgriežam veiksmīgu paziņojumu
             return $this->successResponse(
                 'Profils veiksmīgi rediģēts!',
                 ['data' => $user]
             );
         } catch (\Exception $e) {
+            // Ja kāda kļūda notikusi, atgriežam kļūdas paziņojumu
             return $this->errorResponse(['Rediģēšana neizdevās. Lūdzu, mēģiniet vēlreiz vēlāk!']);
         }
     }

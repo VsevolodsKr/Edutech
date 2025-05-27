@@ -174,37 +174,10 @@ const loadLikedContent = async () => {
             Accept: 'application/json'
         };
 
-        const [likesResponse, teachersResponse] = await Promise.all([
-            axios.get(`/api/likes/user/${user.value.encrypted_id}`, { headers }),
-            axios.get(`/api/teachers/all`, { headers })
-        ]);
-
-        console.log('Raw Likes Response:', likesResponse.data);
-        console.log('Raw Teachers Response:', teachersResponse.data);
-
-        const teachersMap = new Map();
-        teachersResponse.data.forEach(teacher => {
-            if (teacher.id) {
-                const cleanTeacherImagePath = teacher.image
-                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                    ?.replace(/^\//, '');
-                
-                teachersMap.set(Number(teacher.id), {
-                    ...teacher,
-                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
-                });
-            }
-        });
-
-        contents.value = likesResponse.data.contents.map(content => {
-            console.log('Processing content:', content);
-            
-            // Get the like ID from the likes array
-            const like = likesResponse.data.likes.find(l => l.content_id === content.id);
-            console.log('Found like:', like);
-
+        const response = await axios.get(`/api/likes/user/${user.value.encrypted_id}`, { headers });
+        
+        contents.value = response.data.contents.map(content => {
             let thumbPath = content.thumb;
-            console.log('Original thumb path:', thumbPath);
             
             // Handle YouTube thumbnails
             if (content.video_source_type === 'youtube' && content.video) {
@@ -218,33 +191,35 @@ const loadLikedContent = async () => {
                     }
                     if (videoId) {
                         thumbPath = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                        console.log('Using YouTube thumbnail:', thumbPath);
                     }
                 } catch (err) {
                     console.error('Error processing YouTube URL:', err);
                 }
             }
 
-            // Only process local thumbnails if we don't have a YouTube thumbnail
+            // Process local thumbnails if not YouTube
             if (!thumbPath || (!thumbPath.includes('youtube.com') && !thumbPath.includes('youtu.be'))) {
                 const cleanThumbPath = content.thumb
                     ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
                     ?.replace(/^\//, '');
                 thumbPath = cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png';
-                console.log('Using local thumbnail:', thumbPath);
             }
 
-            const processedContent = {
+            // Process teacher image
+            if (content.teacher) {
+                const cleanTeacherImagePath = content.teacher.image
+                    ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                    ?.replace(/^\//, '');
+                content.teacher.image = cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png';
+            }
+
+            return {
                 ...content,
                 thumb: thumbPath,
-                teacher: teachersMap.get(Number(content.teacher_id)) || null,
-                like_id: like?.id
+                like_id: content.like_id
             };
-            console.log('Processed content:', processedContent);
-            return processedContent;
         });
 
-        console.log('Final contents array:', contents.value);
     } catch (err) {
         console.error('Error loading liked content:', err);
         error.value = 'Failed to load liked content. Please try again.';

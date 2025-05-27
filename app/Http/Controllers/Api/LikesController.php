@@ -136,29 +136,41 @@ class LikesController extends Controller
             ], 404);
         }
         
-        $likes = Likes::where('user_id', $id)->get();
-        $contents = [];
+        // Load likes with content and teacher data in a single query
+        $likes = Likes::with(['content' => function($query) {
+            $query->select('id', 'title', 'description', 'video', 'thumb', 'date', 'teacher_id', 'video_source_type');
+        }, 'content.teacher' => function($query) {
+            $query->select('id', 'name', 'image');
+        }])
+        ->where('user_id', $id)
+        ->get();
         
-        foreach($likes as $like) {
-            $content = Contents::find($like->content_id);
-            if ($content) {
-                $contents[] = [
-                    'id' => $content->id,
-                    'encrypted_id' => $content->encrypted_id,
-                    'title' => $content->title,
-                    'description' => $content->description,
-                    'video' => $content->video,
-                    'thumb' => $content->thumb,
-                    'date' => $content->date,
-                    'teacher_id' => $content->teacher_id,
-                    'video_source_type' => $content->video_source_type
-                ];
-            }
-        }
+        // Transform the data to match the expected format
+        $transformedData = $likes->map(function($like) {
+            $content = $like->content;
+            if (!$content) return null;
+            
+            return [
+                'id' => $content->id,
+                'encrypted_id' => $content->encrypted_id,
+                'title' => $content->title,
+                'description' => $content->description,
+                'video' => $content->video,
+                'thumb' => $content->thumb,
+                'date' => $content->date,
+                'teacher_id' => $content->teacher_id,
+                'video_source_type' => $content->video_source_type,
+                'like_id' => $like->encrypted_id,
+                'teacher' => $content->teacher ? [
+                    'id' => $content->teacher->id,
+                    'name' => $content->teacher->name,
+                    'image' => $content->teacher->image
+                ] : null
+            ];
+        })->filter()->values();
         
         return response()->json([
-            'likes' => $likes,
-            'contents' => $contents
+            'contents' => $transformedData
         ]);
     }
 }

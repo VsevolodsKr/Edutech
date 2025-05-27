@@ -7,6 +7,7 @@ export default createStore({
             showSidebar: true,
             user: null,
             userLoaded: false,
+            lastUserLoad: 0,
             searchPlaylist: '',
             isLoading: false,
             dashboardStats: {
@@ -72,7 +73,10 @@ export default createStore({
         getTeachers: (state) => state.teachers,
         getTeachersLoading: (state) => state.teachersLoading,
         getTeachersError: (state) => state.teachersError,
-        isUserLoaded: state => state.userLoaded
+        isUserLoaded: state => state.userLoaded,
+        isCacheValid: (state) => {
+            return state.userLoaded && (Date.now() - state.lastUserLoad) < 300000;
+        }
     },
 
     mutations: {
@@ -194,18 +198,26 @@ export default createStore({
             if (state.dashboardStats && typeof state.dashboardStats[type] === 'number' && state.dashboardStats[type] > 0) {
                 state.dashboardStats[type]--;
             }
+        },
+        setLastUserLoad(state, timestamp) {
+            state.lastUserLoad = timestamp;
         }
     },
 
     actions: {
-        async clearAndLoadUserData({ commit, dispatch }) {
+        async clearAndLoadUserData({ commit, dispatch, state, getters }) {
+            if (getters.isCacheValid) {
+                console.log('Using cached user data');
+                return;
+            }
+
             commit('clearState');
             commit('setIsLoading', true);
             
             try {
                 await dispatch('loadUserData');
                 
-                const user = this.state.user;
+                const user = state.user;
                 if (user?.encrypted_id) {
                     await dispatch('loadUserStats', user.encrypted_id);
                 }
@@ -216,13 +228,19 @@ export default createStore({
                 commit('setIsLoading', false);
             }
         },
-        async loadUserData({ commit, dispatch, state }) {
+        async loadUserData({ commit, dispatch, state, getters }) {
+            if (getters.isCacheValid) {
+                console.log('Using cached user data');
+                return;
+            }
+
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
                     console.log('No token found, clearing user data');
                     commit('setUser', null);
                     commit('setUserLoaded', true);
+                    commit('setLastUserLoad', Date.now());
                     return;
                 }
 
@@ -238,6 +256,7 @@ export default createStore({
                     console.error('No user data received from API');
                     commit('setUser', null);
                     commit('setUserLoaded', true);
+                    commit('setLastUserLoad', Date.now());
                     return;
                 }
 
@@ -247,6 +266,7 @@ export default createStore({
                 // Store user data
                 commit('setUser', userData);
                 commit('setUserLoaded', true);
+                commit('setLastUserLoad', Date.now());
 
                 // Load user stats if we have encrypted_id
                 if (userData.encrypted_id) {
@@ -259,6 +279,7 @@ export default createStore({
                 console.error('Error in loadUserData:', error);
                 commit('setUser', null);
                 commit('setUserLoaded', true);
+                commit('setLastUserLoad', Date.now());
             } finally {
                 commit('setIsLoading', false);
             }
@@ -475,6 +496,12 @@ export default createStore({
         },
 
         async loadLatestPlaylists({ commit, state }) {
+            if (state.latestPlaylists.length > 0 && 
+                Date.now() - (state.latestPlaylists[0]?.timestamp || 0) < 300000) {
+                console.log('Using cached latest playlists');
+                return;
+            }
+
             try {
                 commit('setLatestPlaylistsLoading', true);
                 commit('setLatestPlaylistsError', null);
@@ -487,86 +514,57 @@ export default createStore({
                     throw new Error('Invalid response format');
                 }
 
-                console.log('Raw playlists data:', response.data);
+                const processedPlaylists = response.data
+                    .filter(playlist => playlist.teacher && playlist.teacher.status === 'aktīvs')
+                    .map(playlist => {
+                        try {
+                            const processed = { 
+                                ...playlist,
+                                timestamp: Date.now(),
+                                encrypted_id: playlist.encrypted_id || playlist.id,
+                                content_count: playlist.content_count || 0
+                            };
 
-                const processedPlaylists = await Promise.all(
-                    response.data
-                        .filter(playlist => playlist.teacher && playlist.teacher.status === 'aktīvs')
-                        .map(async (playlist) => {
-                            try {
-                                const processed = { 
-                                    ...playlist,
-                                    timestamp: Date.now(),
-                                    encrypted_id: playlist.encrypted_id || playlist.id
-                                };
-
-                                // Handle thumbnail
-                                if (processed.thumb) {
-                                    if (processed.thumb.startsWith('http')) {
-                                        // Keep external URLs as is
-                                        processed.thumb = processed.thumb;
-                                    } else {
-                                        // Clean and format local paths
-                                        const cleanPath = processed.thumb
-                                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                            .replace(/^\//, '');
-                                        processed.thumb = `/storage/${cleanPath}`;
-                                    }
+                            // Handle thumbnail
+                            if (processed.thumb) {
+                                if (processed.thumb.startsWith('http')) {
+                                    processed.thumb = processed.thumb;
                                 } else {
-                                    processed.thumb = '/storage/default-thumbnail.png';
+                                    const cleanPath = processed.thumb
+                                        .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                                        .replace(/^\//, '');
+                                    processed.thumb = `/storage/${cleanPath}`;
                                 }
-
-                                // Format teacher data if available
-                                if (processed.teacher) {
-                                    let teacherImage = processed.teacher.formatted_image || processed.teacher.image;
-                                    
-                                    if (teacherImage) {
-                                        if (teacherImage.startsWith('http')) {
-                                            // Keep external URLs as is
-                                            teacherImage = teacherImage;
-                                        } else {
-                                            // Clean and format local paths
-                                            const cleanTeacherPath = teacherImage
-                                                .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                                .replace(/^\//, '');
-                                            teacherImage = `/storage/${cleanTeacherPath}`;
-                                        }
-                                    }
-                                    
-                                    processed.teacher = {
-                                        ...processed.teacher,
-                                        name: processed.teacher.name || 'Unknown Teacher',
-                                        image: teacherImage || '/storage/default-avatar.png'
-                                    };
-                                } else {
-                                    processed.teacher = {
-                                        name: 'Unknown Teacher',
-                                        image: '/storage/default-avatar.png'
-                                    };
-                                }
-
-                                // Get content count
-                                try {
-                                    const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
-                                    processed.content_count = contentResponse.data || 0;
-                                    console.log('Content count for playlist:', processed.content_count);
-                                } catch (contentError) {
-                                    console.error('Error fetching content count:', contentError);
-                                    processed.content_count = 0;
-                                }
-
-                                return processed;
-                            } catch (error) {
-                                console.error('Error processing playlist:', error);
-                                return null;
+                            } else {
+                                processed.thumb = '/storage/default-thumbnail.png';
                             }
-                        })
-                );
 
-                const validPlaylists = processedPlaylists.filter(Boolean);
-                console.log('Processed playlists:', validPlaylists);
+                            // Format teacher data
+                            if (processed.teacher) {
+                                let teacherImage = processed.teacher.image;
+                                if (teacherImage && !teacherImage.startsWith('http')) {
+                                    const cleanPath = teacherImage
+                                        .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                                        .replace(/^\//, '');
+                                    teacherImage = `/storage/${cleanPath}`;
+                                }
+                                
+                                processed.teacher = {
+                                    ...processed.teacher,
+                                    name: processed.teacher.name || 'Unknown Teacher',
+                                    image: teacherImage || '/storage/default-avatar.png'
+                                };
+                            }
 
-                commit('setLatestPlaylists', validPlaylists);
+                            return processed;
+                        } catch (error) {
+                            console.error('Error processing playlist:', error);
+                            return null;
+                        }
+                    })
+                    .filter(Boolean);
+
+                commit('setLatestPlaylists', processedPlaylists);
             } catch (err) {
                 console.error('Error loading latest playlists:', err);
                 commit('setLatestPlaylistsError', 'Failed to load latest playlists. Please try again.');
@@ -580,6 +578,7 @@ export default createStore({
             // If we already have courses and they're not too old (e.g., less than 5 minutes old)
             if (state.courses.length > 0 && 
                 Date.now() - (state.courses[0]?.timestamp || 0) < 300000) {
+                console.log('Using cached courses data');
                 return;
             }
 
@@ -592,12 +591,13 @@ export default createStore({
                     throw new Error('Invalid response format');
                 }
 
-                const processedPlaylists = await Promise.all(
-                    response.data.map(async (playlist) => {
+                const processedPlaylists = response.data.map(playlist => {
+                    try {
                         const processed = { 
-                            ...playlist, 
+                            ...playlist,
                             timestamp: Date.now(),
-                            encrypted_id: playlist.encrypted_id || playlist.id
+                            encrypted_id: playlist.encrypted_id || playlist.id,
+                            content_count: playlist.content_count || 0
                         };
 
                         // Handle thumbnail
@@ -610,34 +610,21 @@ export default createStore({
                             processed.thumb = '/storage/default-thumbnail.png';
                         }
 
-                        // Fetch teacher data if we have teacher_id
-                        if (processed.teacher_id) {
-                            try {
-                                const teacherResponse = await axios.get(`/api/teachers/find_teacher/${processed.teacher_id}`);
-                                
-                                if (teacherResponse.data?.data) {
-                                    const teacherData = teacherResponse.data.data;
-                                    let teacherImage = teacherData.formatted_image || teacherData.image;
-                                    if (teacherImage) {
-                                        const cleanTeacherPath = teacherImage
-                                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                            .replace(/^\//, '');
-                                        teacherImage = `/storage/${cleanTeacherPath}`;
-                                    }
-                                    
-                                    processed.teacher = {
-                                        ...teacherData,
-                                        name: teacherData.name || 'Unknown Teacher',
-                                        image: teacherImage || '/storage/default-avatar.png'
-                                    };
-                                }
-                            } catch (teacherError) {
-                                console.error('Error fetching teacher:', teacherError);
-                                processed.teacher = {
-                                    name: 'Unknown Teacher',
-                                    image: '/storage/default-avatar.png'
-                                };
+                        // Format teacher data
+                        if (processed.teacher) {
+                            let teacherImage = processed.teacher.image;
+                            if (teacherImage && !teacherImage.startsWith('http')) {
+                                const cleanPath = teacherImage
+                                    .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                                    .replace(/^\//, '');
+                                teacherImage = `/storage/${cleanPath}`;
                             }
+                            
+                            processed.teacher = {
+                                ...processed.teacher,
+                                name: processed.teacher.name || 'Unknown Teacher',
+                                image: teacherImage || '/storage/default-avatar.png'
+                            };
                         } else {
                             processed.teacher = {
                                 name: 'Unknown Teacher',
@@ -645,20 +632,14 @@ export default createStore({
                             };
                         }
 
-                        // Get content count
-                        try {
-                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
-                            processed.content_count = contentResponse.data || 0;
-                        } catch (contentError) {
-                            console.error('Error fetching content count:', contentError);
-                            processed.content_count = 0;
-                        }
-
                         return processed;
-                    })
-                );
+                    } catch (error) {
+                        console.error('Error processing playlist:', error);
+                        return null;
+                    }
+                }).filter(Boolean);
 
-                commit('setCourses', processedPlaylists.filter(Boolean));
+                commit('setCourses', processedPlaylists);
             } catch (err) {
                 console.error('Error loading courses:', err);
                 commit('setCoursesError', 'Failed to load courses. Please try again.');
@@ -724,9 +705,14 @@ export default createStore({
                     throw new Error('Invalid response format');
                 }
 
-                const processedPlaylists = await Promise.all(
-                    response.data.map(async (playlist) => {
-                        const processed = { ...playlist, timestamp: Date.now() };
+                const processedPlaylists = response.data.map(playlist => {
+                    try {
+                        const processed = { 
+                            ...playlist,
+                            timestamp: Date.now(),
+                            encrypted_id: playlist.encrypted_id || playlist.id,
+                            content_count: playlist.content_count || 0
+                        };
 
                         // Handle thumbnail
                         if (processed.thumb) {
@@ -738,34 +724,21 @@ export default createStore({
                             processed.thumb = '/storage/default-thumbnail.png';
                         }
 
-                        // Fetch teacher data if we have teacher_id
-                        if (processed.teacher_id) {
-                            try {
-                                const teacherResponse = await axios.get(`/api/teachers/find_teacher/${processed.teacher_id}`);
-                                
-                                if (teacherResponse.data?.data) {
-                                    const teacherData = teacherResponse.data.data;
-                                    let teacherImage = teacherData.formatted_image || teacherData.image;
-                                    if (teacherImage) {
-                                        const cleanTeacherPath = teacherImage
-                                            .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                                            .replace(/^\//, '');
-                                        teacherImage = `/storage/${cleanTeacherPath}`;
-                                    }
-                                    
-                                    processed.teacher = {
-                                        ...teacherData,
-                                        name: teacherData.name || 'Unknown Teacher',
-                                        image: teacherImage || '/storage/default-avatar.png'
-                                    };
-                                }
-                            } catch (teacherError) {
-                                console.error('Error fetching teacher:', teacherError);
-                                processed.teacher = {
-                                    name: 'Unknown Teacher',
-                                    image: '/storage/default-avatar.png'
-                                };
+                        // Format teacher data
+                        if (processed.teacher) {
+                            let teacherImage = processed.teacher.image;
+                            if (teacherImage && !teacherImage.startsWith('http')) {
+                                const cleanPath = teacherImage
+                                    .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
+                                    .replace(/^\//, '');
+                                teacherImage = `/storage/${cleanPath}`;
                             }
+                            
+                            processed.teacher = {
+                                ...processed.teacher,
+                                name: processed.teacher.name || 'Unknown Teacher',
+                                image: teacherImage || '/storage/default-avatar.png'
+                            };
                         } else {
                             processed.teacher = {
                                 name: 'Unknown Teacher',
@@ -773,20 +746,14 @@ export default createStore({
                             };
                         }
 
-                        // Get content count
-                        try {
-                            const contentResponse = await axios.get(`/api/contents/playlist/${processed.encrypted_id}/amount`);
-                            processed.content_count = contentResponse.data || 0;
-                        } catch (contentError) {
-                            console.error('Error fetching content count:', contentError);
-                            processed.content_count = 0;
-                        }
-
                         return processed;
-                    })
-                );
+                    } catch (error) {
+                        console.error('Error processing playlist:', error);
+                        return null;
+                    }
+                }).filter(Boolean);
 
-                commit('setCourses', processedPlaylists.filter(Boolean));
+                commit('setCourses', processedPlaylists);
             } catch (err) {
                 console.error('Error searching courses:', err);
                 commit('setCoursesError', 'Failed to search courses. Please try again.');

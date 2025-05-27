@@ -8,7 +8,10 @@ import store from '../store/store';
 
 onMounted(async () => {
     try {
-        await store.dispatch('loadUserData');
+        // Only load user data if cache is invalid
+        if (!store.getters.isCacheValid) {
+            await store.dispatch('loadUserData');
+        }
     } catch (error) {
         console.error('Failed to load user data:', error);
     }

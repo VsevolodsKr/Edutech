@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import Swal from 'sweetalert2';
@@ -96,12 +96,12 @@ const router = useRouter();
 const { width } = useWindowSize();
 
 const playlists = ref([]);
-const user = ref(null);
 const isLoading = ref(true);
 const isDeleting = ref(null);
 const error = ref(null);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const user = computed(() => store.getters.getUser);
 
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -120,68 +120,52 @@ const formatDate = (dateString) => {
     return `${day}.${month}.${year}`;
 };
 
-const loadUser = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/');
-            return null;
-        }
-
-        const response = await axios.get('/api/user', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        return {
-            ...response.data,
-            image: new URL(response.data.image, import.meta.url)
-        };
-    } catch (err) {
-        console.error('Error loading user:', err);
-        router.push('/');
-        return null;
-    }
-};
-
 const loadBookmarks = async () => {
     try {
         isLoading.value = true;
         error.value = null;
 
-        const userData = await loadUser();
-        if (!userData) return;
+        if (!user.value?.encrypted_id) {
+            console.error('No user ID available');
+            error.value = 'Please log in to view your bookmarks.';
+            return;
+        }
 
-        user.value = userData;
         const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No auth token available');
+            error.value = 'Please log in to view your bookmarks.';
+            return;
+        }
+
         const headers = { 
             Authorization: `Bearer ${token}`,
             Accept: 'application/json'
         };
 
-        const response = await axios.get(`/api/bookmarks/user/${userData.encrypted_id}`, { headers });
+        console.log('Making API request to:', `/api/bookmarks/user/${user.value.encrypted_id}`);
+        console.log('With headers:', headers);
+        
+        const response = await axios.get(`/api/bookmarks/user/${user.value.encrypted_id}`, { headers });
+        console.log('Full API response:', response);
+        
+        if (!response.data || !Array.isArray(response.data.playlists)) {
+            console.error('Invalid response format:', response.data);
+            error.value = 'Failed to load bookmarks. Invalid data format.';
+            return;
+        }
 
-        playlists.value = response.data.playlists.map((playlist, index) => {
-            const cleanThumbPath = playlist.thumb
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
+        playlists.value = response.data.playlists;
+        console.log('Loaded playlists:', playlists.value);
 
-            const cleanTeacherImagePath = response.data.teachers[index].image
-                ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
-                ?.replace(/^\//, '');
-
-            return {
-                ...playlist,
-                thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png',
-                teacher: {
-                    ...response.data.teachers[index],
-                    image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
-                },
-                bookmark_id: response.data.bookmarks[index].id
-            };
-        });
     } catch (err) {
-        console.error('Error loading bookmarks:', err);
-        error.value = 'Failed to load bookmarks. Please try again.';
+        console.error('Error loading bookmarks:', err.response || err);
+        if (err.response?.status === 401) {
+            error.value = 'Please log in to view your bookmarks.';
+            router.push('/login');
+        } else {
+            error.value = 'Failed to load bookmarks. Please try again.';
+        }
     } finally {
         isLoading.value = false;
     }
@@ -218,6 +202,8 @@ const deleteBookmark = async (bookmarkId) => {
 
             playlists.value = playlists.value.filter(playlist => playlist.bookmark_id !== bookmarkId);
 
+            // Update store stats
+            store.commit('decrementStat', 'playlists');
             await store.dispatch('loadUserStats', user.value.encrypted_id);
 
             await Swal.fire({
@@ -242,7 +228,23 @@ const deleteBookmark = async (bookmarkId) => {
     }
 };
 
+// Watch for user changes and load bookmarks when user is available
+watch(() => user.value?.encrypted_id, (newId) => {
+    if (newId) {
+        loadBookmarks();
+    }
+});
+
 onMounted(() => {
-    loadBookmarks();
+    // If user is not loaded, dispatch loadUserData
+    if (!user.value) {
+        store.dispatch('clearAndLoadUserData').then(() => {
+            if (user.value?.encrypted_id) {
+                loadBookmarks();
+            }
+        });
+    } else {
+        loadBookmarks();
+    }
 });
 </script>

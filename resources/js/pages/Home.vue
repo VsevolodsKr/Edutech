@@ -108,63 +108,90 @@
                         Nav pieejami kursi
                     </div>
 
-                    <!-- Playlists Grid - visible to all users -->
-                    <div v-else class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
-                        <div v-for="playlist in latestPlaylists" 
-                             :key="playlist.id" 
-                             class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
-                            <!-- Teacher Info -->
-                            <div class="flex items-center gap-[1.5rem] mb-[2rem]">
-                                <img 
-                                    :src="formatTeacherImage(playlist.teacher?.image)" 
-                                    :alt="playlist.teacher?.name"
-                                    class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
-                                >
-                                <div>
-                                    <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem]">
-                                        {{ playlist.teacher?.name || 'Unknown Teacher' }}
-                                    </h3>
-                                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                        {{ formatDate(playlist.date) }}
+                    <!-- Playlists Grid with pagination -->
+                    <div v-else>
+                        <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
+                            <div v-for="playlist in paginatedPlaylists" 
+                                :key="playlist.id" 
+                                class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
+                                <!-- Teacher Info with lazy loading -->
+                                <div class="flex items-center gap-[1.5rem] mb-[2rem]">
+                                    <img 
+                                        :data-src="formatTeacherImage(playlist.teacher?.image)" 
+                                        :alt="playlist.teacher?.name"
+                                        class="h-[4rem] w-[4rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
+                                        :src="formatTeacherImage(playlist.teacher?.image)"
+                                        @error="$event.target.src = '/storage/default-avatar.png'"
+                                    >
+                                    <div>
+                                        <h3 class="text-[1.3rem] text-text_dark mb-[.2rem] [@media(max-width:550px)]:text-[1rem]">
+                                            {{ playlist.teacher?.name || 'Unknown Teacher' }}
+                                        </h3>
+                                        <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
+                                            {{ formatDate(playlist.date) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Course Thumbnail with lazy loading -->
+                                <div class="relative group">
+                                    <img 
+                                        :data-src="playlist.thumb" 
+                                        :alt="playlist.title"
+                                        class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[12rem]"
+                                        :src="playlist.thumb"
+                                        @error="$event.target.src = '/storage/default-thumbnail.png'"
+                                    >
+                                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                                        <router-link 
+                                            :to="isAuthenticated ? '/playlist/' + playlist.encrypted_id : '/login'"
+                                            class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
+                                        >
+                                            Skatīt kursu
+                                        </router-link>
+                                    </div>
+                                    <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
+                                        {{ playlist.content_count }} video
                                     </span>
                                 </div>
-                            </div>
 
-                            <!-- Course Thumbnail -->
-                            <div class="relative group">
-                                <img 
-                                    :src="playlist.thumb" 
-                                    :alt="playlist.title"
-                                    class="w-full h-[20rem] object-cover rounded-lg [@media(max-width:550px)]:h-[12rem]"
-                                >
-                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                                <!-- Course Info -->
+                                <div class="mt-4">
+                                    <h3 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.2rem]">
+                                        {{ playlist.title }}
+                                    </h3>
+                                    <p v-if="playlist.description" class="text-text_light text-[1rem] mb-4 line-clamp-2">
+                                        {{ playlist.description }}
+                                    </p>
                                     <router-link 
                                         :to="isAuthenticated ? '/playlist/' + playlist.encrypted_id : '/login'"
-                                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-transparent"
+                                        class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                                     >
-                                        Skatīt kursu
+                                        Sākt mācīties
                                     </router-link>
                                 </div>
-                                <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                    {{ playlist.content_count }} video
-                                </span>
                             </div>
+                        </div>
 
-                            <!-- Course Info -->
-                            <div class="mt-4">
-                                <h3 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.2rem]">
-                                    {{ playlist.title }}
-                                </h3>
-                                <p v-if="playlist.description" class="text-text_light text-[1rem] mb-4 line-clamp-2">
-                                    {{ playlist.description }}
-                                </p>
-                                <router-link 
-                                    :to="isAuthenticated ? '/playlist/' + playlist.encrypted_id : '/login'"
-                                    class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1rem] transition hover:bg-base hover:text-button [@media(max-width:550px)]:text-[.8rem]"
-                                >
-                                    Sākt mācīties
-                                </router-link>
-                            </div>
+                        <!-- Pagination controls -->
+                        <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-8">
+                            <button 
+                                @click="currentPage--"
+                                :disabled="currentPage === 1"
+                                class="px-4 py-2 rounded-lg bg-button text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-button2 transition-colors"
+                            >
+                                Iepriekšējā
+                            </button>
+                            <span class="px-4 py-2">
+                                {{ currentPage }} / {{ totalPages }}
+                            </span>
+                            <button 
+                                @click="currentPage++"
+                                :disabled="currentPage === totalPages"
+                                class="px-4 py-2 rounded-lg bg-button text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-button2 transition-colors"
+                            >
+                                Nākamā
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -185,6 +212,21 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
+// Pagination state
+const currentPage = ref(1);
+const itemsPerPage = 6;
+
+// Computed properties for pagination
+const paginatedPlaylists = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return latestPlaylists.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(latestPlaylists.value.length / itemsPerPage);
+});
+
 // State
 const isLoggingOut = ref(false);
 const error = ref(null);
@@ -196,15 +238,17 @@ const user = computed(() => {
     const storedUser = store.getters.getUser;
     if (!storedUser) return null;
 
+    // Format the image URL
     const imageUrl = storedUser.image ? 
         (storedUser.image.startsWith('http') ? 
             storedUser.image : 
-            `${window.location.origin}/storage/${storedUser.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`) :
-        `${window.location.origin}/storage/default-avatar.png`;
+            `/storage/${storedUser.image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}`) :
+        `/storage/default-avatar.png`;
 
     return {
         ...storedUser,
-        image: imageUrl
+        image: imageUrl,
+        profession: storedUser.profession || 'students'
     };
 });
 const isLoading = computed(() => store.getters.getIsLoading);
@@ -221,8 +265,6 @@ const sectionClasses = computed(() => [
 
 const statistics = computed(() => {
     const stats = store.getters.getDashboardStats;
-    console.log('Computing statistics with stats:', stats);
-    
     return [
         { value: parseInt(stats?.likes) || 0, label: 'Favorītvideo', link: '/likes' },
         { value: parseInt(stats?.playlists) || 0, label: 'Grāmatzīmes', link: '/bookmarks' },
@@ -276,44 +318,32 @@ watch(() => store.getters.getDashboardStats, (newStats, oldStats) => {
 
 onMounted(async () => {
     try {
-        // Load user data if token exists
-        const token = localStorage.getItem('token');
-        if (token) {
-            await store.dispatch('loadUserData');
-        }
-        
-        // Load latest playlists for all users
+        // Load latest playlists
         await store.dispatch('loadLatestPlaylists');
+        
+        // Load user data only if not already loaded
+        if (!store.getters.isCacheValid) {
+            await store.dispatch('clearAndLoadUserData');
+        }
     } catch (error) {
         console.error('Error in Home.vue setup:', error);
     }
 });
 
-// Watch for user changes
-watch(() => store.getters.getUser, async (newUser, oldUser) => {
-    console.log('User changed:', {
-        oldId: oldUser?.encrypted_id,
-        newId: newUser?.encrypted_id,
-        newUser: newUser
-    });
-
-    if (newUser?.encrypted_id) {
-        await store.dispatch('loadUserStats', newUser.encrypted_id);
-    }
-}, { deep: true, immediate: true });
+// Watch for user changes - simplified since stats are now part of profile
+watch(() => store.getters.getUser, async (newUser) => {
+    console.log('User changed:', newUser);
+}, { deep: true });
 
 // Watch for dashboard stats changes
 watch(() => store.getters.getDashboardStats, (newStats) => {
     console.log('Dashboard stats updated:', newStats);
 }, { deep: true });
 
-// Watch for route changes
+// Watch for route changes - simplified to avoid redundant calls
 watch(() => router.currentRoute.value.path, async (newPath, oldPath) => {
-    if (newPath === '/' && newPath !== oldPath) {
-        if (store.getters.getUser?.encrypted_id) {
-            await store.dispatch('loadUserStats', store.getters.getUser.encrypted_id);
-        }
-        await store.dispatch('loadLatestPlaylists');
+    if (newPath === '/' && newPath !== oldPath && !store.getters.isCacheValid) {
+        await store.dispatch('clearAndLoadUserData');
     }
 });
 </script>
