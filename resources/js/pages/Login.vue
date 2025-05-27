@@ -169,15 +169,29 @@ const handleSubmit = async () => {
                 router.push('/');
             }
         } else {
-            validationMessages.value = Array.isArray(response.data.message) 
-                ? response.data.message 
-                : [response.data.message];
+            validationMessages.value = [response.data.message];
             isError.value = true;
         }
     } catch (error) {
         console.error('Login error:', error);
         
-        validationMessages.value = error.response?.data?.message || ['Kļūda autentifikācijā'];
+        // Handle different types of error responses
+        if (error.response) {
+            // The server responded with a status code outside the 2xx range
+            if (error.response.data && error.response.data.message) {
+                validationMessages.value = Array.isArray(error.response.data.message) 
+                    ? error.response.data.message 
+                    : [error.response.data.message];
+            } else {
+                validationMessages.value = ['Nederīgs e-pasts vai parole'];
+            }
+        } else if (error.request) {
+            // The request was made but no response was received
+            validationMessages.value = ['Neizdevās sazināties ar serveri. Lūdzu, mēģiniet vēlreiz.'];
+        } else {
+            // Something happened in setting up the request
+            validationMessages.value = ['Kļūda autentifikācijā. Lūdzu, mēģiniet vēlreiz.'];
+        }
         isError.value = true;
     } finally {
         isLoading.value = false;

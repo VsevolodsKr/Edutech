@@ -14,6 +14,10 @@ use App\Models\Users;
 use App\Models\Teachers;
 use App\Models\Developers;
 use App\Traits\Encryptable;
+use Illuminate\Support\Facades\DB;
+use App\Models\Likes;
+use App\Models\Comments;
+use App\Models\Bookmarks;
 
 class AuthorizationController extends Controller
 {
@@ -535,19 +539,53 @@ class AuthorizationController extends Controller
     public function delete_user($id)
     {
         try {
-            $user = Users::findOrFail($id);
-            $user->delete();
+            $user = Users::find($id);
+            if (!$user) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Lietotājs nav atrasts'
+                ], 404);
+            }
 
-            return response()->json([
-                'status' => 200,
-                'message' => 'Lietotājs veiksmīgi dzēsts'
-            ]);
+            // Start a database transaction
+            DB::beginTransaction();
+
+            try {
+                // Delete user's image if it exists and is not the default image
+                if ($user->image && $user->image !== self::DEFAULT_IMAGE) {
+                    $imagePath = str_replace('/storage/', '', $user->image);
+                    if (Storage::disk('public')->exists($imagePath)) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                }
+
+                // Delete all user's likes
+                Likes::where('user_id', $id)->delete();
+
+                // Delete all user's comments
+                Comments::where('user_id', $id)->delete();
+
+                // Delete all user's bookmarks
+                Bookmarks::where('user_id', $id)->delete();
+
+                // Finally delete the user
+                $user->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Lietotājs un visi saistītie dati veiksmīgi dzēsti'
+                ]);
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
         } catch (\Exception $e) {
             \Log::error('User deletion error: ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
-                'message' => 'Kļūda dzēšot lietotāju',
-                'error' => $e->getMessage()
+                'message' => 'Kļūda dzēšot lietotāju: ' . $e->getMessage()
             ], 500);
         }
     }

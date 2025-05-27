@@ -27,19 +27,14 @@
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h2 class="text-center text-text_dark text-[2rem] mb-[1rem] [@media(max-width:550px)]:text-[1.5rem]">{{ statistics.comments }}</h2>
                     <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem]">Kopējais komentāru skaits</div>
-                    <router-link 
-                        to="/admin_comments" 
-                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                    >
-                        Skatīt komentārus
-                    </router-link>
+                    <router-link to="/admin_comments" class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]">Skatīt komentārus</router-link>
                 </div>
             </div>
 
             <div class="grid grid-cols-[repeat(auto-fit,_minmax(40rem,_1fr))] gap-[2rem] mt-[2rem] pr-[1rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:pr-0">
                 <div class="bg-base rounded-lg p-[2rem] w-full">
                     <h2 class="text-center text-text_dark text-[1.5rem] mb-[2rem]">Sakarības tendence (Pēdējās 7 dienās)</h2>
-                    <div class="relative h-[300px]">
+                    <div class="relative w-full" style="height: 300px;">
                         <canvas ref="engagementChart"></canvas>
                     </div>
                 </div>
@@ -55,7 +50,6 @@
                                 <div class="flex gap-4 text-sm text-text_light">
                                     <span>{{ content.likes || 0 }} patīk</span>
                                     <span>{{ content.comments || 0 }} komentāri</span>
-                                    <span class="text-button">{{ content.teacher_name }}</span>
                                 </div>
                             </div>
                         </div>
@@ -71,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import Chart from 'chart.js/auto';
 import Admin_Header from '../components/Admin_Header.vue';
@@ -79,17 +73,16 @@ import Admin_Sidebar from '../components/Admin_Sidebar.vue';
 import store from '../store/store';
 
 const { width } = useWindowSize();
-
 const engagementChart = ref(null);
 const chartInstance = ref(null);
+const isLoading = ref(false);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const teacherData = computed(() => store.getters.getUser);
 const isUserLoaded = computed(() => store.getters.isUserLoaded);
 const statistics = computed(() => store.getters.getDashboardStats);
-const popularContents = computed(() => {
-    return statistics.value?.popularContents || [];
-});
+const popularContents = computed(() => statistics.value?.popularContents || []);
+
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
@@ -108,123 +101,127 @@ const engagementData = computed(() => {
     return stats.engagement;
 });
 
-const updateEngagementChart = (data) => {
-    if (!engagementChart.value) return;
+const loadDashboardData = async () => {
+    if (isLoading.value || !teacherData.value?.encrypted_id) return;
     
-    if (chartInstance.value) {
-        chartInstance.value.destroy();
+    try {
+        isLoading.value = true;
+        await store.dispatch('loadDashboardStats', {
+            teacherId: teacherData.value.encrypted_id
+        });
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    } finally {
+        isLoading.value = false;
     }
-
-    const ctx = engagementChart.value.getContext('2d');
-    chartInstance.value = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.labels,
-            datasets: [
-                {
-                    label: 'Favorītvideo',
-                    data: data.likes,
-                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--button2'),
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button2'),
-                    tension: 0.4,
-                    fill: false
-                },
-                {
-                    label: 'Komentāri',
-                    data: data.comments,
-                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--button3'),
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button3'),
-                    tension: 0.4,
-                    fill: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    top: 10,
-                    bottom: 10
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark')
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light'),
-                        stepSize: 1
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light')
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                }
-            }
-        }
-    });
 };
 
-// Add a watch effect for user data loading
-watch(isUserLoaded, async (loaded) => {
-    if (loaded && teacherData.value?.encrypted_id) {
-        await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
+const updateEngagementChart = () => {
+    if (!engagementChart.value) {
+        console.log('Chart element not found');
+        return;
     }
-});
 
-onMounted(async () => {
     try {
-        // Load user data if not already loaded
-        if (!isUserLoaded.value) {
-            await store.dispatch('loadUserData');
+        if (chartInstance.value) {
+            chartInstance.value.destroy();
         }
-        
-        // User data should now be loaded, check if we have valid data
-        if (!teacherData.value?.encrypted_id) {
-            console.error('No valid user data found');
+
+        const ctx = engagementChart.value.getContext('2d');
+        if (!ctx) {
+            console.error('Failed to get 2D context');
             return;
         }
 
-        // Load dashboard stats if user is loaded
-        if (isUserLoaded.value) {
-            await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
-        }
+        const data = engagementData.value;
+        console.log('Creating chart with data:', data);
+
+        chartInstance.value = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels || [],
+                datasets: [
+                    {
+                        label: 'Favorītvideo',
+                        data: data.likes || [],
+                        borderColor: '#4CAF50',
+                        backgroundColor: '#4CAF50',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'Komentāri',
+                        data: data.comments || [],
+                        borderColor: '#2196F3',
+                        backgroundColor: '#2196F3',
+                        tension: 0.4,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#333333'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#666666',
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#666666'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
     } catch (error) {
-        console.error('Error loading dashboard:', error);
+        console.error('Error creating chart:', error);
     }
+};
+
+// Initial setup
+onMounted(async () => {
+    if (!isUserLoaded.value) {
+        await store.dispatch('loadUserData');
+    }
+    await loadDashboardData();
 });
 
-// Update watchers to use encrypted_id from teacherData
-watch(() => store.getters.getPlaylists, async () => {
-    if (teacherData.value?.encrypted_id) {
-        await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
+// Watch for user data changes
+watch(teacherData, async (newTeacher) => {
+    if (newTeacher?.encrypted_id) {
+        await loadDashboardData();
     }
-}, { deep: true });
+}, { immediate: true });
 
-watch(() => store.getters.getContents, async () => {
-    if (teacherData.value?.encrypted_id) {
-        await store.dispatch('loadDashboardStats', teacherData.value.encrypted_id);
-    }
-}, { deep: true });
-
-watch(() => engagementData.value, (newData) => {
-    if (newData && engagementChart.value) {
-        updateEngagementChart(newData);
-    }
+// Watch for engagement data changes
+watch(engagementData, () => {
+    nextTick(() => {
+        updateEngagementChart();
+    });
 }, { deep: true });
 </script>

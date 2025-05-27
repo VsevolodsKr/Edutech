@@ -285,20 +285,29 @@ export default createStore({
             }
         },
 
-        async loadDashboardStats({ commit, state }, teacherId) {
-            // Prevent multiple simultaneous loads
+        async loadDashboardStats({ commit, state }, { teacherId }) {
             if (state.isLoadingDashboard) {
-                console.log('Dashboard stats already loading, skipping...');
                 return;
             }
 
+            commit('setDashboardLoading', true);
             try {
-                commit('setDashboardLoading', true);
-
                 const token = localStorage.getItem('token');
+                if (!token) {
+                    commit('setDashboardStats', null);
+                    return;
+                }
+
                 const headers = { Authorization: `Bearer ${token}` };
-                
-                const [playlistsAmount, contentsAmount, commentsAmount, engagementData, popularContents] = await Promise.all([
+
+                // Make parallel requests for all dashboard data
+                const [
+                    playlistsAmount,
+                    contentsAmount,
+                    commentsAmount,
+                    engagementData,
+                    popularContents
+                ] = await Promise.all([
                     axios.get(`/api/playlists/amount/${teacherId}`, { headers }),
                     axios.get(`/api/contents/amount/${teacherId}`, { headers }),
                     axios.get(`/api/comments/count_teacher/${teacherId}`, { headers }),
@@ -306,22 +315,25 @@ export default createStore({
                     axios.get(`/api/contents/popular/${teacherId}`, { headers })
                 ]);
 
+                console.log('Engagement data response:', engagementData);
+
                 const stats = {
-                    playlists: playlistsAmount.data?.data || 0,
-                    contents: contentsAmount.data?.data || 0,
-                    comments: commentsAmount.data?.data || 0,
-                    popularContents: popularContents.data || [],
+                    playlists: parseInt(playlistsAmount.data?.data) || 0,
+                    contents: parseInt(contentsAmount.data?.data) || 0,
+                    comments: parseInt(commentsAmount.data?.data) || 0,
                     engagement: engagementData.data || {
                         labels: [],
                         likes: [],
                         comments: []
-                    }
+                    },
+                    popularContents: popularContents.data || []
                 };
 
+                console.log('Setting dashboard stats:', stats);
                 commit('setDashboardStats', stats);
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
-                // Don't reset stats on error, just keep existing data
+                commit('setDashboardStats', null);
             } finally {
                 commit('setDashboardLoading', false);
             }

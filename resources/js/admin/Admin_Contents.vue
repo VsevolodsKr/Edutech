@@ -32,7 +32,7 @@
                 </template>
 
                 <template v-else>
-                    <div v-for="content in contents" 
+                    <div v-for="content in paginatedContents" 
                          :key="content.id" 
                          class="bg-base rounded-lg p-[2rem] w-full">
                         <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
@@ -96,6 +96,27 @@
                     </div>
                 </template>
             </div>
+
+            <!-- Add pagination controls -->
+            <div v-if="contents.length > itemsPerPage" class="flex justify-center items-center gap-4 mt-8">
+                <button 
+                    @click="currentPage > 1 && (currentPage--)"
+                    :disabled="currentPage === 1"
+                    class="px-4 py-2 rounded-lg bg-button text-base border-2 border-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-base hover:text-button transition-colors duration-200"
+                >
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="text-text_dark">
+                    Lapa {{ currentPage }} no {{ totalPages }}
+                </span>
+                <button 
+                    @click="currentPage < totalPages && (currentPage++)"
+                    :disabled="currentPage === totalPages"
+                    class="px-4 py-2 rounded-lg bg-button text-base border-2 border-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-base hover:text-button transition-colors duration-200"
+                >
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </section>
         <Admin_Sidebar />
     </div>
@@ -124,6 +145,17 @@ const sectionClasses = computed(() => [
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
+
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+const totalPages = computed(() => Math.ceil(contents.value.length / itemsPerPage));
+
+const paginatedContents = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return contents.value.slice(start, end);
+});
 
 const getImageUrl = (image) => {
     if (!image) return '/storage/default-thumbnail.png';
@@ -218,6 +250,11 @@ watch(contents, (newContents) => {
         error.value = null; // Clear error when there are no contents
     }
 }, { deep: true });
+
+// Reset page when contents change
+watch(contents, () => {
+    currentPage.value = 1;
+});
 </script>
 
 <style scoped>

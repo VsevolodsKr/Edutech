@@ -27,7 +27,7 @@
 
             <div v-else class="flex flex-col gap-[1rem] justify-start items-start pr-[1rem] [@media(max-width:550px)]:pr-0">
                 <div 
-                    v-for="comment in comments" 
+                    v-for="comment in paginatedComments" 
                     :key="comment.id" 
                     class="bg-base rounded-lg p-[2rem] w-full hover:shadow-lg transition-shadow duration-300"
                 >
@@ -73,6 +73,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Add pagination controls -->
+            <div v-if="comments.length > itemsPerPage" class="flex justify-center items-center gap-4 mt-8">
+                <button 
+                    @click="currentPage > 1 && (currentPage--)"
+                    :disabled="currentPage === 1"
+                    class="px-4 py-2 rounded-lg bg-button text-base border-2 border-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-base hover:text-button transition-colors duration-200"
+                >
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="text-text_dark">
+                    Lapa {{ currentPage }} no {{ totalPages }}
+                </span>
+                <button 
+                    @click="currentPage < totalPages && (currentPage++)"
+                    :disabled="currentPage === totalPages"
+                    class="px-4 py-2 rounded-lg bg-button text-base border-2 border-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-base hover:text-button transition-colors duration-200"
+                >
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </section>
         <Admin_Sidebar />
     </div>
@@ -101,6 +122,22 @@ const sectionClasses = computed(() => [
     (!showSidebar.value || (showSidebar.value && width.value < 1180)) ? 'pl-[2rem]' : '',
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
+
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+const totalPages = computed(() => Math.ceil(comments.value.length / itemsPerPage));
+
+const paginatedComments = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return comments.value.slice(start, end);
+});
+
+// Reset page when comments change
+watch(comments, () => {
+    currentPage.value = 1;
+});
 
 const formatDate = (dateString) => {
     if (!dateString) return '';

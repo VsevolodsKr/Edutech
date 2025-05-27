@@ -412,7 +412,7 @@ const deleteTeacher = async (teacher) => {
     try {
         const result = await Swal.fire({
             title: 'Vai tiešām vēlaties dzēst šo skolotāju?',
-            text: 'Šo darbību nevar atsaukt',
+            text: 'Šī darbība dzēsīs arī visus pasniedzēja kursus un video. Šo darbību nevar atsaukt!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Jā, dzēst',
@@ -421,20 +421,40 @@ const deleteTeacher = async (teacher) => {
         });
 
         if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Notiek dzēšana...',
+                text: 'Lūdzu uzgaidiet, kamēr tiek dzēsti visi dati',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // First delete all playlists and their contents
+            await axios.delete(`/api/developer/teachers/${teacher.id}/playlists`);
+            
+            // Then delete the teacher
             await axios.delete(`/api/developer/teachers/${teacher.id}`);
+            
             await Swal.fire({
                 title: 'Veiksmīgi',
-                text: 'Skolotājs dzēsts',
+                text: 'Pasniedzējs un visi viņa dati ir dzēsti',
                 icon: 'success',
                 timer: 1500,
                 showConfirmButton: false
             });
+            
             await loadTeachers();
         }
     } catch (error) {
+        console.error('Error deleting teacher:', error);
         await Swal.fire({
             title: 'Kļūda',
-            text: 'Neizdevās dzēst skolotāju',
+            text: error.response?.data?.message || 'Neizdevās dzēst pasniedzēju un viņa datus',
             icon: 'error'
         });
     }

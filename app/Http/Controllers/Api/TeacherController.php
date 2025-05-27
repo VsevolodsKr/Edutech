@@ -9,10 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Teacher;
-use App\Models\Playlist;
-use App\Models\Content;
-use App\Models\Comment;
-use App\Models\Like;
+use App\Models\Playlists;
+use App\Models\Contents;
+use App\Models\Comments;
+use App\Models\Likes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Users;
@@ -353,17 +353,77 @@ class TeacherController extends Controller
                 ], 404);
             }
 
-            $teacher->delete();
+            // Start a database transaction
+            DB::beginTransaction();
 
-            return response()->json([
-                'status' => 200,
-                'message' => 'Skolotājs veiksmīgi dzēsts',
-                'data' => null
-            ]);
+            try {
+                // Delete teacher's image if it exists
+                if ($teacher->image) {
+                    $imagePath = str_replace('/storage/', '', $teacher->image);
+                    if (Storage::disk('public')->exists($imagePath)) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                }
+
+                // Get all contents first to delete their files
+                $contents = Contents::where('teacher_id', $id)->get();
+                foreach ($contents as $content) {
+                    if ($content->thumb) {
+                        $thumbPath = str_replace('/storage/', '', $content->thumb);
+                        if (Storage::disk('public')->exists($thumbPath)) {
+                            Storage::disk('public')->delete($thumbPath);
+                        }
+                    }
+
+                    if ($content->video && $content->video_source_type === 'local') {
+                        $videoPath = str_replace('/storage/', '', $content->video);
+                        if (Storage::disk('public')->exists($videoPath)) {
+                            Storage::disk('public')->delete($videoPath);
+                        }
+                    }
+                }
+
+                // Delete all contents
+                Contents::where('teacher_id', $id)->delete();
+
+                // Get all playlists to delete their thumbnails
+                $playlists = Playlists::where('teacher_id', $id)->get();
+                foreach ($playlists as $playlist) {
+                    if ($playlist->thumb) {
+                        $thumbPath = str_replace('/storage/', '', $playlist->thumb);
+                        if (Storage::disk('public')->exists($thumbPath)) {
+                            Storage::disk('public')->delete($thumbPath);
+                        }
+                    }
+                }
+
+                // Delete all playlists
+                Playlists::where('teacher_id', $id)->delete();
+
+                // Delete all comments
+                Comments::where('teacher_id', $id)->delete();
+
+                // Delete all likes
+                Likes::where('teacher_id', $id)->delete();
+
+                // Finally delete the teacher
+                $teacher->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Skolotājs un visi saistītie dati veiksmīgi dzēsti',
+                    'data' => null
+                ]);
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Neizdevās dzēst skolotāju',
+                'message' => 'Neizdevās dzēst skolotāju: ' . $e->getMessage(),
                 'data' => null
             ], 500);
         }
@@ -403,5 +463,73 @@ class TeacherController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    public function destroyTeacherContent($id)
+    {
+        try {
+            $teacher = Teachers::find($id);
+            if (!$teacher) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Skolotājs nav atrasts',
+                    'data' => null
+                ], 404);
+            }
+
+            // Start a database transaction
+            DB::beginTransaction();
+
+            try {
+                // Get all playlists to delete their thumbnails
+                $playlists = Playlists::where('teacher_id', $id)->get();
+                foreach ($playlists as $playlist) {
+                    if ($playlist->thumb) {
+                        $thumbPath = str_replace('/storage/', '', $playlist->thumb);
+                        if (Storage::disk('public')->exists($thumbPath)) {
+                            Storage::disk('public')->delete($thumbPath);
+                        }
+                    }
+                }
+
+                // Get all contents to delete their thumbnails and videos
+                $contents = Contents::where('teacher_id', $id)->get();
+                foreach ($contents as $content) {
+                    if ($content->thumb) {
+                        $thumbPath = str_replace('/storage/', '', $content->thumb);
+                        if (Storage::disk('public')->exists($thumbPath)) {
+                            Storage::disk('public')->delete($thumbPath);
+                        }
+                    }
+
+                    if ($content->video && $content->video_source_type === 'local') {
+                        $videoPath = str_replace('/storage/', '', $content->video);
+                        if (Storage::disk('public')->exists($videoPath)) {
+                            Storage::disk('public')->delete($videoPath);
+                        }
+                    }
+                }
+
+                // Delete all playlists (this will cascade delete contents)
+                Playlists::where('teacher_id', $id)->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Visi pasniedzēja kursi un video ir dzēsti',
+                    'data' => null
+                ]);
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Neizdevās dzēst pasniedzēja kursus un video: ' . $e->getMessage(),
+                'data' => null
+            ], 500);
+        }
     }
 }

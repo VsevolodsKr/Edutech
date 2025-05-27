@@ -25,69 +25,98 @@
                     </router-link>
                 </div>
 
-                <div v-for="playlist in playlists" 
-                     :key="playlist.id" 
-                     class="bg-base rounded-lg p-[2rem] w-full">
-                    <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
-                        <div>
-                            <i :class="[
-                                playlist.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]',
-                                'fas fa-circle-dot text-[1.2rem] mr-[.3rem]'
-                            ]"></i>
-                            <span :class="[
-                                playlist.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]',
-                                'text-[1.2rem]'
-                            ]">
-                                {{ playlist.status }}
-                            </span>
+                <template v-if="playlists.length === 0">
+                    <div class="bg-base rounded-lg p-[2rem] w-full">
+                        <p class="text-center text-text_light">Jums vēl nav pievienotu kursu. Sāciet, pievienojot savu pirmo kursu!</p>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <div v-for="playlist in paginatedPlaylists" 
+                         :key="playlist.id" 
+                         class="bg-base rounded-lg p-[2rem] w-full">
+                        <div class="flex items-center gap-[1.5rem] mb-[2rem] justify-between">
+                            <div>
+                                <i :class="[
+                                    playlist.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]',
+                                    'fas fa-circle-dot text-[1.2rem] mr-[.3rem]'
+                                ]"></i>
+                                <span :class="[
+                                    playlist.status === 'Aktīvs' ? 'text-[#0eed46]' : 'text-[#e83731]',
+                                    'text-[1.2rem]'
+                                ]">
+                                    {{ playlist.status }}
+                                </span>
+                            </div>
+                            <div>
+                                <i class="fas fa-calendar text-button text-[1.2rem] mr-[.3rem]"></i>
+                                <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
+                                    {{ formatDate(playlist.date) || 'Nav pieejams' }}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <i class="fas fa-calendar text-button text-[1.2rem] mr-[.3rem]"></i>
-                            <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                {{ formatDate(playlist.date) || 'Nav pieejams' }}
-                            </span>
+
+                        <div class="flex justify-center mb-4">
+                            <img 
+                                :src="getImageUrl(playlist.thumb)" 
+                                :alt="playlist.title"
+                                @error="handleImageError"
+                                class="w-full h-48 object-cover rounded-lg"
+                            >
                         </div>
-                    </div>
 
-                    <div class="flex justify-center mb-4">
-                        <img 
-                            :src="getImageUrl(playlist.thumb)" 
-                            :alt="playlist.title"
-                            @error="handleImageError"
-                            class="w-full h-48 object-cover rounded-lg"
-                        >
-                    </div>
+                        <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
+                            {{ playlist.title }}
+                        </h3>
 
-                    <h3 class="text-[1.5rem] text-text_dark pb-[.5rem] pt-[1rem] [@media(max-width:550px)]:text-[1.2rem]">
-                        {{ playlist.title }}
-                    </h3>
+                        <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem] line-clamp-3">
+                            {{ playlist.description }}
+                        </div>
 
-                    <div class="w-full p-[1rem] bg-background rounded-lg text-center text-[1.2rem] text-text_light mb-[1rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:p-[.5rem] line-clamp-3">
-                        {{ playlist.description }}
-                    </div>
+                        <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
+                            <button 
+                                @click="router.push(`/admin_playlists/update/${playlist.encrypted_id}`)"
+                                class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            >
+                                Rediģēt
+                            </button>
+                            <button 
+                                @click="handleDelete(playlist.id)"
+                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            >
+                                Dzēst
+                            </button>
+                        </div>
 
-                    <div class="flex justify-between w-full gap-[1rem] mb-[1rem]">
                         <button 
-                            @click="router.push(`/admin_playlists/update/${playlist.encrypted_id}`)"
-                            class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button2 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                            @click="router.push(`/admin_playlists/${playlist.encrypted_id}`)"
+                            class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                         >
-                            Rediģēt
-                        </button>
-                        <button 
-                            @click="handleDelete(playlist.id)"
-                            class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                        >
-                            Dzēst
+                            Skatīt kursu
                         </button>
                     </div>
+                </template>
+            </div>
 
-                    <button 
-                        @click="router.push(`/admin_playlists/${playlist.encrypted_id}`)"
-                        class="bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
-                    >
-                        Skatīt kursu
-                    </button>
-                </div>
+            <!-- Add pagination controls -->
+            <div v-if="playlists.length > itemsPerPage" class="flex justify-center items-center gap-4 mt-8">
+                <button 
+                    @click="currentPage > 1 && (currentPage--)"
+                    :disabled="currentPage === 1"
+                    class="px-4 py-2 rounded-lg bg-button text-base border-2 border-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-base hover:text-button transition-colors duration-200"
+                >
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="text-text_dark">
+                    Lapa {{ currentPage }} no {{ totalPages }}
+                </span>
+                <button 
+                    @click="currentPage < totalPages && (currentPage++)"
+                    :disabled="currentPage === totalPages"
+                    class="px-4 py-2 rounded-lg bg-button text-base border-2 border-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-base hover:text-button transition-colors duration-200"
+                >
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </section>
         <Admin_Sidebar />
@@ -206,6 +235,22 @@ const formatDate = (dateString) => {
 
     return `${day}.${month}.${year}`;
 };
+
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+const totalPages = computed(() => Math.ceil(playlists.value.length / itemsPerPage));
+
+const paginatedPlaylists = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return playlists.value.slice(start, end);
+});
+
+// Reset page when playlists change
+watch(playlists, () => {
+    currentPage.value = 1;
+});
 
 onMounted(async () => {
     try {
