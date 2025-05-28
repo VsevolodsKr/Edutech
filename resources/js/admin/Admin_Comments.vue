@@ -74,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- Add pagination controls -->
             <div v-if="comments.length > itemsPerPage" class="flex justify-center items-center gap-4 mt-8">
                 <button 
                     @click="currentPage > 1 && (currentPage--)"
@@ -134,7 +133,6 @@ const paginatedComments = computed(() => {
     return comments.value.slice(start, end);
 });
 
-// Reset page when comments change
 watch(comments, () => {
     currentPage.value = 1;
 });
@@ -179,16 +177,13 @@ const loadComments = async () => {
             return;
         }
 
-        // Process the comments data
         const processedComments = response.data.comments.map(comment => {
-            // Process user image path
             let userImage = comment.user?.image || '/storage/default-avatar.png';
             if (userImage && !userImage.startsWith('http')) {
                 userImage = userImage.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
                 userImage = `/storage/${userImage}`;
             }
 
-            // Process content thumbnail path
             let contentThumb = comment.content?.thumb || '/storage/default-thumbnail.png';
             if (contentThumb && !contentThumb.startsWith('http')) {
                 contentThumb = contentThumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
@@ -279,7 +274,6 @@ onMounted(() => {
     loadComments();
 });
 
-// Add watcher for user changes
 watch(() => store.state.user?.encrypted_id, (newId) => {
     if (newId) {
         loadComments();

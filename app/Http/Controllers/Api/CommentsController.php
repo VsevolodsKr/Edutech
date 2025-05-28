@@ -35,7 +35,6 @@ class CommentsController extends Controller
                 return response()->json(['message' => $errors, 'status' => 500], 500);
             }
 
-            // Create new comment
             $comment = new Comments;
             $comment->content_id = $request->content_id;
             $comment->user_id = $request->user_id;
@@ -266,7 +265,6 @@ class CommentsController extends Controller
                 ], 404);
             }
             
-            // Get all comments for the teacher's content
             $comments = Comments::with(['user', 'content'])
                 ->whereHas('content', function($query) use ($id) {
                     $query->where('teacher_id', $id);
@@ -282,7 +280,6 @@ class CommentsController extends Controller
                 ]);
             }
 
-            // Process and format the data
             $formattedComments = $comments->map(function($comment) {
                 return [
                     'id' => $comment->id,

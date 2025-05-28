@@ -112,26 +112,22 @@ class EngagementController extends Controller
         $dates = collect();
         $now = Carbon::now();
 
-        // Generate last 7 days dates
         for ($i = $days - 1; $i >= 0; $i--) {
             $dates->push($now->copy()->subDays($i)->format('Y-m-d'));
         }
 
-        // Get user registrations per day
         $users = Users::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->whereIn(DB::raw('DATE(created_at)'), $dates)
             ->groupBy('date')
             ->get()
             ->keyBy('date');
 
-        // Get messages per day
         $messages = Contacts::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->whereIn(DB::raw('DATE(created_at)'), $dates)
             ->groupBy('date')
             ->get()
             ->keyBy('date');
 
-        // Format data for chart
         $data = [
             'labels' => $dates->map(function ($date) {
                 return Carbon::parse($date)->format('d.m');

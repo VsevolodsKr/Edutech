@@ -182,8 +182,7 @@ const loadLikedContent = async () => {
         contents.value = response.data.contents.map(content => {
             console.log('Processing content:', content);
             let thumbPath = content.thumb;
-            
-            // Handle YouTube thumbnails
+
             if (content.video_source_type === 'youtube' && content.video) {
                 try {
                     let videoId = '';
@@ -201,7 +200,6 @@ const loadLikedContent = async () => {
                 }
             }
 
-            // Process local thumbnails if not YouTube
             if (!thumbPath || (!thumbPath.includes('youtube.com') && !thumbPath.includes('youtu.be'))) {
                 const cleanThumbPath = content.thumb
                     ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -209,7 +207,6 @@ const loadLikedContent = async () => {
                 thumbPath = cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png';
             }
 
-            // Process teacher image
             if (content.teacher) {
                 const cleanTeacherImagePath = content.teacher.image
                     ?.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -264,10 +261,8 @@ const deleteLike = async (contentId) => {
 
             await axios.delete(`/api/likes/delete/${contentId}`, { headers });
 
-            // Update local state
             contents.value = contents.value.filter(content => content.like_id !== contentId);
             
-            // Update store stats
             store.commit('decrementStat', 'likes');
             await store.dispatch('loadUserStats', user.value.encrypted_id);
 

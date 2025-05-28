@@ -34,6 +34,14 @@ class Contents extends Model
         return $this->encryptId($this->id);
     }
 
+    public function getThumbAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        return str_replace('/storage/app/public/', '/storage/', $value);
+    }
+
     public function user() {
         return $this->hasOne('App\Models\Users', 'id', 'user_id');
     }

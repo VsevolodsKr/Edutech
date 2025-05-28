@@ -57,7 +57,6 @@ import store from '../store/store';
 
 const { width } = useWindowSize();
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
     (showSidebar.value && width.value > 1180) ? 'pl-[22rem]' : 
@@ -65,7 +64,6 @@ const sectionClasses = computed(() => [
     'pt-[2rem] pr-[1rem] bg-background min-h-[calc(127.5vh-20rem)] [@media(max-width:550px)]:pl-[.5rem] [@media(max-width:550px)]:pr-[.5rem]'
 ]);
 
-// Static Data
 const statistics = [
     {
         icon: 'fas fa-graduation-cap',

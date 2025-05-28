@@ -257,21 +257,21 @@ const loadContent = async () => {
             return;
         }
 
-        // Extract content and teacher data from response
         const contentData = response.data.content;
         const teacherData = response.data.teacher;
 
-        // Set content data
         content.value = {
             ...contentData,
             id: contentData.id,
-            thumb: contentData.thumb ? contentData.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '') : null,
-            video: contentData.video ? contentData.video.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '') : null,
+            thumb: contentData.thumb ? `/storage/${contentData.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '')}` : null,
+            video: contentData.video_source_type === 'youtube' ? 
+                contentData.video : 
+                contentData.video ? `/storage/${contentData.video.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '').replace(/^\//, '')}` : null,
             encrypted_playlist_id: contentData.encrypted_playlist_id,
-            encrypted_id: contentData.encrypted_id
+            encrypted_id: contentData.encrypted_id,
+            video_source_type: contentData.video_source_type
         };
 
-        // Set teacher data
         if (teacherData) {
             teacher.value = {
                 ...teacherData,
@@ -282,7 +282,6 @@ const loadContent = async () => {
             };
         }
 
-        // Load comments and counts
         await loadComments();
         await Promise.all([
             loadLikesCount(),
@@ -445,8 +444,7 @@ const handleCommentSubmit = async () => {
             return;
         }
 
-        // Get the raw content ID from the encrypted ID
-        const contentId = content.value.id; // Use the raw ID instead of encrypted_id
+        const contentId = content.value.id;
         
         const response = await axios.post('/api/comments/add', {
             content_id: contentId,
@@ -555,11 +553,10 @@ const toggleLike = async () => {
             } catch (error) {
                 console.error('Error deleting like:', error);
                 if (error.response?.status === 404) {
-                    // If the like wasn't found, reset the state
                     isLiked.value = false;
                     likeId.value = null;
                 } else {
-                    throw error; // Re-throw other errors
+                    throw error;
                 }
             }
         } else {
@@ -574,7 +571,7 @@ const toggleLike = async () => {
                     'Accept': 'application/json'
                 }
             });
-            await checkLikeStatus(); // This will set isLiked and likeId
+            await checkLikeStatus();
             likesCount.value++;
         }
     } catch (err) {

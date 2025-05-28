@@ -73,7 +73,7 @@
                                 {{ playlist.description }}
                             </p>
                             <router-link 
-                                :to="'/teacher_profile/' + teacher.id"
+                                :to="'/teacher_profile/' + teacher.encrypted_id"
                                 class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
                             >
                                 Skatīt profilu
@@ -161,17 +161,17 @@ const formatDate = (dateString) => {
 };
 
 const getThumbnailUrl = (content) => {
-    if (!content.url) return content.thumb || '/storage/default-thumbnail.png';
+    if (!content) return '/storage/default-thumbnail.png';
     
     try {
-        if (content.url.includes('youtube.com') || content.url.includes('youtu.be')) {
+        if (content.video_source_type === 'youtube' && content.video) {
             let videoId = '';
             
-            if (content.url.includes('youtu.be/')) {
-                videoId = content.url.split('youtu.be/')[1].split('?')[0];
+            if (content.video.includes('youtu.be/')) {
+                videoId = content.video.split('youtu.be/')[1].split('?')[0];
             }
-            else if (content.url.includes('youtube.com')) {
-                const urlObj = new URL(content.url);
+            else if (content.video.includes('youtube.com')) {
+                const urlObj = new URL(content.video);
                 videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
             }
             
@@ -180,15 +180,12 @@ const getThumbnailUrl = (content) => {
             }
         }
         
-        let cleanPath = content.thumb;
-        if (cleanPath) {
-            if (cleanPath.includes('/storage/app/public/')) {
-                cleanPath = cleanPath.replace('/storage/app/public/', '');
-            } else if (cleanPath.includes('storage/app/public/')) {
-                cleanPath = cleanPath.replace('storage/app/public/', '');
+        if (content.thumb) {
+            if (content.thumb.startsWith('http') || content.thumb.startsWith('/storage/')) {
+                return content.thumb;
             }
-            cleanPath = cleanPath.replace(/^\/+/, '');
-            return `${window.location.origin}/storage/${cleanPath}`;
+            
+            return `/storage/${content.thumb}`;
         }
         
         return '/storage/default-thumbnail.png';
@@ -208,7 +205,6 @@ const loadPlaylistData = async () => {
         isPlaylistLoading.value = true;
         error.value = null;
 
-        // Get playlist data
         const playlistResponse = await axios.get(`/api/playlists/find/${route.params.id}`);
         
         if (!playlistResponse.data?.playlist) {
@@ -225,7 +221,6 @@ const loadPlaylistData = async () => {
             thumb: cleanThumbPath ? `/storage/${cleanThumbPath}` : '/storage/default-thumbnail.png'
         };
 
-        // Get teacher data from the playlist response
         if (playlistResponse.data?.teacher) {
             const teacherData = playlistResponse.data.teacher;
             const cleanTeacherImagePath = teacherData.image
@@ -234,16 +229,17 @@ const loadPlaylistData = async () => {
 
             teacher.value = {
                 ...teacherData,
+                encrypted_id: teacherData.encrypted_id || teacherData.id,
                 image: cleanTeacherImagePath ? `/storage/${cleanTeacherImagePath}` : '/storage/default-avatar.png'
             };
         } else {
             teacher.value = {
                 name: 'Unknown Teacher',
-                image: '/storage/default-avatar.png'
+                image: '/storage/default-avatar.png',
+                encrypted_id: null
             };
         }
 
-        // Get content count and contents
         const [countResponse, contentsResponse] = await Promise.all([
             axios.get(`/api/contents/playlist/${route.params.id}/amount`),
             axios.get(`/api/playlists/${route.params.id}/contents`)
@@ -318,11 +314,10 @@ const toggleBookmark = async () => {
             } catch (error) {
                 console.error('Error deleting bookmark:', error);
                 if (error.response?.status === 404) {
-                    // If the bookmark wasn't found, reset the state
                     isBookmarked.value = false;
                     bookmarkId.value = null;
                 } else {
-                    throw error; // Re-throw other errors
+                    throw error;
                 }
             }
         } else {

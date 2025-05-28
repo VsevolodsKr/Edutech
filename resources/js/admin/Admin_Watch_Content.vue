@@ -61,13 +61,13 @@
 
                 <div class="flex justify-between w-full gap-[1rem] my-[1rem]">
                     <button 
-                        @click="router.push(`/admin_contents/update/${content.id}`)"
+                        @click="router.push(`/admin_contents/update/${content.encrypted_id}`)"
                         class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button3 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
                         Rediģēt
                     </button>
                     <button 
-                        @click="handleDelete(content.id)"
+                        @click="handleDelete(content.encrypted_id)"
                         class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
                         Dzēst

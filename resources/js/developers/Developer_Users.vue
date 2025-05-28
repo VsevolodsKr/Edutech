@@ -257,7 +257,6 @@ const filteredUsers = computed(() => {
         return matchesSearch && matchesStatus;
     });
 
-    // Calculate pagination
     const startIndex = (currentPage.value - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filtered.slice(startIndex, endIndex);

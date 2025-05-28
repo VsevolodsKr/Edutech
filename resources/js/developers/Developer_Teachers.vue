@@ -265,7 +265,6 @@ const filteredTeachers = computed(() => {
         return matchesSearch && matchesStatus;
     });
 
-    // Calculate pagination
     const startIndex = (currentPage.value - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filtered.slice(startIndex, endIndex);
@@ -421,7 +420,6 @@ const deleteTeacher = async (teacher) => {
         });
 
         if (result.isConfirmed) {
-            // Show loading state
             Swal.fire({
                 title: 'Notiek dzēšana...',
                 text: 'Lūdzu uzgaidiet, kamēr tiek dzēsti visi dati',
@@ -434,10 +432,7 @@ const deleteTeacher = async (teacher) => {
                 }
             });
 
-            // First delete all playlists and their contents
             await axios.delete(`/api/developer/teachers/${teacher.id}/playlists`);
-            
-            // Then delete the teacher
             await axios.delete(`/api/developer/teachers/${teacher.id}`);
             
             await Swal.fire({

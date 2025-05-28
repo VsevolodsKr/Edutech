@@ -32,7 +32,6 @@ class Playlists extends Model
 
     public function getStatusAttribute($value)
     {
-        // Return the actual status value from the database
         return $value;
     }
 

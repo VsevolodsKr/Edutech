@@ -203,7 +203,6 @@ const updateEngagementChart = () => {
     }
 };
 
-// Initial setup
 onMounted(async () => {
     if (!isUserLoaded.value) {
         await store.dispatch('loadUserData');
@@ -211,14 +210,12 @@ onMounted(async () => {
     await loadDashboardData();
 });
 
-// Watch for user data changes
 watch(teacherData, async (newTeacher) => {
     if (newTeacher?.encrypted_id) {
         await loadDashboardData();
     }
 }, { immediate: true });
 
-// Watch for engagement data changes
 watch(engagementData, () => {
     nextTick(() => {
         updateEngagementChart();

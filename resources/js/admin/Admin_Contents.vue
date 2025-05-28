@@ -97,7 +97,6 @@
                 </template>
             </div>
 
-            <!-- Add pagination controls -->
             <div v-if="contents.length > itemsPerPage" class="flex justify-center items-center gap-4 mt-8">
                 <button 
                     @click="currentPage > 1 && (currentPage--)"
@@ -244,14 +243,12 @@ watch(storeIsLoading, (newValue) => {
     isLoading.value = newValue;
 });
 
-// Add watcher for contents
 watch(contents, (newContents) => {
     if (!newContents || newContents.length === 0) {
-        error.value = null; // Clear error when there are no contents
+        error.value = null;
     }
 }, { deep: true });
 
-// Reset page when contents change
 watch(contents, () => {
     currentPage.value = 1;
 });

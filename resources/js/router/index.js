@@ -359,7 +359,7 @@ const developerRoutes = [
         component: () => import('../developers/Developer_Teachers.vue'),
         name: 'Developer_Teachers',
         meta: { 
-            title: 'Skolotāju pārvaldība',
+            title: 'Pasniedzēju pārvaldība',
             requiresAuth: true,
             isDeveloper: true
         },

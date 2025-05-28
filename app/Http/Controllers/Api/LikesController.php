@@ -136,7 +136,6 @@ class LikesController extends Controller
             ], 404);
         }
         
-        // Load likes with content and teacher data in a single query
         $likes = Likes::with(['content' => function($query) {
             $query->select('id', 'title', 'description', 'video', 'thumb', 'date', 'teacher_id', 'video_source_type');
         }, 'content.teacher' => function($query) {
@@ -145,7 +144,6 @@ class LikesController extends Controller
         ->where('user_id', $id)
         ->get();
         
-        // Transform the data to match the expected format
         $transformedData = $likes->map(function($like) {
             $content = $like->content;
             if (!$content) return null;

@@ -98,7 +98,6 @@
             </div>
         </div>
 
-        <!-- Pagination controls -->
         <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-8">
             <button 
                 @click="currentPage--"
@@ -139,11 +138,9 @@ const { width } = useWindowSize();
 const searchQuery = ref('');
 const isSearching = ref(false);
 
-// Pagination state
 const currentPage = ref(1);
 const itemsPerPage = 9;
 
-// Computed properties for pagination
 const paginatedPlaylists = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -154,7 +151,6 @@ const totalPages = computed(() => {
     return Math.ceil(playlists.value.length / itemsPerPage);
 });
 
-// Reset page when search query changes
 watch(searchQuery, () => {
     currentPage.value = 1;
 });

@@ -309,12 +309,10 @@ class TeacherController extends Controller
                 'status' => $request->status
             ];
 
-            // Update password only if provided
             if ($request->filled('password')) {
                 $teacherData['password'] = Hash::make($request->password);
             }
 
-            // Handle image upload only if provided
             if ($request->hasFile('image')) {
                 if ($teacher->image && Storage::disk('public')->exists($teacher->image)) {
                     Storage::disk('public')->delete($teacher->image);
@@ -353,11 +351,9 @@ class TeacherController extends Controller
                 ], 404);
             }
 
-            // Start a database transaction
             DB::beginTransaction();
 
             try {
-                // Delete teacher's image if it exists
                 if ($teacher->image) {
                     $imagePath = str_replace('/storage/', '', $teacher->image);
                     if (Storage::disk('public')->exists($imagePath)) {
@@ -365,7 +361,6 @@ class TeacherController extends Controller
                     }
                 }
 
-                // Get all contents first to delete their files
                 $contents = Contents::where('teacher_id', $id)->get();
                 foreach ($contents as $content) {
                     if ($content->thumb) {
@@ -383,10 +378,8 @@ class TeacherController extends Controller
                     }
                 }
 
-                // Delete all contents
                 Contents::where('teacher_id', $id)->delete();
 
-                // Get all playlists to delete their thumbnails
                 $playlists = Playlists::where('teacher_id', $id)->get();
                 foreach ($playlists as $playlist) {
                     if ($playlist->thumb) {
@@ -397,16 +390,12 @@ class TeacherController extends Controller
                     }
                 }
 
-                // Delete all playlists
                 Playlists::where('teacher_id', $id)->delete();
 
-                // Delete all comments
                 Comments::where('teacher_id', $id)->delete();
 
-                // Delete all likes
                 Likes::where('teacher_id', $id)->delete();
 
-                // Finally delete the teacher
                 $teacher->delete();
 
                 DB::commit();
@@ -477,11 +466,9 @@ class TeacherController extends Controller
                 ], 404);
             }
 
-            // Start a database transaction
             DB::beginTransaction();
 
             try {
-                // Get all playlists to delete their thumbnails
                 $playlists = Playlists::where('teacher_id', $id)->get();
                 foreach ($playlists as $playlist) {
                     if ($playlist->thumb) {
@@ -492,7 +479,6 @@ class TeacherController extends Controller
                     }
                 }
 
-                // Get all contents to delete their thumbnails and videos
                 $contents = Contents::where('teacher_id', $id)->get();
                 foreach ($contents as $content) {
                     if ($content->thumb) {
@@ -510,7 +496,6 @@ class TeacherController extends Controller
                     }
                 }
 
-                // Delete all playlists (this will cascade delete contents)
                 Playlists::where('teacher_id', $id)->delete();
 
                 DB::commit();

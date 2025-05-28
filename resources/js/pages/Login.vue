@@ -147,50 +147,44 @@ const handleSubmit = async () => {
             };
             localStorage.setItem('user', JSON.stringify(userData));
             
-            await store.dispatch('clearAndLoadUserData');
-
+            store.commit('setUser', userData);
+            store.commit('setUserLoaded', true);
+            store.commit('setLastUserLoad', Date.now());
+            
+            let targetRoute = '/';
             if (response.data.is_developer) {
                 const redirectTo = localStorage.getItem('developerRedirectTo');
                 if (redirectTo) {
                     localStorage.removeItem('developerRedirectTo');
-                    router.push(redirectTo);
+                    targetRoute = redirectTo;
                 } else {
-                    router.push('/developer_dashboard');
+                    targetRoute = '/developer_dashboard';
                 }
             } else if (response.data.is_teacher) {
                 const redirectTo = localStorage.getItem('adminRedirectTo');
                 if (redirectTo) {
                     localStorage.removeItem('adminRedirectTo');
-                    router.push(redirectTo);
+                    targetRoute = redirectTo;
                 } else {
-                    router.push('/dashboard');
+                    targetRoute = '/dashboard';
                 }
-            } else {
-                router.push('/');
             }
+            
+            if (userData.encrypted_id) {
+                await store.dispatch('loadUserStats', userData.encrypted_id);
+            }
+            
+            await router.push(targetRoute);
         } else {
             validationMessages.value = [response.data.message];
             isError.value = true;
         }
     } catch (error) {
         console.error('Login error:', error);
-        
-        // Handle different types of error responses
-        if (error.response) {
-            // The server responded with a status code outside the 2xx range
-            if (error.response.data && error.response.data.message) {
-                validationMessages.value = Array.isArray(error.response.data.message) 
-                    ? error.response.data.message 
-                    : [error.response.data.message];
-            } else {
-                validationMessages.value = ['Nederīgs e-pasts vai parole'];
-            }
-        } else if (error.request) {
-            // The request was made but no response was received
-            validationMessages.value = ['Neizdevās sazināties ar serveri. Lūdzu, mēģiniet vēlreiz.'];
+        if (error.response?.data?.message) {
+            validationMessages.value = [error.response.data.message];
         } else {
-            // Something happened in setting up the request
-            validationMessages.value = ['Kļūda autentifikācijā. Lūdzu, mēģiniet vēlreiz.'];
+            validationMessages.value = ['Nederīgs e-pasts vai parole'];
         }
         isError.value = true;
     } finally {

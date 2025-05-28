@@ -129,10 +129,8 @@ const loadComments = async () => {
         isLoading.value = true;
         error.value = null;
 
-        // First ensure we have user data
         if (!user.value?.id) {
             await store.dispatch('loadUserData');
-            // Check again after loading
             if (!user.value?.id) {
                 router.push('/');
                 return;
@@ -150,7 +148,6 @@ const loadComments = async () => {
             Accept: 'application/json'
         };
 
-        // Make sure we have the encrypted_id before making the API call
         if (!user.value.encrypted_id) {
             console.error('No encrypted ID available');
             error.value = 'Failed to load user data. Please try again.';
@@ -223,10 +220,8 @@ const deleteComment = async (commentId) => {
 
             await axios.delete(`/api/comments/delete/${commentId}`, { headers });
 
-            // Update local state
             comments.value = comments.value.filter(comment => comment.id !== commentId);
             
-            // Update store stats
             store.commit('decrementStat', 'comments');
             await store.dispatch('loadUserStats', user.value.encrypted_id);
 
@@ -252,7 +247,6 @@ const deleteComment = async (commentId) => {
     }
 };
 
-// Update the watch to handle user data loading
 watch(() => user.value?.id, async (newId) => {
     if (newId) {
         await loadComments();

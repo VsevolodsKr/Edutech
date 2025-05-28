@@ -34,12 +34,10 @@ class Teachers extends Authenticatable
             return $this->image;
         }
 
-        // If the path already starts with /storage/, return it as is
         if (str_starts_with($this->image, '/storage/')) {
             return $this->image;
         }
 
-        // Clean the path from any storage/public prefixes and normalize it
         $path = str_replace([
             'storage/app/public/',
             'storage/',
@@ -49,12 +47,10 @@ class Teachers extends Authenticatable
             'uploads/'
         ], '', $this->image);
 
-        // If the path is empty after cleaning, return default image
         if (empty($path)) {
             return '/storage/default-avatar.png';
         }
 
-        // If the path is in uploads directory, keep it
         if (str_starts_with($path, 'uploads/')) {
             return '/storage/' . $path;
         }

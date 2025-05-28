@@ -153,11 +153,9 @@ const loadBookmarks = async () => {
             return;
         }
 
-        // Process playlists and format image paths
         playlists.value = response.data.playlists.map(playlist => {
             let thumbPath = playlist.thumb;
             
-            // Process thumbnail path
             if (thumbPath) {
                 if (thumbPath.includes('/storage/app/public/')) {
                     thumbPath = thumbPath.replace('/storage/app/public/', '');
@@ -170,7 +168,6 @@ const loadBookmarks = async () => {
                 thumbPath = '/storage/default-thumb.png';
             }
 
-            // Process teacher image path
             if (playlist.teacher) {
                 let imagePath = playlist.teacher.image;
                 if (imagePath) {
@@ -238,7 +235,6 @@ const deleteBookmark = async (bookmarkId) => {
 
             playlists.value = playlists.value.filter(playlist => playlist.bookmark_id !== bookmarkId);
 
-            // Update store stats
             store.commit('decrementStat', 'playlists');
             await store.dispatch('loadUserStats', user.value.encrypted_id);
 
@@ -264,7 +260,6 @@ const deleteBookmark = async (bookmarkId) => {
     }
 };
 
-// Watch for user changes and load bookmarks when user is available
 watch(() => user.value?.encrypted_id, (newId) => {
     if (newId) {
         loadBookmarks();
@@ -272,7 +267,6 @@ watch(() => user.value?.encrypted_id, (newId) => {
 });
 
 onMounted(() => {
-    // If user is not loaded, dispatch loadUserData
     if (!user.value) {
         store.dispatch('clearAndLoadUserData').then(() => {
             if (user.value?.encrypted_id) {

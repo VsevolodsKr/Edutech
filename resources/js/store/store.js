@@ -263,12 +263,10 @@ export default createStore({
                 const userData = response.data;
                 console.log('Received user data:', userData);
 
-                // Store user data
                 commit('setUser', userData);
                 commit('setUserLoaded', true);
                 commit('setLastUserLoad', Date.now());
 
-                // Load user stats if we have encrypted_id
                 if (userData.encrypted_id) {
                     console.log('Loading stats for user with encrypted_id:', userData.encrypted_id);
                     await dispatch('loadUserStats', userData.encrypted_id);
@@ -300,7 +298,6 @@ export default createStore({
 
                 const headers = { Authorization: `Bearer ${token}` };
 
-                // Make parallel requests for all dashboard data
                 const [
                     playlistsAmount,
                     contentsAmount,
@@ -359,7 +356,6 @@ export default createStore({
 
                 console.log('Loading stats for user:', encryptedId);
 
-                // Make API calls one by one for better error tracking
                 const likesRes = await axios.get(`/api/likes/count_user/${encryptedId}`, { headers });
                 console.log('Likes response:', likesRes.data);
 
@@ -369,7 +365,6 @@ export default createStore({
                 const commentsRes = await axios.get(`/api/comments/count_user/${encryptedId}`, { headers });
                 console.log('Comments response:', commentsRes.data);
 
-                // Extract the actual count values
                 const stats = {
                     likes: parseInt(likesRes.data?.data) || 0,
                     playlists: parseInt(bookmarksRes.data?.data) || 0,
@@ -392,7 +387,6 @@ export default createStore({
                 const response = await axios.get(`/api/playlists/teacher_playlists/${userId}`);
                 const playlists = response.data?.data || [];
                 
-                // Process playlists to ensure correct image paths
                 const processedPlaylists = playlists.map(playlist => ({
                     ...playlist,
                     thumb: playlist.thumb ? `/storage/${playlist.thumb.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')}` : '/storage/default-thumbnail.png'
@@ -422,16 +416,13 @@ export default createStore({
 
                 const contents = Array.isArray(response.data) ? response.data : [];
                 
-                // Process contents to ensure correct video and thumbnail paths
                 const processedContents = contents.map(content => {
                     let processedContent = { ...content };
 
-                    // Handle video URL
                     if (content.video) {
                         if (content.video_source_type === 'youtube') {
-                            processedContent.video = content.video; // Keep YouTube URLs as is
+                            processedContent.video = content.video;
                         } else {
-                            // Process local video path
                             let videoPath = content.video;
                             videoPath = videoPath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
                             videoPath = videoPath.replace(/^\/+/, '');
@@ -440,13 +431,10 @@ export default createStore({
                         }
                     }
 
-                    // Handle thumbnail
                     if (content.thumb) {
-                        // Check if it's a YouTube thumbnail
                         if (content.thumb.includes('youtube.com') || content.thumb.includes('youtu.be')) {
-                            processedContent.thumb = content.thumb; // Keep YouTube thumbnail URLs as is
+                            processedContent.thumb = content.thumb;
                         } else {
-                            // Process local thumbnail path
                             let thumbPath = content.thumb;
                             thumbPath = thumbPath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
                             thumbPath = thumbPath.replace(/^\/+/, '');
@@ -463,7 +451,7 @@ export default createStore({
                 commit('setContents', processedContents);
             } catch (error) {
                 console.error('Error loading contents:', error);
-                commit('setContents', []); // Set empty array on error
+                commit('setContents', []);
             }
         },
 
@@ -537,7 +525,6 @@ export default createStore({
                                 content_count: playlist.content_count || 0
                             };
 
-                            // Handle thumbnail
                             if (processed.thumb) {
                                 if (processed.thumb.startsWith('http')) {
                                     processed.thumb = processed.thumb;
@@ -551,7 +538,6 @@ export default createStore({
                                 processed.thumb = '/storage/default-thumbnail.png';
                             }
 
-                            // Format teacher data
                             if (processed.teacher) {
                                 let teacherImage = processed.teacher.image;
                                 if (teacherImage && !teacherImage.startsWith('http')) {
@@ -587,7 +573,6 @@ export default createStore({
         },
 
         async loadCourses({ commit, state }) {
-            // If we already have courses and they're not too old (e.g., less than 5 minutes old)
             if (state.courses.length > 0 && 
                 Date.now() - (state.courses[0]?.timestamp || 0) < 300000) {
                 console.log('Using cached courses data');
@@ -661,7 +646,6 @@ export default createStore({
         },
 
         async loadTeachers({ commit, state }) {
-            // If we already have teachers and they're not too old (e.g., less than 5 minutes old)
             if (state.teachers.length > 0 && 
                 Date.now() - (state.teachers[0]?.timestamp || 0) < 300000) {
                 return;
@@ -677,12 +661,9 @@ export default createStore({
                 }
 
                 const processedTeachers = response.data.map(teacher => {
-                    // Handle the image path
                     let imagePath = teacher.formatted_image || teacher.image;
                     if (imagePath) {
-                        // Remove any storage/app/public prefixes
                         imagePath = imagePath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
-                        // Ensure it starts with /storage/
                         imagePath = '/storage/' + imagePath;
                     } else {
                         imagePath = '/storage/default-avatar.png';
@@ -786,12 +767,9 @@ export default createStore({
                 }
 
                 const processedTeachers = response.data.map(teacher => {
-                    // Handle the image path
                     let imagePath = teacher.formatted_image || teacher.image;
                     if (imagePath) {
-                        // Remove any storage/app/public prefixes
                         imagePath = imagePath.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
-                        // Ensure it starts with /storage/
                         imagePath = '/storage/' + imagePath;
                     } else {
                         imagePath = '/storage/default-avatar.png';
@@ -813,7 +791,6 @@ export default createStore({
             }
         },
 
-        // Add new action to refresh stats after user actions
         async refreshUserStats({ dispatch, state }) {
             if (state.user?.encrypted_id) {
                 await dispatch('loadUserStats', state.user.encrypted_id);

@@ -98,7 +98,6 @@
                 </template>
             </div>
 
-            <!-- Add pagination controls -->
             <div v-if="playlists.length > itemsPerPage" class="flex justify-center items-center gap-4 mt-8">
                 <button 
                     @click="currentPage > 1 && (currentPage--)"
@@ -247,7 +246,6 @@ const paginatedPlaylists = computed(() => {
     return playlists.value.slice(start, end);
 });
 
-// Reset page when playlists change
 watch(playlists, () => {
     currentPage.value = 1;
 });

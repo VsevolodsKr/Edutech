@@ -145,6 +145,7 @@ class PlaylistsController extends Controller
                 ],
                 'teacher' => $playlist->teacher ? [
                     'id' => $playlist->teacher->id,
+                    'encrypted_id' => $this->encryptId($playlist->teacher->id),
                     'name' => $playlist->teacher->name,
                     'image' => $playlist->teacher->image,
                 ] : null

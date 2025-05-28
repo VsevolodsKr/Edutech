@@ -115,7 +115,6 @@ class BookmarksController extends Controller
                 ], 404);
             }
 
-            // Eager load relationships with specific attributes
             $bookmarks = Bookmarks::with(['playlist' => function($query) {
                 $query->with(['teacher' => function($query) {
                     $query->select('id', 'name', 'image', 'profession');
@@ -127,12 +126,10 @@ class BookmarksController extends Controller
 
             foreach($bookmarks as $bookmark) {
                 if ($bookmark->playlist) {
-                    // Format the playlist thumbnail URL if it exists
                     if ($bookmark->playlist->thumb) {
                         $bookmark->playlist->thumb = str_replace('/storage/app/public/', '/storage/', $bookmark->playlist->thumb);
                     }
                     
-                    // Add bookmark ID to playlist for reference
                     $bookmark->playlist->bookmark_id = $bookmark->id;
                     
                     $playlists[] = $bookmark->playlist;

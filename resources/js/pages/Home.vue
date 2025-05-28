@@ -3,7 +3,6 @@
     <Header />
         <div class="main-content">
             <section :class="sectionClasses">
-                <!-- Dashboard section for authenticated users -->
                 <div v-if="isAuthenticated">
                     <h1 class="text-[1.5rem] text-text_dark">Vadības panelis</h1>
                     <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
@@ -59,7 +58,6 @@
                                 </div>
                             </div>
 
-                            <!-- Action Buttons -->
                             <div class="flex gap-[1rem]">
                                 <button 
                                     @click="$router.push('/update-profile')" 
@@ -83,7 +81,6 @@
                     </div>
                 </div>
 
-                <!-- Latest courses section - visible to all users -->
                 <div class="mt-8">
                     <h2 class="text-[1.5rem] text-text_dark mb-4 [@media(max-width:550px)]:text-[1.2rem]">
                         {{ isAuthenticated ? 'Jaunākie kursi' : 'Pieejamie kursi' }}
@@ -108,13 +105,11 @@
                         Nav pieejami kursi
                     </div>
 
-                    <!-- Playlists Grid with pagination -->
                     <div v-else>
                         <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
                             <div v-for="playlist in latestPlaylists" 
                                 :key="playlist.id" 
                                 class="bg-base rounded-lg p-[2rem] hover:shadow-lg transition-shadow duration-300">
-                                <!-- Teacher Info with lazy loading -->
                                 <div class="flex items-center gap-[1.5rem] mb-[2rem]">
                                     <img 
                                         :data-src="formatTeacherImage(playlist.teacher?.image)" 
@@ -133,7 +128,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Course Thumbnail with lazy loading -->
                                 <div class="relative group">
                                     <img 
                                         :data-src="playlist.thumb" 
@@ -155,7 +149,6 @@
                                     </span>
                                 </div>
 
-                                <!-- Course Info -->
                                 <div class="mt-4">
                                     <h3 class="text-[1.5rem] text-text_dark mb-2 [@media(max-width:550px)]:text-[1.2rem]">
                                         {{ playlist.title }}
@@ -191,18 +184,15 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const isLoggingOut = ref(false);
 const error = ref(null);
 const isAuthenticated = computed(() => store.getters.getUser !== null);
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const user = computed(() => {
     const storedUser = store.getters.getUser;
     if (!storedUser) return null;
 
-    // Format the image URL
     const imageUrl = storedUser.image ? 
         (storedUser.image.startsWith('http') ? 
             storedUser.image : 
@@ -216,7 +206,6 @@ const user = computed(() => {
     };
 });
 const isLoading = computed(() => store.getters.getIsLoading);
-const dashboardStats = computed(() => store.getters.getDashboardStats);
 const latestPlaylists = computed(() => store.getters.getLatestPlaylists);
 const isPlaylistsLoading = computed(() => store.getters.getLatestPlaylistsLoading);
 const playlistsError = computed(() => store.getters.getLatestPlaylistsError);
@@ -268,7 +257,6 @@ const handleLogout = async () => {
     }
 };
 
-// Watchers
 watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
@@ -282,10 +270,8 @@ watch(() => store.getters.getDashboardStats, (newStats, oldStats) => {
 
 onMounted(async () => {
     try {
-        // Load latest playlists
         await store.dispatch('loadLatestPlaylists');
         
-        // Load user data only if not already loaded
         if (!store.getters.isCacheValid) {
             await store.dispatch('clearAndLoadUserData');
         }
@@ -294,17 +280,14 @@ onMounted(async () => {
     }
 });
 
-// Watch for user changes - simplified since stats are now part of profile
 watch(() => store.getters.getUser, async (newUser) => {
     console.log('User changed:', newUser);
 }, { deep: true });
 
-// Watch for dashboard stats changes
 watch(() => store.getters.getDashboardStats, (newStats) => {
     console.log('Dashboard stats updated:', newStats);
 }, { deep: true });
 
-// Watch for route changes - simplified to avoid redundant calls
 watch(() => router.currentRoute.value.path, async (newPath, oldPath) => {
     if (newPath === '/' && newPath !== oldPath && !store.getters.isCacheValid) {
         await store.dispatch('clearAndLoadUserData');
