@@ -200,6 +200,9 @@
                             Ja nevēlaties mainīt attēlu, atstājiet šo lauku tukšu
                         </p>
                     </div>
+                    <div v-if="imagePreview" class="mt-4">
+                        <img :src="imagePreview" alt="Image preview" class="max-w-[200px] rounded-lg shadow-lg">
+                    </div>
                     <div class="flex justify-end gap-4 mt-[2rem]">
                         <button 
                             type="button"
@@ -249,6 +252,8 @@ const form = ref({
     status: 'aktīvs',
     image: null
 });
+const imageInput = ref(null);
+const imagePreview = ref(null);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
@@ -326,6 +331,7 @@ const editTeacher = (teacher) => {
 const closeModal = () => {
     showModal.value = false;
     editingTeacher.value = null;
+    imagePreview.value = null;
     form.value = {
         name: '',
         email: '',
@@ -334,12 +340,20 @@ const closeModal = () => {
         status: 'aktīvs',
         image: null
     };
+    if (imageInput.value) {
+        imageInput.value.value = '';
+    }
 };
 
 const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
         form.value.image = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 };
 

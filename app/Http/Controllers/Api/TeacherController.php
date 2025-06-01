@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Users;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Developers;
 
 class TeacherController extends Controller
 {
@@ -44,6 +45,8 @@ class TeacherController extends Controller
             }
 
             $formattedImage = $teacher->formatted_image;
+            $playlistCount = $teacher->playlists()->where('status', 'Aktīvs')->count();
+            $contentCount = $teacher->contents()->where('status', 'Aktīvs')->count();
             
             $teacherData = [
                 'id' => $teacher->id,
@@ -52,7 +55,9 @@ class TeacherController extends Controller
                 'profession' => $teacher->profession,
                 'email' => $teacher->email,
                 'image' => $formattedImage,
-                'formatted_image' => $formattedImage
+                'formatted_image' => $formattedImage,
+                'playlist_count' => (int)$playlistCount,
+                'content_count' => (int)$contentCount
             ];
             
             return response()->json([
@@ -123,8 +128,8 @@ class TeacherController extends Controller
     public function all()
     {
         $teachers = Teachers::all()->map(function ($teacher) {
-            $playlistCount = $teacher->playlists()->count();
-            $contentCount = $teacher->contents()->count();
+            $playlistCount = $teacher->playlists()->where('status', 'Aktīvs')->count();
+            $contentCount = $teacher->contents()->where('status', 'Aktīvs')->count();
 
             $formattedImage = $teacher->formatted_image;
 
@@ -148,7 +153,25 @@ class TeacherController extends Controller
         $query = $request->input('query');
         $teachers = Teachers::where('name', 'like', "%{$query}%")
             ->orWhere('profession', 'like', "%{$query}%")
-            ->get();
+            ->get()
+            ->map(function ($teacher) {
+                $playlistCount = $teacher->playlists()->where('status', 'Aktīvs')->count();
+                $contentCount = $teacher->contents()->where('status', 'Aktīvs')->count();
+
+                $formattedImage = $teacher->formatted_image;
+
+                return [
+                    'id' => $teacher->id,
+                    'encrypted_id' => $this->encryptId($teacher->id),
+                    'name' => $teacher->name,
+                    'profession' => $teacher->profession,
+                    'email' => $teacher->email,
+                    'image' => $formattedImage,
+                    'formatted_image' => $formattedImage,
+                    'playlist_count' => (int)$playlistCount,
+                    'content_count' => (int)$contentCount
+                ];
+            });
         return response()->json($teachers);
     }
 
@@ -231,7 +254,7 @@ class TeacherController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:teachers,email',
+                'email' => 'required|email',
                 'profession' => 'required|string|max:255',
                 'status' => 'required',
                 'password' => 'required|min:6',
@@ -243,6 +266,15 @@ class TeacherController extends Controller
                     'status' => 422,
                     'message' => 'Validācijas kļūda',
                     'errors' => $validator->errors()
+                ], 422);
+            }
+
+            if (Users::where('email', $request->email)->exists() ||
+                Teachers::where('email', $request->email)->exists() ||
+                Developers::where('email', $request->email)->exists()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'E-pasts jau eksistē citā lietotāju, pasniedzēju vai izstrādātāju kontā',
                 ], 422);
             }
 
@@ -285,7 +317,7 @@ class TeacherController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:teachers,email,' . $id,
+                'email' => 'required|email',
                 'profession' => 'required|string|max:255',
                 'status' => 'required|in:aktīvs,neaktīvs',
                 'password' => 'nullable|min:6',
@@ -301,6 +333,15 @@ class TeacherController extends Controller
             }
 
             $teacher = Teachers::findOrFail($id);
+
+            if (Users::where('email', $request->email)->exists() ||
+                Teachers::where('email', $request->email)->where('id', '!=', $id)->exists() ||
+                Developers::where('email', $request->email)->exists()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'E-pasts jau eksistē citā lietotāju, pasniedzēju vai izstrādātāju kontā',
+                ], 422);
+            }
 
             $teacherData = [
                 'name' => $request->name,

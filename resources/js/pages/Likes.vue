@@ -228,7 +228,7 @@ const loadLikedContent = async () => {
 
     } catch (err) {
         console.error('Error loading liked content:', err);
-        error.value = 'Failed to load liked content. Please try again.';
+        error.value = 'Neizdevās ielādēt iepatīkusies video. Lūdzu, mēģiniet vēlreiz.';
     }
 };
 

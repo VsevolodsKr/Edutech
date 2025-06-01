@@ -42,7 +42,7 @@
                 >
                     <div class="flex justify-center">
                         <img 
-                            :src="userData.image" 
+                            :src="getUserImageUrl(userData.image)" 
                             :alt="userData.name"
                             class="h-[8rem] w-[8rem] rounded-full object-cover mb-[1rem]"
                         >
@@ -90,6 +90,7 @@ const { width } = useWindowSize();
 const showUserMenu = ref(false);
 const currentTheme = ref(localStorage.getItem('theme-color') || 'theme-light');
 const isLoggingOut = ref(false);
+const defaultAvatar = '/images/default-avatar.png';
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const userData = computed(() => store.getters.getUser);
@@ -117,6 +118,24 @@ const themes = {
         button4: '#e83731',
         selection: '#eae883b9'
     }
+};
+
+const getUserImageUrl = (image) => {
+    if (!image) return defaultAvatar;
+    if (image.startsWith('data:')) return image;
+    if (image.startsWith('http')) return image;
+
+    let cleanPath = image;
+    if (cleanPath.includes('/storage/app/public/')) {
+        cleanPath = cleanPath.replace('/storage/app/public/', '');
+    } else if (cleanPath.startsWith('/storage/')) {
+        cleanPath = cleanPath.replace('/storage/', '');
+    }
+    if (cleanPath.startsWith('/')) {
+        cleanPath = cleanPath.substring(1);
+    }
+
+    return `${window.location.origin}/storage/${cleanPath}`;
 };
 
 const toggleSidebar = () => {

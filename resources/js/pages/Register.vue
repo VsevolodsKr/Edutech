@@ -307,14 +307,21 @@ const handleSubmit = async () => {
             }
         });
 
-        validationMessages.value = Array.isArray(response.data.message) 
-            ? response.data.message 
-            : [response.data.message];
-        isError.value = false;
+        if (response.data.status === 200) {
+            validationMessages.value = Array.isArray(response.data.message) 
+                ? response.data.message 
+                : [response.data.message];
+            isError.value = false;
 
-        setTimeout(() => {
-            router.push('/login');
-        }, 500);
+            setTimeout(() => {
+                router.push('/login');
+            }, 1500);
+        } else {
+            validationMessages.value = Array.isArray(response.data.message)
+                ? response.data.message
+                : [response.data.message];
+            isError.value = true;
+        }
     } catch (err) {
         console.error('Registration error:', err);
         

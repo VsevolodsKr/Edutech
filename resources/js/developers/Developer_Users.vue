@@ -179,6 +179,9 @@
                         <p v-if="editingUser" class="text-sm text-text_light mt-1">
                             Ja nevēlaties mainīt attēlu, atstājiet šo lauku tukšu
                         </p>
+                        <div v-if="imagePreview" class="mt-4">
+                            <img :src="imagePreview" alt="Image preview" class="max-w-[200px] rounded-lg shadow-lg">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-text_dark mb-2">Statuss</label>
@@ -207,6 +210,7 @@
                         </button>
                     </div>
                 </form>
+                
             </div>
         </div>
 
@@ -241,6 +245,7 @@ const form = ref({
 });
 
 const imageInput = ref(null);
+const imagePreview = ref(null);
 
 const showSidebar = computed(() => store.getters.getShowSidebar);
 const sectionClasses = computed(() => [
@@ -297,6 +302,11 @@ const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
         form.value.image = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 };
 
@@ -327,6 +337,7 @@ const editUser = (user) => {
 const closeModal = () => {
     showModal.value = false;
     editingUser.value = null;
+    imagePreview.value = null;
     form.value = {
         name: '',
         email: '',

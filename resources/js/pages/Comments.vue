@@ -54,16 +54,16 @@
                     <div class="flex justify-start gap-[1rem] mt-[1rem]">
                         <router-link 
                             :to="'/edit_comment/' + comment.encrypted_id"
-                            class="flex-1 max-w-[10rem] bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
+                            class="flex-1 max-w-[6rem] bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
                         >
-                            Rediģēt komentāru
+                            Rediģēt
                         </router-link>
                         <button 
                             @click="() => deleteComment(comment.id)"
                             :disabled="isDeleting === comment.id"
-                            class="flex-1 max-w-[10rem] bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
+                            class="flex-1 max-w-[6rem] bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
                         >
-                            {{ isDeleting === comment.id ? 'Dzēšana...' : 'Dzēst komentāru' }}
+                            {{ isDeleting === comment.id ? 'Dzēšana...' : 'Dzēst' }}
                         </button>
                     </div>
                 </div>
@@ -150,7 +150,7 @@ const loadComments = async () => {
 
         if (!user.value.encrypted_id) {
             console.error('No encrypted ID available');
-            error.value = 'Failed to load user data. Please try again.';
+            error.value = 'Neizdevās ielādēt lietotāja datus. Lūdzu, mēģiniet vēlreiz.';
             return;
         }
 
@@ -160,7 +160,7 @@ const loadComments = async () => {
 
         if (!response.data.comments) {
             console.error('No comments data in response');
-            error.value = 'Failed to load comments. Please try again.';
+            error.value = 'Neizdevās ielādēt komentārus. Lūdzu, mēģiniet vēlreiz.';
             return;
         }
 
@@ -185,7 +185,7 @@ const loadComments = async () => {
         console.log('Processed comments:', comments.value);
     } catch (err) {
         console.error('Error loading comments:', err);
-        error.value = 'Failed to load comments. Please try again.';
+        error.value = 'Neizdevās ielādēt komentārus. Lūdzu, mēģiniet vēlreiz.';
     } finally {
         isLoading.value = false;
     }

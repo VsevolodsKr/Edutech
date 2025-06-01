@@ -98,7 +98,6 @@ import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import store from '../store/store';
-import Swal from 'sweetalert2';
 
 const router = useRouter();
 const { width } = useWindowSize();
@@ -139,23 +138,10 @@ const handleLogout = async () => {
     try {
         isLoggingOut.value = true;
         localStorage.removeItem('token');
-        store.commit('setUser', null);
-        
-        await Swal.fire({
-            title: 'Veiksmīgi',
-            text: 'Izlogojās veiksmīgi',
-            icon: 'success',
-            timer: 1500,
-            showConfirmButton: false
-        });
-        
+        store.commit('setUser', null); 
         router.push('/login');
     } catch (err) {
-        await Swal.fire({
-            title: 'Kļūda',
-            text: 'Neizdevās izlogoties. Lūdzu, mēģiniet vēlreiz.',
-            icon: 'error'
-        });
+        console.log(err);
     } finally {
         isLoggingOut.value = false;
     }

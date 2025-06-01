@@ -522,7 +522,8 @@ export default createStore({
                                 ...playlist,
                                 timestamp: Date.now(),
                                 encrypted_id: playlist.encrypted_id || playlist.id,
-                                content_count: playlist.content_count || 0
+                                contents: playlist.contents || [],
+                                content_count: playlist.contents?.filter(content => content.status === 'Aktīvs').length || 0
                             };
 
                             if (processed.thumb) {
@@ -594,10 +595,10 @@ export default createStore({
                             ...playlist,
                             timestamp: Date.now(),
                             encrypted_id: playlist.encrypted_id || playlist.id,
-                            content_count: playlist.content_count || 0
+                            contents: playlist.contents || [],
+                            content_count: playlist.contents?.filter(content => content.status === 'Aktīvs').length || 0
                         };
 
-                        // Handle thumbnail
                         if (processed.thumb) {
                             const cleanPath = processed.thumb
                                 .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -607,7 +608,6 @@ export default createStore({
                             processed.thumb = '/storage/default-thumbnail.png';
                         }
 
-                        // Format teacher data
                         if (processed.teacher) {
                             let teacherImage = processed.teacher.image;
                             if (teacherImage && !teacherImage.startsWith('http')) {
@@ -704,10 +704,10 @@ export default createStore({
                             ...playlist,
                             timestamp: Date.now(),
                             encrypted_id: playlist.encrypted_id || playlist.id,
-                            content_count: playlist.content_count || 0
+                            contents: playlist.contents || [],
+                            content_count: playlist.contents?.filter(content => content.status === 'Aktīvs').length || 0
                         };
 
-                        // Handle thumbnail
                         if (processed.thumb) {
                             const cleanPath = processed.thumb
                                 .replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '')
@@ -717,7 +717,6 @@ export default createStore({
                             processed.thumb = '/storage/default-thumbnail.png';
                         }
 
-                        // Format teacher data
                         if (processed.teacher) {
                             let teacherImage = processed.teacher.image;
                             if (teacherImage && !teacherImage.startsWith('http')) {

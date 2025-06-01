@@ -145,7 +145,7 @@
                                         </router-link>
                                     </div>
                                     <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                        {{ playlist.content_count }} video
+                                        {{ (playlist.contents || []).filter(content => content.status === 'Aktīvs').length }} video
                                     </span>
                                 </div>
 
@@ -257,20 +257,34 @@ const handleLogout = async () => {
     }
 };
 
+const refreshDashboardStats = async () => {
+    if (isAuthenticated.value) {
+        await store.dispatch('loadDashboardStats');
+    }
+};
+
 watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
 
-watch(() => store.getters.getDashboardStats, (newStats, oldStats) => {
-    console.log('Dashboard stats changed:', {
-        old: oldStats,
-        new: newStats
-    });
-}, { deep: true });
+watch(() => router.currentRoute.value.path, async (newPath) => {
+    if (newPath === '/') {
+        await refreshDashboardStats();
+    }
+});
+
+watch(isAuthenticated, async (newValue) => {
+    if (newValue) {
+        await refreshDashboardStats();
+    }
+});
 
 onMounted(async () => {
     try {
-        await store.dispatch('loadLatestPlaylists');
+        await Promise.all([
+            store.dispatch('loadLatestPlaylists'),
+            refreshDashboardStats()
+        ]);
         
         if (!store.getters.isCacheValid) {
             await store.dispatch('clearAndLoadUserData');
@@ -281,16 +295,15 @@ onMounted(async () => {
 });
 
 watch(() => store.getters.getUser, async (newUser) => {
-    console.log('User changed:', newUser);
-}, { deep: true });
-
-watch(() => store.getters.getDashboardStats, (newStats) => {
-    console.log('Dashboard stats updated:', newStats);
-}, { deep: true });
-
-watch(() => router.currentRoute.value.path, async (newPath, oldPath) => {
-    if (newPath === '/' && newPath !== oldPath && !store.getters.isCacheValid) {
-        await store.dispatch('clearAndLoadUserData');
+    if (newUser) {
+        await refreshDashboardStats();
     }
-});
+}, { deep: true });
+
+watch(() => store.getters.getDashboardStats, (newStats, oldStats) => {
+    console.log('Dashboard stats changed:', {
+        old: oldStats,
+        new: newStats
+    });
+}, { deep: true });
 </script>

@@ -393,7 +393,7 @@ class AuthorizationController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
+                'email' => 'required|string|email|max:255',
                 'password' => 'required|string|min:6',
                 'status' => 'required|in:aktīvs,neaktīvs',
                 'image' => 'nullable|image|max:2048'
@@ -404,6 +404,15 @@ class AuthorizationController extends Controller
                     'status' => 422,
                     'message' => 'Validācijas kļūda',
                     'errors' => $validator->errors()
+                ], 422);
+            }
+
+            if (Users::where('email', $request->email)->exists() ||
+                Teachers::where('email', $request->email)->exists() ||
+                Developers::where('email', $request->email)->exists()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'E-pasts jau eksistē citā lietotāju, pasniedzēju vai izstrādātāju kontā'
                 ], 422);
             }
 
@@ -443,7 +452,7 @@ class AuthorizationController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+                'email' => 'required|string|email|max:255',
                 'password' => 'nullable|string|min:6',
                 'status' => 'required|in:aktīvs,neaktīvs',
                 'image' => 'nullable|image|max:2048'
@@ -459,6 +468,16 @@ class AuthorizationController extends Controller
             }
 
             $user = Users::findOrFail($id);
+
+            if (Users::where('email', $request->email)->where('id', '!=', $id)->exists() ||
+                Teachers::where('email', $request->email)->exists() ||
+                Developers::where('email', $request->email)->exists()) {
+                return response()->json([
+                    'status' => 422,
+                    'message' => 'E-pasts jau eksistē citā lietotāju, pasniedzēju vai izstrādātāju kontā'
+                ], 422);
+            }
+
             \Log::info('Found user:', $user->toArray());
             
             $userData = [

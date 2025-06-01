@@ -68,19 +68,13 @@ class ContentsController extends Controller
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
-                return response()->json([
-                    'message' => 'Nepareizs kursa ID',
-                    'status' => 404
-                ], 404);
+                return response()->json([]);
             }
 
-            $contents = Contents::with('teacher')
-                ->where('playlist_id', $id)
+            $contents = Contents::where('playlist_id', $id)
+                ->where('status', 'Aktīvs')
                 ->orderBy('date', 'asc')
                 ->get()
-                ->filter(function ($content) {
-                    return $content->teacher && $content->teacher->status === 'aktīvs';
-                })
                 ->map(function ($content) {
                     return [
                         'id' => $content->id,
@@ -99,10 +93,7 @@ class ContentsController extends Controller
 
             return response()->json($contents);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Neizdevās iegūt kursa saturus',
-                'status' => 500
-            ], 500);
+            return response()->json([]);
         }
     }
 
@@ -126,7 +117,7 @@ class ContentsController extends Controller
                 ], 404);
             }
 
-            if (!$content->teacher || $content->teacher->status === 'neaktīvs') {
+            if (!$content->teacher || $content->teacher->status === 'Neaktīvs') {
                 return response()->json([
                     'message' => 'Šis video nav pieejams, jo pasniedzējs ir deaktivizēts',
                     'status' => 403
@@ -157,10 +148,18 @@ class ContentsController extends Controller
                     'data' => 0
                 ]);
             }
+
+            $count = Contents::join('teachers', 'contents.teacher_id', '=', 'teachers.id')
+                ->where('contents.teacher_id', $id)
+                ->where('contents.status', 'Aktīvs')
+                ->where('teachers.status', 'Aktīvs')
+                ->count();
+
             return response()->json([
-                'data' => Contents::where('teacher_id', $id)->count()
+                'data' => $count
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error in get_amount: ' . $e->getMessage());
             return response()->json([
                 'data' => 0
             ]);
@@ -169,15 +168,18 @@ class ContentsController extends Controller
 
     public function get_playlist_contents_amount($encryptedId)
     {
-        $id = $this->decryptId($encryptedId);
-        if (!$id) {
-            return response()->json([
-                'message' => 'Invalid playlist ID',
-                'status' => 404
-            ], 404);
-        }
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return 0;
+            }
 
-        return Contents::where('playlist_id', $id)->count();
+            return Contents::where('playlist_id', $id)
+                ->where('status', 'Aktīvs')
+                ->count();
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     public function add_content(Request $request)

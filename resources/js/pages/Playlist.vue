@@ -240,17 +240,17 @@ const loadPlaylistData = async () => {
             };
         }
 
-        const [countResponse, contentsResponse] = await Promise.all([
-            axios.get(`/api/contents/playlist/${route.params.id}/amount`),
-            axios.get(`/api/playlists/${route.params.id}/contents`)
-        ]);
-
-        contentCount.value = countResponse.data;
-        if (contentsResponse.data) {
+        const contentsResponse = await axios.get(`/api/playlists/${route.params.id}/contents`);
+        
+        if (Array.isArray(contentsResponse.data)) {
             contents.value = contentsResponse.data.map(content => ({
                 ...content,
                 thumb: getThumbnailUrl(content)
             }));
+            contentCount.value = contents.value.length;
+        } else {
+            contents.value = [];
+            contentCount.value = 0;
         }
 
         if (user.value) {
@@ -262,6 +262,8 @@ const loadPlaylistData = async () => {
         error.value = 'Failed to load playlist. Please try again.';
         playlist.value = null;
         teacher.value = null;
+        contents.value = [];
+        contentCount.value = 0;
     } finally {
         isPlaylistLoading.value = false;
     }

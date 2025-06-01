@@ -53,8 +53,8 @@
                                         required
                                     >
                                         <option value="" disabled>Izvēlieties statusu...</option>
-                                        <option value="active">Aktīvs</option>
-                                        <option value="deactive">Neaktīvs</option>
+                                        <option value="Aktīvs">Aktīvs</option>
+                                        <option value="Neaktīvs">Neaktīvs</option>
                                     </select>
                                 </div>
 
@@ -262,7 +262,7 @@ const errorStatus = ref(null);
 const formData = ref({
     title: '',
     description: '',
-    status: 'active',
+    status: 'Aktīvs',
     video_source_type: 'file',
     youtube_link: '',
     video: null,

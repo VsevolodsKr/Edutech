@@ -24,7 +24,7 @@
                     <template v-else>
                         <video
                             :src="content.video"
-                            :poster="content.thumb"
+                            :poster="getThumbUrl(content.thumb)"
                             class="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
                             controls
                             controlsList="nodownload"
@@ -172,8 +172,10 @@ const getThumbUrl = (thumb) => {
     if (thumb.startsWith('http')) return thumb;
 
     let cleanPath = thumb;
-    if (cleanPath.includes('storage/app/public/')) {
-        cleanPath = cleanPath.replace('storage/app/public/', '');
+    if (cleanPath.includes('/storage/app/public/')) {
+        cleanPath = cleanPath.replace('/storage/app/public/', '');
+    } else if (cleanPath.startsWith('/storage/')) {
+        cleanPath = cleanPath.replace('/storage/', '');
     }
     if (cleanPath.startsWith('/')) {
         cleanPath = cleanPath.substring(1);

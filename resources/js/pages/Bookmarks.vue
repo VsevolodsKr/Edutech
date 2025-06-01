@@ -127,14 +127,14 @@ const loadBookmarks = async () => {
 
         if (!user.value?.encrypted_id) {
             console.error('No user ID available');
-            error.value = 'Please log in to view your bookmarks.';
+            error.value = 'Lūdzu, ielogojieties, lai skatītu savas grāmatzīmētās kursus.';
             return;
         }
 
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No auth token available');
-            error.value = 'Please log in to view your bookmarks.';
+            error.value = 'Lūdzu, ielogojieties, lai skatītu savas grāmatzīmētās kursus.';
             return;
         }
 
@@ -149,7 +149,7 @@ const loadBookmarks = async () => {
         
         if (!response.data || !Array.isArray(response.data.playlists)) {
             console.error('Invalid response format:', response.data);
-            error.value = 'Failed to load bookmarks. Invalid data format.';
+            error.value = 'Neizdevās ielādēt grāmatzīmētās kursus. Nederīga datu forma.';
             return;
         }
 
@@ -194,10 +194,10 @@ const loadBookmarks = async () => {
     } catch (err) {
         console.error('Error loading bookmarks:', err.response || err);
         if (err.response?.status === 401) {
-            error.value = 'Please log in to view your bookmarks.';
+            error.value = 'Lūdzu, ielogojieties, lai skatītu savas grāmatzīmētās kursus.';
             router.push('/login');
         } else {
-            error.value = 'Failed to load bookmarks. Please try again.';
+            error.value = 'Neizdevās ielādēt grāmatzīmētās kursus. Lūdzu, mēģiniet vēlreiz.';
         }
     } finally {
         isLoading.value = false;

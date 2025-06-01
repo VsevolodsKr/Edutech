@@ -491,7 +491,13 @@ const handleDeleteComment = async (commentId) => {
 
         if (result.isConfirmed) {
             isDeletingComment.value = commentId;
-            await axios.delete(`/api/comments/delete/${commentId}`, {
+
+            const commentToDelete = comments.value.find(comment => comment.id === commentId);
+            if (!commentToDelete || !commentToDelete.encrypted_id) {
+                throw new Error('Comment not found or missing encrypted ID');
+            }
+
+            await axios.delete(`/api/comments/delete/${commentToDelete.encrypted_id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
@@ -517,9 +523,9 @@ const handleDeleteComment = async (commentId) => {
             router.push('/login');
             return;
         }
-                    Swal.fire({
+        Swal.fire({
             title: 'Kļūda!',
-            text: 'Neizdevās dzēst komentāru',
+            text: err.response?.data?.message || 'Neizdevās dzēst komentāru',
             icon: 'error',
             color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
             background: getComputedStyle(document.documentElement).getPropertyValue('--background'),

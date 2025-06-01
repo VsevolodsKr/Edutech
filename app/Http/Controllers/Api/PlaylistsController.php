@@ -42,7 +42,7 @@ class PlaylistsController extends Controller
                             'name' => $playlist->teacher->name,
                             'image' => $playlist->teacher->image,
                         ] : null,
-                        'content_count' => $playlist->contents()->count()
+                        'content_count' => $playlist->contents()->where('status', 'Aktīvs')->count()
                     ];
                 });
 
@@ -73,7 +73,13 @@ class PlaylistsController extends Controller
                     'thumb' => $playlist->thumb,
                     'date' => $playlist->date,
                     'teacher_id' => $playlist->teacher_id,
-                    'content_count' => $playlist->contents->count(),
+                    'contents' => $playlist->contents->map(function ($content) {
+                        return [
+                            'id' => $content->id,
+                            'status' => $content->status
+                        ];
+                    }),
+                    'content_count' => $playlist->contents->where('status', 'Aktīvs')->count(),
                     'teacher' => $playlist->teacher ? [
                         'id' => $playlist->teacher->id,
                         'name' => $playlist->teacher->name,
@@ -102,7 +108,13 @@ class PlaylistsController extends Controller
                     'thumb' => $playlist->thumb,
                     'date' => $playlist->date,
                     'teacher_id' => $playlist->teacher_id,
-                    'content_count' => $playlist->contents->count(),
+                    'contents' => $playlist->contents->map(function ($content) {
+                        return [
+                            'id' => $content->id,
+                            'status' => $content->status
+                        ];
+                    }),
+                    'content_count' => $playlist->contents->where('status', 'Aktīvs')->count(),
                     'teacher' => $playlist->teacher ? [
                         'id' => $playlist->teacher->id,
                         'name' => $playlist->teacher->name,
@@ -141,7 +153,7 @@ class PlaylistsController extends Controller
                     'thumb' => $playlist->thumb,
                     'date' => $playlist->date,
                     'teacher_id' => $playlist->teacher_id,
-                    'content_count' => $playlist->contents()->count()
+                    'content_count' => $playlist->contents()->where('status', 'Aktīvs')->count()
                 ],
                 'teacher' => $playlist->teacher ? [
                     'id' => $playlist->teacher->id,
@@ -184,7 +196,13 @@ class PlaylistsController extends Controller
                     'thumb' => $playlist->thumb,
                     'date' => $playlist->date,
                     'teacher_id' => $playlist->teacher_id,
-                    'content_count' => $playlist->contents->count(),
+                    'contents' => $playlist->contents->map(function ($content) {
+                        return [
+                            'id' => $content->id,
+                            'status' => $content->status
+                        ];
+                    }),
+                    'content_count' => $playlist->contents->where('status', 'Aktīvs')->count(),
                     'teacher' => $playlist->teacher ? [
                         'id' => $playlist->teacher->id,
                         'name' => $playlist->teacher->name,
@@ -294,7 +312,7 @@ class PlaylistsController extends Controller
                         'thumb' => $playlist->thumb ? '/storage/' . $playlist->thumb : null,
                         'date' => $playlist->date,
                         'status' => $playlist->status,
-                        'content_count' => $playlist->contents()->count()
+                        'content_count' => $playlist->contents()->where('status', 'Aktīvs')->count()
                     ];
                 });
 
@@ -346,7 +364,7 @@ class PlaylistsController extends Controller
                         'thumb' => $playlist->thumb,
                         'date' => $playlist->date,
                         'teacher_id' => $playlist->teacher_id,
-                        'content_count' => $playlist->contents()->count()
+                        'content_count' => $playlist->contents()->where('status', 'Aktīvs')->count()
                     ];
                 });
 
@@ -460,17 +478,38 @@ class PlaylistsController extends Controller
 
     public function get_playlist_contents($encryptedId)
     {
-        $id = $this->decryptId($encryptedId);
-        if (!$id) {
-            return response()->json([
-                'message' => 'Nepareizs kursa ID',
-                'status' => 404
-            ], 404);
-        }
+        try {
+            $id = $this->decryptId($encryptedId);
+            if (!$id) {
+                return response()->json([
+                    'message' => 'Nepareizs kursa ID',
+                    'status' => 404
+                ], 404);
+            }
 
-        return Contents::where('playlist_id', $id)
-            ->orderBy('date', 'asc')
-            ->get();
+            $contents = Contents::where('playlist_id', $id)
+                ->orderBy('date', 'asc')
+                ->get()
+                ->map(function ($content) {
+                    return [
+                        'id' => $content->id,
+                        'encrypted_id' => $this->encryptId($content->id),
+                        'title' => $content->title,
+                        'description' => $content->description,
+                        'video' => $content->video,
+                        'thumb' => $content->thumb,
+                        'date' => $content->date,
+                        'status' => $content->status,
+                        'video_source_type' => $content->video_source_type,
+                        'teacher_id' => $content->teacher_id,
+                        'playlist_id' => $content->playlist_id
+                    ];
+                });
+
+            return response()->json($contents);
+        } catch (\Exception $e) {
+            return response()->json([]);
+        }
     }
 
     public function get_playlist_contents_amount($encryptedId)

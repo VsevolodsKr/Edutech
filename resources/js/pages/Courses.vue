@@ -77,7 +77,7 @@
                                 </router-link>
                             </div>
                             <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-60 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                {{ playlist.content_count }} video
+                                {{ (playlist.contents || []).filter(content => content.status === 'Aktīvs').length }} video
                             </span>
                         </div>
 
