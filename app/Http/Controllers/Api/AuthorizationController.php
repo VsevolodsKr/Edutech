@@ -139,7 +139,7 @@ class AuthorizationController extends Controller
             ]);
         }
 
-        if ($developer && Hash::check($request->password, $developer->password)) {
+        if ($developer && Auth::guard('developer')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = $developer->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'status' => 200,

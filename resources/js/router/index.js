@@ -355,6 +355,17 @@ const developerRoutes = [
         beforeEnter: requireDeveloperAuth
     },
     {
+        path: '/developer_profile',
+        component: () => import('../developers/Developer_Profile.vue'),
+        name: 'Developer_Profile',
+        meta: { 
+            title: 'Mans profils',
+            requiresAuth: true,
+            isDeveloper: true
+        },
+        beforeEnter: requireDeveloperAuth
+    },
+    {
         path: '/developer_teachers',
         component: () => import('../developers/Developer_Teachers.vue'),
         name: 'Developer_Teachers',

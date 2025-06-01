@@ -26,6 +26,7 @@
                             :src="adminData.image" 
                             :alt="adminData.name"
                             class="h-[9rem] w-[9rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]"
+                            @error="handleImageError"
                         >
                     </div>
                     <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">
@@ -109,15 +110,30 @@ const adminData = computed(() => {
     const storedUser = store.getters.getUser;
     if (!storedUser) return null;
 
-    const imageUrl = storedUser.image ? 
-        (storedUser.image.startsWith('http') ? 
-            storedUser.image : 
-            `${window.location.origin}/storage/uploads/${storedUser.image.split('/').pop()}`) :
-        `${window.location.origin}/images/default-avatar.png`;
+    let imageUrl = storedUser.image;
+    if (!imageUrl) {
+        imageUrl = '/storage/default-avatar.png';
+    } else if (!imageUrl.startsWith('data:') && !imageUrl.startsWith('http')) {
+        let cleanPath = imageUrl;
+        if (cleanPath.includes('/storage/app/public/')) {
+            cleanPath = cleanPath.replace('/storage/app/public/', '');
+        } else if (cleanPath.startsWith('/storage/')) {
+            cleanPath = cleanPath.replace('/storage/', '');
+        }
+        
+        cleanPath = cleanPath.replace(/^\/+/, '').replace(/\/+$/, '');
+        
+        if (!cleanPath.startsWith('uploads/')) {
+            cleanPath = `uploads/${cleanPath}`;
+        }
+
+        imageUrl = `/storage/${cleanPath}`;
+    }
 
     return {
         ...storedUser,
-        image: imageUrl
+        image: imageUrl,
+        _updateKey: Date.now()
     };
 });
 
@@ -150,6 +166,19 @@ const handleLogout = async () => {
 watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
+
+watch(() => store.getters.getUser?._updateKey, () => {
+    adminData.value = {
+        ...adminData.value,
+        _updateKey: Date.now()
+    };
+});
+
+const handleImageError = (event) => {
+    if (!event.target.src.includes('default-avatar.png')) {
+        event.target.src = '/storage/default-avatar.png';
+    }
+};
 
 </script>
 

@@ -112,11 +112,9 @@ import store from '../store/store';
 const router = useRouter();
 const { width } = useWindowSize();
 
-// State
 const isLoggingOut = ref(false);
 const isLoading = ref(false);
 
-// Navigation items
 const navigationItems = [
     { path: '/', icon: 'fa fa-home', label: 'Sākumlapa' },
     { path: '/about', icon: 'fa fa-question', label: 'Par mums' },
@@ -125,37 +123,39 @@ const navigationItems = [
     { path: '/contact', icon: 'fas fa-handshake', label: 'Sazinies ar mums' }
 ];
 
-// Computed
 const showSidebar = computed(() => store.getters.getShowSidebar);
+const getImageUrl = (image) => {
+    if (!image) return '/storage/default-avatar.png';
+    if (image.startsWith('data:')) return image;
+    if (image.startsWith('http')) return image;
+
+    let cleanPath = image;
+    if (cleanPath.includes('/storage/app/public/')) {
+        cleanPath = cleanPath.replace('/storage/app/public/', '');
+    } else if (cleanPath.startsWith('/storage/')) {
+        cleanPath = cleanPath.replace('/storage/', '');
+    }
+    
+    cleanPath = cleanPath.replace(/^\/+/, '').replace(/\/+$/, '');
+
+    if (!cleanPath.startsWith('uploads/')) {
+        cleanPath = `uploads/${cleanPath}`;
+    }
+
+    return `/storage/${cleanPath}`;
+};
+
 const user = computed(() => {
     const storedUser = store.getters.getUser;
     if (!storedUser) return null;
 
-    // Format image URL
-    let imageUrl = storedUser.image;
-    if (imageUrl) {
-        if (imageUrl.startsWith('http')) {
-            // Keep external URLs as is
-        } else if (imageUrl.includes('/storage/app/public/') || imageUrl.includes('storage/app/public/')) {
-            // Clean up storage path
-            imageUrl = imageUrl.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
-            imageUrl = `/storage/${imageUrl}`;
-        } else if (!imageUrl.startsWith('/storage/')) {
-            // Add storage prefix if missing
-            imageUrl = `/storage/${imageUrl}`;
-        }
-    } else {
-        imageUrl = '/storage/default-avatar.png';
-    }
-
     return {
         ...storedUser,
-        image: imageUrl
+        image: getImageUrl(storedUser.image)
     };
 });
 const storeIsLoading = computed(() => store.getters.getIsLoading);
 
-// Methods
 const toggleSidebar = () => {
     store.commit('setShowSidebar', false);
 };
@@ -179,7 +179,6 @@ const handleLogout = async () => {
     }
 };
 
-// Watchers
 watch(width, (value) => {
     store.commit('setShowSidebar', value >= 1180);
 });
@@ -188,9 +187,7 @@ watch(storeIsLoading, (newValue) => {
     isLoading.value = newValue;
 });
 
-// Initialize
 onMounted(() => {
-    // No need to load user data here as it's already in the store
     isLoading.value = false;
 });
 </script>

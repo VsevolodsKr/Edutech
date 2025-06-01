@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\BookmarksController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\Api\DevelopersController;
 
 // Public Routes
 Route::get('playlists/latest', [PlaylistsController::class, 'latest']);
@@ -125,6 +126,9 @@ Route::post('contact/send', [ContactController::class, 'send']);
 
 // Developer Routes
 Route::prefix('developer')->middleware('auth:sanctum')->group(function () {
+    // Profile Management
+    Route::post('/profile/update', [DevelopersController::class, 'update']);
+
     // Teacher Management
     Route::get('/teachers', [TeacherController::class, 'index']);
     Route::post('/teachers', [TeacherController::class, 'store']);

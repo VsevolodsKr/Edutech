@@ -35,7 +35,7 @@
                         {{ adminData.profession }}
                     </p>
                     <router-link 
-                        to="/admin_profile"
+                        to="/developer_profile"
                         class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                     >
                         Skatīt profilu
@@ -123,6 +123,7 @@ const adminData = computed(() => {
 
 const navigationItems = [
     { path: '/developer_dashboard', icon: 'fa fa-home', label: 'Izstrādātāja panelis' },
+    { path: '/developer_profile', icon: 'fa-solid fa-user', label: 'Mans profils' },
     { path: '/developer_teachers', icon: 'fa-solid fa-chalkboard-user', label: 'Pasniedzēji' },
     { path: '/developer_users', icon: 'fa-solid fa-users', label: 'Lietotāji' },
     { path: '/developer_messages', icon: 'fa-solid fa-envelope', label: 'Ziņojumi' }

@@ -44,7 +44,26 @@ export default createStore({
             return state.showSidebar
         },
         getUser: function (state){
-            return state.user
+            if (!state.user) return null;
+
+            const processImageUrl = (image) => {
+                if (!image) return '/storage/default-avatar.png';
+                if (image.startsWith('http')) return image;
+                
+                let cleanPath = image.replace(/^\/?(storage\/app\/public\/|storage\/|\/storage\/)/g, '');
+                
+                // Ensure uploads directory is in the path
+                if (!cleanPath.startsWith('uploads/')) {
+                    cleanPath = `uploads/${cleanPath}`;
+                }
+                
+                return `/storage/${cleanPath}`;
+            };
+
+            return {
+                ...state.user,
+                image: processImageUrl(state.user.image)
+            };
         },
         getSearchPlaylist: function (state){
             return state.searchPlaylist
