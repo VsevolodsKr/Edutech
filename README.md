@@ -1,26 +1,26 @@
 # 🎓 Patstāvīgas apmācības tīmekļa vietne "Edutech"
 
-## 📚 Par Projektu
+## 📚 Par projektu
 
 EduTech ir moderna mācību satura pārvaldības sistēma, kas izstrādāta, lai atvieglotu mācību procesu gan skolotājiem, gan skolēniem. Platforma nodrošina iespēju veidot, pārvaldīt un koplietot izglītības saturu interaktīvā un lietotājdraudzīgā vidē.
 
-## ⭐ Galvenās Funkcijas
+## ⭐ Galvenās funkcijas
 
-- **👨‍🎓 Lietotāju Saskarne**
+- **👨‍🎓 Lietotāju saskarne**
   - 👤 Personalizēts lietotāja profils
   - 🎥 Video materiālu skatīšanās
   - 📚 Kursu pārlūkošana
   - 📊 Mācību progresa sekošana
   - 💻 Interaktīva mācību vide
 
-- **👨‍🏫 Skolotāju Saskarne**
+- **👨‍🏫 Skolotāju saskarne**
   - 📤 Video materiālu augšupielāde un pārvaldība
   - 🔗 YouTube video integrācija
   - ✏️ Kursu veidošana
   - 📈 Skolēnu progresa pārraudzība
   - 📝 Mācību materiālu rediģēšana
 
-- **👨‍💼 Administratora Saskarne**
+- **👨‍💼 Administratora saskarne**
   - 👥 Lietotāju kontu pārvaldība
   - 🛡️ Satura moderācijas rīki
   - 📊 Sistēmas statistikas pārskati
@@ -38,7 +38,7 @@ EduTech ir moderna mācību satura pārvaldības sistēma, kas izstrādāta, lai
   - 🎯 Tailwind CSS
   - 📱 JavaScript
 
-## 💻 Sistēmas Prasības
+## 💻 Sistēmas prasības
 
 - ⚡ PHP >= 8.0
 - 🟢 Node.js >= 14.0
@@ -52,12 +52,12 @@ EduTech ir moderna mācību satura pārvaldības sistēma, kas izstrādāta, lai
 git clone [projekta-url]
 ```
 
-2. Instalējiet PHP atkarības:
+2. Instalējiet PHP atbalstu:
 ```bash
 composer install
 ```
 
-3. Instalējiet JavaScript atkarības:
+3. Instalējiet JavaScript atbalstu:
 ```bash
 npm install
 ```
