@@ -468,7 +468,7 @@ const loadUserData = async () => {
 onMounted(() => {
     loadUserData();
 });
-</script>
+</script> 
 
 <style scoped>
 .message-enter-active,

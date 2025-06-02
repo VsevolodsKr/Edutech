@@ -308,13 +308,13 @@ const handleSubmit = async () => {
         });
 
         if (response.data.status === 200) {
-            validationMessages.value = Array.isArray(response.data.message) 
-                ? response.data.message 
-                : [response.data.message];
-            isError.value = false;
+        validationMessages.value = Array.isArray(response.data.message) 
+            ? response.data.message 
+            : [response.data.message];
+        isError.value = false;
 
-            setTimeout(() => {
-                router.push('/login');
+        setTimeout(() => {
+            router.push('/login');
             }, 1500);
         } else {
             validationMessages.value = Array.isArray(response.data.message)

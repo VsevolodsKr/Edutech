@@ -479,16 +479,16 @@ class PlaylistsController extends Controller
     public function get_playlist_contents($encryptedId)
     {
         try {
-            $id = $this->decryptId($encryptedId);
-            if (!$id) {
-                return response()->json([
-                    'message' => 'Nepareizs kursa ID',
-                    'status' => 404
-                ], 404);
-            }
+        $id = $this->decryptId($encryptedId);
+        if (!$id) {
+            return response()->json([
+                'message' => 'Nepareizs kursa ID',
+                'status' => 404
+            ], 404);
+        }
 
             $contents = Contents::where('playlist_id', $id)
-                ->orderBy('date', 'asc')
+            ->orderBy('date', 'asc')
                 ->get()
                 ->map(function ($content) {
                     return [

@@ -82,15 +82,6 @@ const userRoutes = [
         }
     },
     {
-        path: '/update-profile',
-        name: 'update-profile',
-        component: () => import('../pages/UpdateProfile.vue'),
-        meta: { 
-            title: 'Rediģēt profilu',
-            requiresAuth: true 
-        }
-    },
-    {
         path: '/playlist/:id',
         component: () => import('../pages/Playlist.vue'),
         name: 'Playlist',

@@ -17,19 +17,19 @@
                 <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
                 </div>
-
+                
                 <div v-else class="flex items-center justify-center">
                     <!-- View Mode -->
                     <div v-if="!isEditing" class="bg-base rounded-lg p-[2rem] w-[50rem]">
                         <div class="flex justify-center mb-6">
                             <img 
-                                :src="getImageUrl(adminData.image)"
+                                :src="getImageUrl(adminData.image)" 
                                 :alt="adminData.name"
                                 @error="handleImageError"
                                 class="w-32 h-32 rounded-full object-cover border-4 border-button"
                             >
                         </div>
-
+                        
                         <div class="space-y-6">
                             <div class="bg-background rounded-lg p-4">
                                 <h3 class="text-[1rem] text-text_light mb-1 [@media(max-width:550px)]:text-[.8rem]">
@@ -59,47 +59,47 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
-                                <div class="text-center p-4 bg-background rounded-lg">
-                                    <h3 class="text-[1.8rem] text-button">{{ statistics.playlists }}</h3>
-                                    <div class="flex justify-center items-center gap-2">
-                                        <i class="fa-solid fa-bars-staggered text-button"></i>
-                                        <p class="text-[1.2rem] text-text_light">Kursi</p>
-                                    </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.playlists }}</h3>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fa-solid fa-bars-staggered text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Kursi</p>
                                 </div>
-                                <div class="text-center p-4 bg-background rounded-lg">
-                                    <h3 class="text-[1.8rem] text-button">{{ statistics.contents }}</h3>
-                                    <div class="flex justify-center items-center gap-2">
-                                        <i class="fas fa-graduation-cap text-button"></i>
-                                        <p class="text-[1.2rem] text-text_light">Video</p>
-                                    </div>
+                            </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.contents }}</h3>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fas fa-graduation-cap text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Video</p>
                                 </div>
-                                <div class="text-center p-4 bg-background rounded-lg">
-                                    <h3 class="text-[1.8rem] text-button">{{ statistics.likes }}</h3>
-                                    <div class="flex justify-center items-center gap-2">
-                                        <i class="fas fa-heart text-button"></i>
-                                        <p class="text-[1.2rem] text-text_light">Favorītvideo</p>
-                                    </div>
+                            </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.likes }}</h3>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fas fa-heart text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Favorītvideo</p>
                                 </div>
-                                <div class="text-center p-4 bg-background rounded-lg">
-                                    <h3 class="text-[1.8rem] text-button">{{ statistics.comments }}</h3>
-                                    <div class="flex justify-center items-center gap-2">
-                                        <i class="fas fa-comment text-button"></i>
-                                        <p class="text-[1.2rem] text-text_light">Komentāri</p>
+                            </div>
+                            <div class="text-center p-4 bg-background rounded-lg">
+                                <h3 class="text-[1.8rem] text-button">{{ statistics.comments }}</h3>
+                                <div class="flex justify-center items-center gap-2">
+                                    <i class="fas fa-comment text-button"></i>
+                                    <p class="text-[1.2rem] text-text_light">Komentāri</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Edit Mode -->
                     <form v-else @submit.prevent="handleSubmit" class="bg-base rounded-lg p-[2rem] w-[50rem]">
                         <div v-if="errorList.length" class="bg-[#fcb6b6] text-[#912020] rounded-xl mb-[1rem]">
-                            <p v-for="(error, index) in errorList" 
-                               :key="index" 
-                               class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]">
-                                <i class="fa fa-warning"></i> {{ error }}
-                            </p>
-                        </div>
+                                <p v-for="(error, index) in errorList" 
+                                   :key="index" 
+                                   class="py-[.5rem] pl-[.5rem] w-full [@media(max-width:550px)]:text-[.7rem]">
+                                    <i class="fa fa-warning"></i> {{ error }}
+                                </p>
+                            </div>
 
                         <div class="flex justify-center mb-8">
                             <div class="relative">
@@ -123,7 +123,7 @@
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
-                        </div>
+                            </div>
 
                         <div class="space-y-6">
                             <div>
@@ -161,45 +161,45 @@
                                 <div v-if="showPasswordFields" class="space-y-4">
                                     <div>
                                         <label class="block text-text_dark mb-2">Pašreizējā parole <span class="text-button4">*</span></label>
-                                        <input 
-                                            v-model="formData.old_password"
-                                            type="password"
+                                <input 
+                                    v-model="formData.old_password"
+                                    type="password"
                                             class="w-full p-[.8rem] rounded-lg bg-background text-text_dark border-2 border-line focus:border-button focus:outline-none"
-                                        >
-                                    </div>
+                                >
+                            </div>
 
                                     <div>
                                         <label class="block text-text_dark mb-2">Jaunā parole <span class="text-button4">*</span></label>
-                                        <input 
-                                            v-model="formData.new_password"
-                                            type="password"
+                                <input 
+                                    v-model="formData.new_password"
+                                    type="password"
                                             class="w-full p-[.8rem] rounded-lg bg-background text-text_dark border-2 border-line focus:border-button focus:outline-none"
-                                        >
-                                    </div>
+                                >
+                            </div>
 
                                     <div>
                                         <label class="block text-text_dark mb-2">Apstiprināt jauno paroli <span class="text-button4">*</span></label>
-                                        <input 
-                                            v-model="formData.confirm_password"
-                                            type="password"
+                                <input 
+                                    v-model="formData.confirm_password"
+                                    type="password"
                                             class="w-full p-[.8rem] rounded-lg bg-background text-text_dark border-2 border-line focus:border-button focus:outline-none"
-                                        >
+                                >
                                     </div>
                                 </div>
                             </div>
 
                             <div class="flex justify-end pt-6">
-                                <button 
-                                    type="submit"
-                                    :disabled="isSubmitting"
+                            <button 
+                                type="submit"
+                                :disabled="isSubmitting"
                                     class="bg-button text-base px-6 py-2 rounded-lg hover:bg-transparent hover:text-button border-2 border-button transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                >
+                            >
                                     <span v-if="isSubmitting" class="animate-spin rounded-full h-5 w-5 border-2 border-base border-t-transparent"></span>
                                     {{ isSubmitting ? 'Saglabā...' : 'Saglabāt izmaiņas' }}
-                                </button>
+                            </button>
                             </div>
                         </div>
-                    </form>
+                        </form>
                 </div>
             </section>
         </div>
@@ -387,8 +387,8 @@ const handleSubmit = async () => {
 
         const data = new FormData();
 
-        data.append('name', formData.value.name);
-        data.append('email', formData.value.email);
+            data.append('name', formData.value.name);
+            data.append('email', formData.value.email);
 
         if (showPasswordFields.value) {
             data.append('old_password', formData.value.old_password);
@@ -467,7 +467,7 @@ const getImageUrl = (image) => {
     } else if (cleanPath.startsWith('/storage/')) {
         cleanPath = cleanPath.replace('/storage/', '');
     }
-    
+
     cleanPath = cleanPath.replace(/^\/+/, '').replace(/\/+$/, '');
     
     if (!cleanPath.startsWith('uploads/')) {
@@ -479,7 +479,7 @@ const getImageUrl = (image) => {
 
 const handleImageError = (event) => {
     if (!event.target.src.includes('default-avatar.png')) {
-        event.target.src = defaultAvatar;
+    event.target.src = defaultAvatar;
     }
 };
 

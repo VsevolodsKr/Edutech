@@ -110,7 +110,7 @@
 
                         <div class="flex gap-[1rem] mt-[.5rem]">
                             <button 
-                                @click="handleDeleteComment(comment.id)"
+                                @click="handleDeleteComment(comment.encrypted_id)"
                                 class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button4 [@media(max-width:550px)]:text-[.8rem]"
                             >
                                 Dzēst komentāru
@@ -233,6 +233,7 @@ const loadContent = async () => {
                 if (commentsResponse.data.comments) {
                     processedContent.comments = commentsResponse.data.comments.map(comment => ({
                         id: comment.id,
+                        encrypted_id: comment.encrypted_id,
                         comment: comment.comment,
                         created_at: comment.date,
                         user_name: comment.user?.name || 'Unknown User',
