@@ -66,7 +66,7 @@
                         <button 
                             @click="() => deleteComment(comment.encrypted_id)"
                             :disabled="isDeleting === comment.encrypted_id"
-                            class="max-w-[12rem] bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
+                            class="max-w-[14rem] bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
                         >
                             {{ isDeleting === comment.encrypted_id ? 'Dzēšana...' : 'Dzēst komentāru' }}
                         </button>
