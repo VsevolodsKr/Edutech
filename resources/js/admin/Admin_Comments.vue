@@ -62,11 +62,11 @@
                         <div class="absolute top-[-0.5rem] left-[1.5rem] w-[1rem] h-[1rem] bg-background transform rotate-45"></div>
                     </div>
 
-                    <div class="flex justify-start mt-[1rem]">
+                    <div class="flex justify-start mt-[1rem] [@media(max-width:550px)]:mt-[.5rem]">
                         <button 
                             @click="() => deleteComment(comment.encrypted_id)"
                             :disabled="isDeleting === comment.encrypted_id"
-                            class="max-w-[14rem] bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem] [@media(max-width:550px)]:max-w-[7rem]"
+                            class="max-w-[14rem] bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[2rem] transition hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:max-w-full [@media(max-width:550px)]:w-full"
                         >
                             {{ isDeleting === comment.encrypted_id ? 'Dzēšana...' : 'Dzēst komentāru' }}
                         </button>

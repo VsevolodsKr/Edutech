@@ -10,8 +10,8 @@
                 <h3 class="text-[1.5rem] text-text_dark">Video nav atrasts</h3>
             </div>
 
-            <div v-else class="bg-base rounded-lg p-[1rem]">
-                <div class="relative w-full pt-[56.25%] mb-4">
+            <div v-else class="bg-base rounded-lg p-[1rem] [@media(max-width:550px)]:p-[.5rem]">
+                <div class="relative w-full pt-[56.25%] mb-4 [@media(max-width:550px)]:mb-2">
                     <template v-if="content.video_source_type === 'youtube'">
                         <iframe
                             :src="getYouTubeEmbedUrl(content.video)"
@@ -34,41 +34,41 @@
                     </template>
                 </div>
 
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl text-text_dark">{{ content.title }}</h2>
-                    <div class="flex gap-4">
-                        <span class="text-text_light">
+                <div class="flex items-center justify-between mb-4 [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:items-start [@media(max-width:550px)]:gap-2 [@media(max-width:550px)]:mb-2">
+                    <h2 class="text-2xl text-text_dark [@media(max-width:550px)]:text-[1.1rem]">{{ content.title }}</h2>
+                    <div class="flex gap-4 [@media(max-width:550px)]:gap-2">
+                        <span class="text-text_light [@media(max-width:550px)]:text-[.8rem]">
                             <i class="fas fa-heart text-button"></i>
                             {{ content.likes || 0 }} patīk
                         </span>
-                        <span class="text-text_light">
+                        <span class="text-text_light [@media(max-width:550px)]:text-[.8rem]">
                             <i class="fas fa-comments text-button"></i>
                             {{ content.commentsCount || 0 }} komentāri
                         </span>
                     </div>
                 </div>
 
-                <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center">
+                <div class="flex mt-[.5rem] mb-[1rem] border-b border-line pb-[1rem] gap-[1.5rem] items-center [@media(max-width:550px)]:gap-[.5rem] [@media(max-width:550px)]:mb-[.5rem] [@media(max-width:550px)]:pb-[.5rem]">
                     <p class="text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
                         <i class="fas fa-calendar text-button mr-[.3rem]"></i>
                         <span class="text-text_light">{{ formatDate(content.date) }}</span>
                     </p>
                 </div>
 
-                <p class="leading-1.5 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-1">
+                <p class="leading-1.5 text-[1rem] text-text_light mt-[1.5rem] text-justify [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:leading-1 [@media(max-width:550px)]:mt-[.5rem]">
                     {{ content.description }}
                 </p>
 
-                <div class="flex justify-between w-full gap-[1rem] my-[1rem]">
+                <div class="flex justify-between w-full gap-[1rem] my-[1rem] [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:gap-[.5rem] [@media(max-width:550px)]:my-[.5rem]">
                     <button 
                         @click="router.push(`/admin_contents/update/${content.encrypted_id}`)"
-                        class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button3 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                        class="bg-button3 text-base text-center border-2 border-button3 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button3 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:w-full"
                     >
                         Rediģēt
                     </button>
                     <button 
                         @click="handleDelete(content.encrypted_id)"
-                        class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
+                        class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] block w-1/2 transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:w-full"
                     >
                         Dzēst
                     </button>
@@ -81,7 +81,7 @@
                 {{ content.commentsCount || 0 }} komentāri
             </h1>
 
-            <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col">
+            <div class="grid gap-[1rem] bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:p-[.5rem]">
                 <div v-if="!content.comments?.length" class="text-center text-text_light py-4">
                     Nav komentāri
                 </div>
@@ -90,12 +90,12 @@
                     <div v-for="comment in content.comments" 
                          :key="comment.id" 
                          class="mb-8 last:mb-0">
-                        <div class="flex items-center gap-[1rem] mb-[1rem]">
+                        <div class="flex items-center gap-[1rem] mb-[1rem] [@media(max-width:550px)]:gap-[.5rem]">
                             <img :src="comment.user_image" 
                                  :alt="comment.user_name"
-                                 class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]">
+                                 class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[2.2rem] [@media(max-width:550px)]:w-[2.2rem]">
                             <div>
-                                <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
+                                <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[.95rem]">
                                     {{ comment.user_name }}
                                 </h3>
                                 <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
@@ -104,14 +104,14 @@
                             </div>
                         </div>
 
-                        <div class="rounded-lg bg-background p-[1rem] whitespace-pre-line my-[.5rem] text-[1rem] text-text_light leading-7 relative [@media(max-width:550px)]:text-[.7rem]">
+                        <div class="rounded-lg bg-background p-[1rem] whitespace-pre-line my-[.5rem] text-[1rem] text-text_light leading-7 relative [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:p-[.5rem]">
                             {{ comment.comment }}
                         </div>
 
-                        <div class="flex gap-[1rem] mt-[.5rem]">
+                        <div class="flex gap-[1rem] mt-[.5rem] [@media(max-width:550px)]:gap-[.5rem]">
                             <button 
                                 @click="handleDeleteComment(comment.encrypted_id)"
-                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button4 [@media(max-width:550px)]:text-[.8rem]"
+                                class="bg-button4 text-base text-center border-2 border-button4 rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button4 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
                             >
                                 Dzēst komentāru
                             </button>

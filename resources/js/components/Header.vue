@@ -28,22 +28,22 @@
 
             <div 
                 v-if="show && user" 
-                class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100"
+                class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100 [@media(max-width:550px)]:w-[15rem] [@media(max-width:550px)]:p-[.7rem]"
             >
                 <div class="flex justify-center">
-                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
+                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem] [@media(max-width:550px)]:mb-[.5rem]">
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
-                <p class="text-[1.3rem] text-text_light">students</p>
+                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.1rem]">{{ user.name }}</h3>
+                <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">students</p>
                 <router-link 
                     to="/profile" 
-                    class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem]"
+                    class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem] [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:mb-[.5rem]"
                 >
                     Skatīt profilu
                 </router-link>
                 <button 
                     @click="logout" 
-                    class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base"
+                    class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:mt-[.5rem]"
                 >
                     Iziet
                 </button>
@@ -107,22 +107,22 @@
 
             <div 
                 v-if="show && user" 
-                class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100"
+                class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] transition ease-linear duration-200 transform scale-100 [@media(max-width:550px)]:w-[15rem] [@media(max-width:550px)]:p-[.7rem]"
             >
                 <div class="flex justify-center">
-                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem]">
+                    <img :src="user.image" class="h-[8rem] w-[8rem] rounded-[50%] object-contain mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem] [@media(max-width:550px)]:mb-[.5rem]">
                 </div>
-                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ user.name }}</h3>
-                <p class="text-[1.3rem] text-text_light">students</p>
+                <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.1rem]">{{ user.name }}</h3>
+                <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">students</p>
                 <router-link 
                     to="/profile" 
-                    class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem]"
+                    class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button hover:bg-base mb-[1rem] [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:mb-[.5rem]"
                 >
                     Skatīt profilu
                 </router-link>
                 <button 
                     @click="logout" 
-                    class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base"
+                    class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition ease-linear duration-200 hover:transition hover:ease-linear hover:duration-200 hover:text-button4 hover:bg-base [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:mt-[.5rem]"
                 >
                     Iziet
                 </button>

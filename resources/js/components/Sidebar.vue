@@ -15,27 +15,27 @@
                 </div>
             </div>
 
-            <div v-if="isLoading" class="py-[3rem] px-[2rem] text-center">
+            <div v-if="isLoading" class="py-[3rem] px-[2rem] text-center [@media(max-width:550px)]:py-[1.5rem] [@media(max-width:550px)]:px-[1rem]">
                 <div class="flex justify-center mb-4">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button [@media(max-width:550px)]:h-8 [@media(max-width:550px)]:w-8"></div>
                 </div>
-                <p class="text-text_light">Ielādē...</p>
+                <p class="text-text_light [@media(max-width:550px)]:text-[.8rem]">Ielādē...</p>
             </div>
 
             <template v-else-if="user">
-                <div class="py-[3rem] px-[2rem] text-center">
+                <div class="py-[3rem] px-[2rem] text-center [@media(max-width:550px)]:py-[1.5rem] [@media(max-width:550px)]:px-[1rem]">
                     <div class="flex justify-center">
                         <img 
                             :src="user.image" 
                             :alt="user.name"
                             @error="handleImageError"
-                            class="h-[9rem] w-[9rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]"
+                            class="h-[9rem] w-[9rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem] [@media(max-width:550px)]:mb-[.5rem]"
                         >
                     </div>
-                    <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">
+                    <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[.9rem]">
                         {{ user.name }}
                     </h3>
-                    <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">
+                    <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[.8rem]">
                         {{ user.role || 'students' }}
                     </p>
                     <router-link 
@@ -48,11 +48,11 @@
             </template>
 
             <template v-else>
-                <div class="py-[2rem] px-[2rem]">
-                    <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1rem]">
+                <div class="py-[2rem] px-[2rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:px-[1rem]">
+                    <h3 class="text-[1.3rem] text-text_dark text-center overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[.9rem]">
                         Lūdzu ielogojieties vai reģistrējieties
                     </h3>
-                    <div class="w-full flex gap-[.5rem] pt-[.5rem] mb-[2rem]">
+                    <div class="w-full flex gap-[.5rem] pt-[.5rem] mb-[2rem] [@media(max-width:550px)]:mb-[1rem]">
                         <router-link 
                             to="/login"
                             class="bg-button2 text-base text-center border-2 border-button2 rounded-lg py-[.5rem] block w-1/2 transition-all duration-200 hover:bg-transparent hover:text-button2 [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.2rem]"
@@ -74,11 +74,11 @@
                     v-for="(item, index) in navigationItems" 
                     :key="index"
                     :to="item.path"
-                    class="block p-[2rem] text-[1.3rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:pl-[2rem]"
+                    class="block p-[2rem] text-[1.3rem] [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:px-[1rem]"
                     :class="{ 'pt-[.5rem] pb-[2rem]': index === 0 }"
                 >
                     <span class="text-text_light hover:text-button hover:border-b hover:border-button hover:pb-[.5rem] transition-colors duration-200">
-                        <i :class="[item.icon, 'mr-[1.5rem]']"></i>
+                        <i :class="[item.icon, 'mr-[1.5rem] [@media(max-width:550px)]:mr-[.8rem]']"></i>
                         {{ item.label }}
                     </span>
                 </router-link>
@@ -87,12 +87,12 @@
                     v-if="user"
                     @click="handleLogout"
                     :disabled="isLoggingOut"
-                    class="block w-full p-[2rem] text-[1.3rem] text-left [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:pl-[2rem]"
+                    class="block w-full p-[2rem] text-[1.3rem] text-left [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.5rem] [@media(max-width:550px)]:px-[1rem]"
                 >
                     <span class="text-text_light hover:text-button hover:border-b hover:border-button hover:pb-[.5rem] transition-colors duration-200 flex items-center">
-                        <i class="fa-solid fa-right-from-bracket mr-[1.5rem]"></i>
+                        <i class="fa-solid fa-right-from-bracket mr-[1.5rem] [@media(max-width:550px)]:mr-[.8rem]"></i>
                         <span v-if="isLoggingOut" class="flex items-center gap-2">
-                            <div class="animate-spin rounded-full h-4 w-4 border-2 border-button"></div>
+                            <div class="animate-spin rounded-full h-4 w-4 border-2 border-button [@media(max-width:550px)]:h-3 [@media(max-width:550px)]:w-3"></div>
                             Izlogošana...
                         </span>
                         <span v-else>Iziet</span>

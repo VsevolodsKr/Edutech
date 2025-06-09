@@ -38,21 +38,21 @@
             <Transition name="menu">
                 <div 
                     v-if="showUserMenu && userData"
-                    class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] shadow-lg"
+                    class="absolute top-[120%] right-[5rem] bg-base rounded-lg p-[1.5rem] text-center overflow-hidden origin-top-right w-[20rem] shadow-lg [@media(max-width:550px)]:w-[15rem] [@media(max-width:550px)]:p-[.7rem]"
                 >
                     <div class="flex justify-center">
                         <img 
                             :src="getUserImageUrl(userData.image)" 
                             :alt="userData.name"
-                            class="h-[8rem] w-[8rem] rounded-full object-cover mb-[1rem]"
+                            class="h-[8rem] w-[8rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem] [@media(max-width:550px)]:mb-[.5rem]"
                         >
                     </div>
-                    <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap">{{ userData.name }}</h3>
-                    <p class="text-[1.3rem] text-text_light">{{ userData.profession }}</p>
+                    <h3 class="text-[1.5rem] text-text_dark text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.1rem]">{{ userData.name }}</h3>
+                    <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[.9rem]">{{ userData.profession }}</p>
 
                     <router-link 
                         to="/developer_profile"
-                        class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full mt-[1rem] transition-all duration-200 hover:bg-transparent hover:text-button"
+                        class="bg-button text-base border-2 border-button rounded-lg py-[.5rem] block w-full mt-[1rem] transition-all duration-200 hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:mt-[.5rem]"
                     >
                         Skatīt profilu
                     </router-link>
@@ -60,7 +60,7 @@
                     <button 
                         @click="handleLogout"
                         :disabled="isLoggingOut"
-                        class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="bg-button4 text-base border-2 border-button4 rounded-lg mt-[1rem] py-[.5rem] block w-full transition-all duration-200 hover:bg-transparent hover:text-button4 disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:text-[.9rem] [@media(max-width:550px)]:py-[.3rem] [@media(max-width:550px)]:mt-[.5rem]"
                     >
                         <span v-if="isLoggingOut" class="inline-flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

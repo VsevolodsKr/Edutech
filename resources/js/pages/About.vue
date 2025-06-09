@@ -6,39 +6,39 @@
                 <h1 class="text-[1.5rem] text-text_dark capitalize">Par mums</h1>
                 <hr class="border-[#ccc] mb-[2rem] mr-[1rem] [@media(max-width:550px)]:mr-[.5rem]">
                 
-                <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] items-center">
+                <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] items-center [@media(max-width:550px)]:grid-cols-1 [@media(max-width:550px)]:gap-[1rem]">
                     <div class="text-center">
-                        <img src="../images/about-img.svg" alt="About Us" class="w-full h-[40rem] [@media(max-width:550px)]:h-[20rem]">
+                        <img src="../images/about-img.svg" alt="About Us" class="w-full h-[40rem] [@media(max-width:550px)]:h-[15rem]">
                     </div>
-                    <div class="text-center">
-                        <h3 class="text-[1.75rem] text-text_dark mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Kāpēc mēs?</h3>
-                        <p class="text-[1.1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.9rem]">
+                    <div class="text-center [@media(max-width:550px)]:px-[.5rem]">
+                        <h3 class="text-[1.75rem] text-text_dark mb-[2rem] [@media(max-width:550px)]:text-[1.25rem] [@media(max-width:550px)]:mb-[1rem]">Kāpēc mēs?</h3>
+                        <p class="text-[1.1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.9rem] [@media(max-width:550px)]:leading-[1.6]">
                             Mēs esam paredzēti nodrošināt augstas kvalitātes izglītību caur mūsu inovatīvo tiešsaistes mācīšanās platformu. 
                             Mūsu kursi ir izstrādāti nozarēs ekspertiem un mācītājiem, lai nodrošinātu jums labāko iespējamo mācīšanās pieredzi.
                         </p>
-                        <div class="mt-[2rem] grid grid-cols-[repeat(auto-fit,_minmax(16rem,_1fr))] gap-[1.5rem]">
+                        <div class="mt-[2rem] grid grid-cols-[repeat(auto-fit,_minmax(16rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:grid-cols-1 [@media(max-width:550px)]:gap-[1rem] [@media(max-width:550px)]:mt-[1rem]">
                             <div v-for="(stat, index) in statistics" 
                                  :key="index"
-                                 class="flex items-center gap-[1rem] h-[7rem] bg-base rounded-lg px-[1.2rem]">
-                                <i :class="stat.icon" class="text-[2rem] text-button"></i>
+                                 class="flex items-center gap-[1rem] h-[7rem] bg-base rounded-lg px-[1.2rem] [@media(max-width:550px)]:h-[5rem] [@media(max-width:550px)]:px-[1rem]">
+                                <i :class="stat.icon" class="text-[2rem] text-button [@media(max-width:550px)]:text-[1.5rem]"></i>
                                 <div class="text-left">
-                                    <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.25rem]">{{ stat.value }}</h3>
-                                    <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[0.9rem]">{{ stat.label }}</p>
+                                    <h3 class="text-[1.5rem] text-text_dark [@media(max-width:550px)]:text-[1.1rem]">{{ stat.value }}</h3>
+                                    <p class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[0.8rem]">{{ stat.label }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-[3rem]">
-                    <h3 class="text-[1.75rem] text-text_dark text-center mb-[2rem] [@media(max-width:550px)]:text-[1.25rem]">Mūsu priekšrocības</h3>
-                    <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem]">
+                <div class="mt-[3rem] [@media(max-width:550px)]:mt-[2rem]">
+                    <h3 class="text-[1.75rem] text-text_dark text-center mb-[2rem] [@media(max-width:550px)]:text-[1.25rem] [@media(max-width:550px)]:mb-[1rem]">Mūsu priekšrocības</h3>
+                    <div class="grid grid-cols-[repeat(auto-fit,_minmax(30rem,_1fr))] gap-[1.5rem] [@media(max-width:550px)]:grid-cols-1 [@media(max-width:550px)]:gap-[1rem]">
                         <div v-for="(feature, index) in features" 
                              :key="index"
-                             class="bg-base rounded-lg p-[2rem] text-center">
-                            <i :class="feature.icon" class="text-[2.5rem] text-button mb-[1.5rem] [@media(max-width:550px)]:text-[2rem]"></i>
-                            <h3 class="text-[1.5rem] text-text_dark mb-[1rem] [@media(max-width:550px)]:text-[1.25rem]">{{ feature.title }}</h3>
-                            <p class="text-[1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.9rem]">{{ feature.description }}</p>
+                             class="bg-base rounded-lg p-[2rem] text-center [@media(max-width:550px)]:p-[1rem]">
+                            <i :class="feature.icon" class="text-[2.5rem] text-button mb-[1.5rem] [@media(max-width:550px)]:text-[2rem] [@media(max-width:550px)]:mb-[1rem]"></i>
+                            <h3 class="text-[1.5rem] text-text_dark mb-[1rem] [@media(max-width:550px)]:text-[1.1rem] [@media(max-width:550px)]:mb-[.5rem]">{{ feature.title }}</h3>
+                            <p class="text-[1rem] text-text_light leading-[1.8] [@media(max-width:550px)]:text-[0.8rem] [@media(max-width:550px)]:leading-[1.6]">{{ feature.description }}</p>
                         </div>
                     </div>
                 </div>

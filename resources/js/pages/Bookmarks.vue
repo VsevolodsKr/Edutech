@@ -11,7 +11,7 @@
                 <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-button"></div>
             </div>
 
-            <div v-else-if="error" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
+            <div v-else-if="error && (!user || !user.encrypted_id) && !isLoading" class="text-center text-button4 text-[1.2rem] mt-[2rem]">
                 {{ error }}
                 <button 
                     @click="loadBookmarks"
@@ -21,7 +21,7 @@
                 </button>
             </div>
 
-            <div v-else-if="!playlists.length" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
+            <div v-else-if="!playlists.length && !isLoading && user && user.encrypted_id" class="text-center text-text_light text-[1.2rem] mt-[2rem]">
                 Jums nav grāmatzīmēts neviens kurss.
             </div>
 
@@ -237,6 +237,7 @@ const deleteBookmark = async (bookmarkId) => {
 
             store.commit('decrementStat', 'playlists');
             await store.dispatch('loadUserStats', user.value.encrypted_id);
+            await store.dispatch('loadDashboardStats');
 
             await Swal.fire({
                 title: 'Dzēsts!',

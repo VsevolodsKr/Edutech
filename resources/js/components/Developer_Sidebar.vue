@@ -20,18 +20,18 @@
             </div>
 
             <template v-if="!isLoading && adminData">
-                <div class="py-[3rem] px-[2rem] text-center">
+                <div class="py-[3rem] px-[2rem] text-center [@media(max-width:550px)]:py-[1.5rem] [@media(max-width:550px)]:px-[1rem]">
                     <div class="flex justify-center">
                         <img 
                             :src="adminData.image" 
                             :alt="adminData.name"
-                            class="h-[9rem] w-[9rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[4rem] [@media(max-width:550px)]:w-[4rem]"
+                            class="h-[9rem] w-[9rem] rounded-full object-cover mb-[1rem] [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem] [@media(max-width:550px)]:mb-[.5rem]"
                         >
                     </div>
-                    <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[1.2rem]">
+                    <h3 class="text-[1.5rem] text-text_dark overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:550px)]:text-[.9rem]">
                         {{ adminData.name }}
                     </h3>
-                    <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[1rem]">
+                    <p class="text-[1.3rem] text-text_light [@media(max-width:550px)]:text-[.8rem]">
                         {{ adminData.profession }}
                     </p>
                     <router-link 
@@ -59,16 +59,16 @@
                 </div>
             </template>
 
-            <nav v-if="!isLoading" class="mt-[1rem]">
+            <nav v-if="!isLoading" class="mt-[1rem] [@media(max-width:550px)]:mt-[.5rem]">
                 <router-link 
                     v-for="(item, index) in navigationItems" 
                     :key="index"
                     :to="item.path"
-                    class="block p-[2rem] text-[1.3rem] [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:pl-[2rem]"
+                    class="block p-[2rem] text-[1.3rem] [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:px-[1rem]"
                     :class="{ 'pt-[.5rem] pb-[2rem]': index === 0 }"
                 >
                     <span class="text-text_light hover:text-button hover:border-b hover:border-button hover:pb-[.5rem] transition-colors duration-200">
-                        <i :class="[item.icon, 'mr-[1.5rem]']"></i>
+                        <i :class="[item.icon, 'mr-[1.5rem] [@media(max-width:550px)]:mr-[.8rem]']"></i>
                         {{ item.label }}
                     </span>
                 </router-link>
@@ -77,12 +77,12 @@
                     v-if="adminData"
                     @click="handleLogout"
                     :disabled="isLoggingOut"
-                    class="block w-full p-[2rem] text-[1.3rem] text-left [@media(max-width:550px)]:text-[1rem] [@media(max-width:550px)]:py-[1rem] [@media(max-width:550px)]:pl-[2rem]"
+                    class="block w-full p-[2rem] text-[1.3rem] text-left [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:py-[.5rem] [@media(max-width:550px)]:px-[1rem]"
                 >
                     <span class="text-text_light hover:text-button hover:border-b hover:border-button hover:pb-[.5rem] transition-colors duration-200 flex items-center">
-                        <i class="fa-solid fa-right-from-bracket mr-[1.5rem]"></i>
+                        <i class="fa-solid fa-right-from-bracket mr-[1.5rem] [@media(max-width:550px)]:mr-[.8rem]"></i>
                         <span v-if="isLoggingOut" class="flex items-center gap-2">
-                            <div class="animate-spin rounded-full h-4 w-4 border-2 border-button"></div>
+                            <div class="animate-spin rounded-full h-4 w-4 border-2 border-button [@media(max-width:550px)]:h-3 [@media(max-width:550px)]:w-3"></div>
                             Izlogošana...
                         </span>
                         <span v-else>Izlogoties</span>

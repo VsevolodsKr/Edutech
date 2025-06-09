@@ -22,62 +22,62 @@
             </div>
 
             <template v-else-if="playlist && teacher">
-    <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg">
-        <div class="flex-[1_1_20rem]">
+    <div class="flex items-center gap-[3rem] flex-wrap bg-base p-[1rem] rounded-lg [@media(max-width:550px)]:flex-col [@media(max-width:550px)]:gap-[1rem] [@media(max-width:550px)]:p-[.5rem]">
+        <div class="flex-[1_1_20rem] w-full [@media(max-width:550px)]:flex-[1_1_5rem]">
             <div class="mb-[1rem]">
-                            <button 
-                                v-if="user"
-                                @click="toggleBookmark"
-                                :disabled="isBookmarkLoading"
-                                class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition hover:text-base hover:bg-text_light disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]"
-                            >
-                                <i :class="[isBookmarked ? 'fa-solid text-button' : 'far', 'fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]']"></i>
-                                <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">
-                                    {{ isBookmarked ? 'Grāmatatzīmēt' : 'Grāmatiezīmēt' }}
-                                </span>
-                            </button>
+                <button 
+                    v-if="user"
+                    @click="toggleBookmark"
+                    :disabled="isBookmarkLoading"
+                    class="rounded-lg bg-background px-[1rem] py-[.5rem] text-text_light cursor-pointer transition hover:text-base hover:bg-text_light disabled:opacity-50 disabled:cursor-not-allowed [@media(max-width:550px)]:px-[.5rem] [@media(max-width:550px)]:py-[.2rem]"
+                >
+                    <i :class="[isBookmarked ? 'fa-solid text-button' : 'far', 'fa-bookmark text-[1rem] mr-[.8rem] [@media(max-width:550px)]:text-[.7rem]']"></i>
+                    <span class="text-1rem [@media(max-width:550px)]:text-[.7rem]">
+                        {{ isBookmarked ? 'Grāmatatzīmēt' : 'Grāmatiezīmēt' }}
+                    </span>
+                </button>
             </div>
             <div class="relative">
-                            <img 
-                                :src="playlist.thumb" 
-                                :alt="playlist.title"
-                                class="h-[30rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[13rem]"
-                            >
-                            <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-30 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem]">
-                                {{ contentCount }} video
-                            </span>
+                <img 
+                    :src="playlist.thumb" 
+                    :alt="playlist.title"
+                    class="h-[30rem] w-full object-cover rounded-lg [@media(max-width:550px)]:h-[10rem]"
+                >
+                <span class="absolute top-[1rem] left-[1rem] rounded-lg py-[.5rem] px-[1.5rem] bg-black bg-opacity-30 text-white text-[1rem] [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:top-[.5rem] [@media(max-width:550px)]:left-[.5rem] [@media(max-width:550px)]:px-[.7rem] [@media(max-width:550px)]:py-[.2rem]">
+                    {{ contentCount }} video
+                </span>
             </div>
         </div>
 
-        <div class="flex-[1_1_40rem]">
-            <div class="flex items-center gap-[1rem] mb-[1rem]">
-                            <img 
-                                :src="teacher.image" 
-                                :alt="teacher.name"
-                                class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[3rem] [@media(max-width:550px)]:w-[3rem]"
-                            >
+        <div class="flex-[1_1_40rem] w-full [@media(max-width:550px)]:flex-[1_1_10rem]">
+            <div class="flex items-center gap-[1rem] mb-[1rem] [@media(max-width:550px)]:gap-[.5rem]">
+                <img 
+                    :src="teacher.image" 
+                    :alt="teacher.name"
+                    class="h-[5rem] w-[5rem] rounded-full object-cover [@media(max-width:550px)]:h-[2.2rem] [@media(max-width:550px)]:w-[2.2rem]"
+                >
                 <div>
-                                <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[1rem]">
-                                    {{ teacher.name }}
-                                </h3>
-                                <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                    {{ formatDate(playlist.date) }}
-                                </span>
+                    <h3 class="text-[1.3rem] text-text_dark [@media(max-width:550px)]:text-[.95rem]">
+                        {{ teacher.name }}
+                    </h3>
+                    <span class="text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
+                        {{ formatDate(playlist.date) }}
+                    </span>
                 </div>
             </div>
             <div>
-                            <h3 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.2rem]">
-                                {{ playlist.title }}
-                            </h3>
-                            <p class="py-[1rem] leading-7 text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem]">
-                                {{ playlist.description }}
-                            </p>
-                            <router-link 
-                                :to="'/teacher_profile/' + teacher.encrypted_id"
-                                class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem]"
-                            >
-                                Skatīt profilu
-                            </router-link>
+                <h3 class="text-[1.5rem] text-text_dark capitalize [@media(max-width:550px)]:text-[1.1rem]">
+                    {{ playlist.title }}
+                </h3>
+                <p class="py-[1rem] leading-7 text-[1rem] text-text_light [@media(max-width:550px)]:text-[.7rem] [@media(max-width:550px)]:py-[.5rem]">
+                    {{ playlist.description }}
+                </p>
+                <router-link 
+                    :to="'/teacher_profile/' + teacher.encrypted_id"
+                    class="inline-block bg-button text-base text-center border-2 border-button rounded-lg py-[.5rem] px-[1.5rem] transition hover:bg-transparent hover:text-button [@media(max-width:550px)]:text-[.8rem] [@media(max-width:550px)]:block [@media(max-width:550px)]:w-full [@media(max-width:550px)]:px-0"
+                >
+                    Skatīt profilu
+                </router-link>
             </div>
         </div>
     </div>
