@@ -459,7 +459,7 @@ class TeacherController extends Controller
         }
     }
 
-    public function getTopTeachers()
+    public function get_top_teachers()
     {
         $teachers = Teachers::withCount([
             'playlists',
@@ -484,7 +484,7 @@ class TeacherController extends Controller
         return response()->json($data);
     }
 
-    public function getTeacherStats()
+    public function get_teacher_stats()
     {
         $stats = [
             'total' => Teachers::count(),
@@ -495,7 +495,7 @@ class TeacherController extends Controller
         return response()->json($stats);
     }
 
-    public function destroyTeacherContent($id)
+    public function destroy_teacher_content($id)
     {
         try {
             $teacher = Teachers::find($id);

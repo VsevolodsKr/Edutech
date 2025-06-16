@@ -46,8 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // User Profile Routes
-    Route::get('/user/profile', [AuthorizationController::class, 'getProfile']);
-    Route::post('/user/update-profile', [AuthorizationController::class, 'updateProfile']);
+    Route::get('/user/profile', [AuthorizationController::class, 'get_profile']);
+    Route::post('/user/update-profile', [AuthorizationController::class, 'update_profile']);
 
     // Admin Routes
     Route::prefix('admin')->group(function () {
@@ -66,7 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Message Management
         Route::get('/messages', [ContactController::class, 'index']);
         Route::post('/messages/{id}/reply', [ContactController::class, 'reply']);
-        Route::put('/messages/{id}/read', [ContactController::class, 'markAsRead']);
+        Route::put('/messages/{id}/read', [ContactController::class, 'mark_as_read']);
         Route::delete('/messages/{id}', [ContactController::class, 'destroy']);
     });
 
@@ -108,11 +108,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Developer Dashboard Routes
     Route::prefix('developer')->group(function () {
-        Route::get('/dashboard/stats', [EngagementController::class, 'getDashboardStats']);
-        Route::get('/dashboard/activity', [EngagementController::class, 'getSystemActivity']);
-        Route::get('/dashboard/message-status', [ContactController::class, 'getMessageStatusDistribution']);
-        Route::get('/dashboard/top-teachers', [TeacherController::class, 'getTopTeachers']);
-        Route::get('/dashboard/unread-messages', [ContactController::class, 'getUnreadMessages']);
+        Route::get('/dashboard/stats', [EngagementController::class, 'get_dashboard_stats']);
+        Route::get('/dashboard/activity', [EngagementController::class, 'get_system_activity']);
+        Route::get('/dashboard/message-status', [ContactController::class, 'get_message_status_distribution']);
+        Route::get('/dashboard/top-teachers', [TeacherController::class, 'get_top_teachers']);
+        Route::get('/dashboard/unread-messages', [ContactController::class, 'get_unread_messages']);
     });
 });
 
@@ -134,7 +134,7 @@ Route::prefix('developer')->middleware('auth:sanctum')->group(function () {
     Route::post('/teachers', [TeacherController::class, 'store']);
     Route::put('/teachers/{id}', [TeacherController::class, 'update']);
     Route::delete('/teachers/{id}', [TeacherController::class, 'destroy']);
-    Route::delete('/teachers/{id}/playlists', [TeacherController::class, 'destroyTeacherContent']);
+    Route::delete('/teachers/{id}/playlists', [TeacherController::class, 'destroy_teacher_content']);
 
     // User Management
     Route::get('/users', [AuthorizationController::class, 'get_users']);
@@ -145,7 +145,7 @@ Route::prefix('developer')->middleware('auth:sanctum')->group(function () {
     // Message Management
     Route::get('/messages', [ContactController::class, 'index']);
     Route::post('/messages/{id}/reply', [ContactController::class, 'reply']);
-    Route::put('/messages/{id}/read', [ContactController::class, 'markAsRead']);
-    Route::put('/messages/{id}/status', [ContactController::class, 'updateStatus']);
+    Route::put('/messages/{id}/read', [ContactController::class, 'mark_as_read']);
+    Route::put('/messages/{id}/status', [ContactController::class, 'update_status']);
     Route::delete('/messages/{id}', [ContactController::class, 'destroy']);
 });

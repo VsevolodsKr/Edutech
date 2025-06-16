@@ -61,7 +61,7 @@ class ContactController extends Controller
         }
     }
 
-    public function markAsRead($id)
+    public function mark_as_read($id)
     {
         try {
             $message = Contacts::find($id);
@@ -117,7 +117,7 @@ class ContactController extends Controller
         }
     }
 
-    public function getMessageStatusDistribution()
+    public function get_message_status_distribution()
     {
         $statuses = Contacts::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
@@ -136,7 +136,7 @@ class ContactController extends Controller
         return response()->json($data);
     }
 
-    public function getUnreadMessages()
+    public function get_unread_messages()
     {
         $messages = Contacts::where('status', 'jauns')
             ->orderBy('created_at', 'desc')
@@ -155,7 +155,7 @@ class ContactController extends Controller
         return response()->json($messages);
     }
 
-    public function updateStatus(Request $request, $id)
+    public function update_status(Request $request, $id)
     {
         try {
             $validator = Validator::make($request->all(), [

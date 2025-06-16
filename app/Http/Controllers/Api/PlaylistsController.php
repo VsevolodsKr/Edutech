@@ -177,7 +177,7 @@ class PlaylistsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse($validator->messages()->all());
+            return $this->error_response($validator->messages()->all());
         }
 
         return Playlists::with(['teacher', 'contents'])
@@ -218,7 +218,7 @@ class PlaylistsController extends Controller
         try {
             $validator = $this->validatePlaylist($request);
             if ($validator->fails()) {
-                return $this->errorResponse($validator->messages()->all());
+                return $this->error_response($validator->messages()->all());
             }
 
             $playlist = new Playlists();
@@ -229,14 +229,14 @@ class PlaylistsController extends Controller
             $playlist->date = Carbon::now();
 
             if ($request->hasFile('thumb')) {
-                $playlist->thumb = $this->handleFileUpload($request->file('thumb'));
+                $playlist->thumb = $this->handle_file_upload($request->file('thumb'));
             }
 
             $playlist->save();
 
-            return $this->successResponse('Kurss ir veiksmīgi izveidots!');
+            return $this->success_response('Kurss ir veiksmīgi izveidots!');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Neizdevās izveidot kursu: ' . $e->getMessage()]);
+            return $this->error_response(['Neizdevās izveidot kursu: ' . $e->getMessage()]);
         }
     }
 
@@ -245,12 +245,12 @@ class PlaylistsController extends Controller
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
-                return $this->errorResponse(['Nepareizs kursa ID']);
+                return $this->error_response(['Nepareizs kursa ID']);
             }
 
             $validator = $this->validatePlaylist($request);
             if ($validator->fails()) {
-                return $this->errorResponse($validator->messages()->all());
+                return $this->error_response($validator->messages()->all());
             }
 
             $playlist = Playlists::findOrFail($id);
@@ -264,21 +264,21 @@ class PlaylistsController extends Controller
 
             if ($request->hasFile('thumb')) {
                 try {
-                    $updateData['thumb'] = $this->handleFileUpload($request->file('thumb'));
+                    $updateData['thumb'] = $this->handle_file_upload($request->file('thumb'));
                     
                     if ($playlist->thumb && Storage::disk('public')->exists($playlist->thumb)) {
                         Storage::disk('public')->delete($playlist->thumb);
                     }
                 } catch (\Exception $e) {
-                    return $this->errorResponse(['Neizdevās augšupielādēt kursa attēlu: ' . $e->getMessage()]);
+                    return $this->error_response(['Neizdevās augšupielādēt kursa attēlu: ' . $e->getMessage()]);
                 }
             }
             
             $playlist->update($updateData);
 
-            return $this->successResponse('Kurss ir veiksmīgi rediģēts!');
+            return $this->success_response('Kurss ir veiksmīgi rediģēts!');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Neizdevās rediģēt kursu: ' . $e->getMessage()]);
+            return $this->error_response(['Neizdevās rediģēt kursu: ' . $e->getMessage()]);
         }
     }
 
@@ -291,9 +291,9 @@ class PlaylistsController extends Controller
             
             $playlist->delete();
             
-            return $this->successResponse('Kurss ir veiksmīgi dzēsts!');
+            return $this->success_response('Kurss ir veiksmīgi dzēsts!');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Neizdevās dzēst kursu: ' . $e->getMessage()]);
+            return $this->error_response(['Neizdevās dzēst kursu: ' . $e->getMessage()]);
         }
     }
 
@@ -407,7 +407,7 @@ class PlaylistsController extends Controller
         }
     }
 
-    private function handleFileUpload($file)
+    private function handle_file_upload($file)
     {
         if (!$file) {
             throw new \Exception('Nav norādīts fails');
@@ -460,7 +460,7 @@ class PlaylistsController extends Controller
         ]);
     }
 
-    private function errorResponse(array $messages, int $status = 500)
+    private function error_response(array $messages, int $status = 500)
     {
         return response()->json([
             'message' => $messages,
@@ -468,7 +468,7 @@ class PlaylistsController extends Controller
         ], $status);
     }
 
-    private function successResponse(string $message, array $data = [], int $status = 200)
+    private function success_response(string $message, array $data = [], int $status = 200)
     {
         return response()->json(array_merge([
             'message' => [$message],

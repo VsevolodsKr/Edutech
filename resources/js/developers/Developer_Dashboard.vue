@@ -78,9 +78,9 @@ const statistics = ref({
     users: 0,
     messages: 0,
     activity: { labels: [], users: [], messages: [] },
-    messageStatus: { labels: [], data: [] },
-    topTeachers: { labels: [], datasets: {} },
-    unreadMessages: []
+    message_status: { labels: [], data: [] },
+    top_teachers: { labels: [], datasets: {} },
+    unread_messages: []
 });
 
 const sectionClasses = computed(() => [
@@ -98,10 +98,10 @@ const loadDashboardData = async () => {
             updateActivityChart(statistics.value.activity);
         }
         if (messageStatusChart.value) {
-            updateMessageStatusChart(statistics.value.messageStatus);
+            updateMessageStatusChart(statistics.value.message_status);
         }
         if (topTeachersChart.value) {
-            updateTopTeachersChart(statistics.value.topTeachers);
+            updateTopTeachersChart(statistics.value.top_teachers);
         }
     } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -156,7 +156,10 @@ const updateMessageStatusChart = (data) => {
         'apstrāde': 'Apstrāde',
         'pabeigts': 'Pabeigts'
     };
-    const displayLabels = data.labels.map(status => statusLabelMap[status] || status);
+
+    const labels = data.labels || ['jauns', 'atvērts', 'apstrāde', 'pabeigts'];
+    const values = data.data || [0, 0, 0, 0];
+    const displayLabels = labels.map(status => statusLabelMap[status] || status);
 
     const ctx = messageStatusChart.value.getContext('2d');
     chartInstances.value.messageStatus = new Chart(ctx, {
@@ -164,7 +167,7 @@ const updateMessageStatusChart = (data) => {
         data: {
             labels: displayLabels,
             datasets: [{
-                data: data.data,
+                data: values,
                 backgroundColor: [
                     getComputedStyle(document.documentElement).getPropertyValue('--button4'),
                     getComputedStyle(document.documentElement).getPropertyValue('--button3'),
@@ -176,15 +179,8 @@ const updateMessageStatusChart = (data) => {
             }]
         },
         options: {
-            ...getChartOptions(),
-            scales: {
-                x: {
-                    display: false
-                },
-                y: {
-                    display: false
-                }
-            },
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom',
@@ -219,47 +215,73 @@ const updateTopTeachersChart = (data) => {
         chartInstances.value.topTeachers.destroy();
     }
 
+    const labels = data.labels || [];
+    const datasets = data.datasets || {
+        playlists: [],
+        contents: [],
+        comments: [],
+        likes: []
+    };
+
     const ctx = topTeachersChart.value.getContext('2d');
     chartInstances.value.topTeachers = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.labels,
+            labels: labels,
             datasets: [
                 {
                     label: 'Kursi',
-                    data: data.datasets.playlists,
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                    data: datasets.playlists,
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button')
                 },
                 {
                     label: 'Video',
-                    data: data.datasets.contents,
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                    data: datasets.contents,
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button2')
                 },
                 {
                     label: 'Komentāri',
-                    data: data.datasets.comments,
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                    data: datasets.comments,
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button3')
                 },
                 {
                     label: 'Patīk',
-                    data: data.datasets.likes,
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark'),
+                    data: datasets.likes,
                     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--button4')
                 }
             ]
         },
         options: {
-            ...getChartOptions(),
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: {
-                    stacked: false
+                    stacked: false,
+                    ticks: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light')
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
                 },
                 y: {
                     stacked: false,
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_light'),
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text_dark')
+                    }
                 }
             }
         }

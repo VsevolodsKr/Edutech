@@ -187,11 +187,11 @@ class ContentsController extends Controller
         try {
             $validator = $this->validateContent($request);
             if ($validator->fails()) {
-                return $this->errorResponse($validator->messages()->all());
+                return $this->error_response($validator->messages()->all());
             }
 
             if (empty($request->status)) {
-                return $this->errorResponse(['Izvēlējiet video statusu']);
+                return $this->error_response(['Izvēlējiet video statusu']);
             }
 
             $content = new Contents();
@@ -206,17 +206,17 @@ class ContentsController extends Controller
             ];
 
             if ($request->hasFile('thumb')) {
-                $contentData['thumb'] = $this->handleFileUpload($request->thumb, self::CONTENT_THUMBS_PATH);
+                $contentData['thumb'] = $this->handle_file_upload($request->thumb, self::CONTENT_THUMBS_PATH);
             }
 
             if ($request->video_source_type === 'file') {
                 if (!$request->hasFile('video')) {
-                    return $this->errorResponse(['Please upload a video file']);
+                    return $this->error_response(['Please upload a video file']);
                 }
-                $contentData['video'] = $this->handleFileUpload($request->video, self::CONTENT_VIDEOS_PATH);
+                $contentData['video'] = $this->handle_file_upload($request->video, self::CONTENT_VIDEOS_PATH);
             } else if ($request->video_source_type === 'youtube') {
                 if (empty($request->youtube_link)) {
-                    return $this->errorResponse(['Please provide a YouTube video URL']);
+                    return $this->error_response(['Please provide a YouTube video URL']);
                 }
                 $contentData['video'] = $request->youtube_link;
                 
@@ -228,11 +228,11 @@ class ContentsController extends Controller
             $content->fill($contentData);
             $content->save();
 
-            return $this->successResponse('Content uploaded successfully');
+            return $this->success_response('Content uploaded successfully');
         } catch (\Exception $e) {
             \Log::error('Error adding content: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
-            return $this->errorResponse(['Failed to upload content. Please try again later.']);
+            return $this->error_response(['Failed to upload content. Please try again later.']);
         }
     }
 
@@ -241,12 +241,12 @@ class ContentsController extends Controller
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
-                return $this->errorResponse(['Nepareizs video ID']);
+                return $this->error_response(['Nepareizs video ID']);
             }
 
             $validator = $this->validateContent($request);
             if ($validator->fails()) {
-                return $this->errorResponse($validator->messages()->all());
+                return $this->error_response($validator->messages()->all());
             }
 
             $content = Contents::findOrFail($id);
@@ -260,9 +260,9 @@ class ContentsController extends Controller
 
             $content->update($updateData);
 
-            return $this->successResponse('Video veiksmīgi rediģēts');
+            return $this->success_response('Video veiksmīgi rediģēts');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Neizdevās rediģēt video: ' . $e->getMessage()]);
+            return $this->error_response(['Neizdevās rediģēt video: ' . $e->getMessage()]);
         }
     }
 
@@ -271,7 +271,7 @@ class ContentsController extends Controller
         try {
             $id = $this->decryptId($encryptedId);
             if (!$id) {
-                return $this->errorResponse(['Nepareizs video ID']);
+                return $this->error_response(['Nepareizs video ID']);
             }
 
             $content = Contents::findOrFail($id);
@@ -282,13 +282,13 @@ class ContentsController extends Controller
             
             $content->delete();
             
-            return $this->successResponse('Video veiksmīgi dzēsts');
+            return $this->success_response('Video veiksmīgi dzēsts');
         } catch (\Exception $e) {
-            return $this->errorResponse(['Neizdevās dzēst video: ' . $e->getMessage()]);
+            return $this->error_response(['Neizdevās dzēst video: ' . $e->getMessage()]);
         }
     }
 
-    private function handleFileUpload($file, string $path)
+    private function handle_file_upload($file, string $path)
     {
         if (!$file) {
             throw new \Exception('File not provided');
@@ -314,7 +314,7 @@ class ContentsController extends Controller
         ]);
     }
 
-    private function errorResponse(array $messages, int $status = 500)
+    private function error_response(array $messages, int $status = 500)
     {
         return response()->json([
             'message' => $messages,
@@ -322,7 +322,7 @@ class ContentsController extends Controller
         ], $status);
     }
 
-    private function successResponse(string $message, array $data = [], int $status = 200)
+    private function success_response(string $message, array $data = [], int $status = 200)
     {
         return response()->json(array_merge([
             'message' => [$message],

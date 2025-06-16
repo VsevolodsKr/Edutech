@@ -219,9 +219,21 @@ const sectionClasses = computed(() => [
 const statistics = computed(() => {
     const stats = store.getters.getDashboardStats;
     return [
-        { value: parseInt(stats?.likes) || 0, label: 'Favorītvideo', link: '/likes' },
-        { value: parseInt(stats?.playlists) || 0, label: 'Grāmatzīmes', link: '/bookmarks' },
-        { value: parseInt(stats?.comments) || 0, label: 'Komentāri', link: '/comments' }
+        { 
+            value: stats?.likes || 0, 
+            label: 'Favorītvideo', 
+            link: '/likes' 
+        },
+        { 
+            value: stats?.playlists || 0, 
+            label: 'Grāmatzīmes', 
+            link: '/bookmarks' 
+        },
+        { 
+            value: stats?.comments || 0, 
+            label: 'Komentāri', 
+            link: '/comments' 
+        }
     ];
 });
 
